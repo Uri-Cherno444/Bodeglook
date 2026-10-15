@@ -1,0 +1,135 @@
+/* 03 · Inicio */
+
+.inicio {
+    padding: 48px 64px 64px;
+    display: flex;
+    flex-direction: column;
+    gap: 48px;
+}
+
+/* ---------- Banner ---------- */
+
+.banner {
+    background: var(--crema);
+    border-radius: 24px;
+    padding: 40px 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 32px;
+}
+
+.banner-texto {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.banner-saludo {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--naranja);
+}
+
+.banner-texto h1 {
+    margin: 0;
+    font-size: 40px;
+}
+
+.banner-descripcion {
+    margin: 0;
+    font-size: 18px;
+    color: var(--gris-texto);
+}
+
+.banner-botones {
+    display: flex;
+    gap: 12px;
+}
+
+.banner-resumen {
+    display: flex;
+    gap: 16px;
+}
+
+.dato {
+    width: 210px;
+    padding: 20px 24px;
+    border-radius: 16px;
+    background: var(--blanco);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.dato-numero {
+    font-size: 36px;
+    font-weight: 700;
+}
+
+.dato-texto {
+    font-size: 15px;
+    color: var(--gris-texto);
+}
+
+/* ---------- Filtros rápidos ---------- */
+
+.filtros-rapidos {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* ---------- Secciones de tarjetas ---------- */
+
+.seccion-lugares {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.seccion-lugares-encabezado {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.seccion-lugares-encabezado h2 {
+    margin: 0;
+    font-size: 32px;
+}
+
+.ver-todo {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--naranja);
+    text-decoration: none;
+}
+
+@media (max-width: 1200px) {
+    .banner {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+@media (max-width: 900px) {
+    .inicio {
+        padding: 24px 16px 48px;
+    }
+
+    .banner {
+        padding: 24px;
+    }
+
+    .banner-texto h1 {
+        font-size: 32px;
+    }
+
+    .banner-botones,
+    .banner-resumen {
+        flex-wrap: wrap;
+    }
+}

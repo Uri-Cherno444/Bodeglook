@@ -1,0 +1,94 @@
+/* 08 · Mis Planes (y la distribución con el panel "Chats" que usan 06 y 10) */
+
+.pagina-con-chats {
+    padding: 56px 112px 96px;
+    display: flex;
+    align-items: flex-start;
+    gap: 48px;
+}
+
+.mis-planes {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+}
+
+.mis-planes-encabezado {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 24px;
+}
+
+.mis-planes-encabezado h1 {
+    margin: 0 0 8px;
+    font-size: 48px;
+    line-height: 56px;
+}
+
+.mis-planes-encabezado p {
+    margin: 0;
+    font-size: 20px;
+    line-height: 30px;
+    color: var(--gris-texto);
+}
+
+.grilla-planes {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.sin-planes {
+    padding: 48px 24px;
+    border: 1px dashed var(--gris-medio);
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    text-align: center;
+}
+
+.sin-planes[hidden] {
+    display: none;
+}
+
+.sin-planes p {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+@media (max-width: 1200px) {
+    .pagina-con-chats {
+        flex-direction: column;
+        padding: 40px 32px 64px;
+    }
+
+    .mis-planes {
+        width: 100%;
+    }
+}
+
+@media (max-width: 900px) {
+    .pagina-con-chats {
+        padding: 24px 16px 48px;
+    }
+
+    .mis-planes-encabezado {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .mis-planes-encabezado h1 {
+        font-size: 36px;
+        line-height: 44px;
+    }
+
+    .grilla-planes {
+        grid-template-columns: 1fr;
+    }
+}

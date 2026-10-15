@@ -1,0 +1,69 @@
+@{
+    ViewData["Title"] = "Iniciar sesión";
+    ViewData["SinHeader"] = true;
+}
+
+@section Estilos {
+    <link rel="stylesheet" href="~/css/cuenta.css" asp-append-version="true" />
+}
+
+<section class="cuenta">
+    <div class="cuenta-marca">
+        <span class="cuenta-logo">
+            <img src="~/img/logo-pin-grande.svg" width="118" height="180" alt="" />
+        </span>
+        <p class="cuenta-nombre">Bodeglook</p>
+        <p class="cuenta-lema">Organizar una salida nunca fue tan fácil</p>
+        <p class="cuenta-descripcion">Descubrí, reservá y compartí las mejores bodegas y restaurantes con tus amigos.</p>
+    </div>
+
+    <div class="cuenta-panel">
+        <form class="cuenta-formulario" id="formIniciarSesion" novalidate>
+            <h1>Iniciar sesión</h1>
+            <p class="cuenta-subtitulo">Ingresá tus datos para continuar</p>
+
+            <div class="aviso" id="aviso" hidden>
+                <span class="aviso-texto" id="avisoTexto"></span>
+                <button type="button" class="aviso-cerrar" aria-label="Cerrar aviso">
+                    <img src="~/img/icono-cerrar-aviso.svg" width="24" height="24" alt="" />
+                </button>
+            </div>
+
+            <div class="campo" data-campo="usuario">
+                <label for="usuario">Usuario</label>
+                <div class="campo-entrada">
+                    <input type="text" id="usuario" name="usuario" placeholder="Tu usuario o email" autocomplete="username" />
+                </div>
+            </div>
+
+            <div class="campo" data-campo="contrasena">
+                <label for="contrasena">Contraseña</label>
+                <div class="campo-entrada">
+                    <input type="password" id="contrasena" name="contrasena" placeholder="Tu contraseña" autocomplete="current-password" />
+                </div>
+            </div>
+
+            @* Sin destino por ahora *@
+            <a class="cuenta-olvide">¿Olvidaste tu contraseña?</a>
+
+            <button type="submit" class="boton boton-primario boton-grande boton-ancho">Ingresar</button>
+
+            <div class="cuenta-pie">
+                <span>¿No tenés cuenta?</span>
+                <a href="/Cuenta/Registro">Registrate</a>
+            </div>
+        </form>
+    </div>
+</section>
+
+@section Scripts {
+    <script src="~/js/cuenta.js" asp-append-version="true"></script>
+    <script>
+        prepararFormulario("formIniciarSesion", "/Cuenta/Ingresar", function () {
+            return {
+                nombreUsuario: document.getElementById("usuario").value,
+                contraseña: document.getElementById("contrasena").value
+            };
+        });
+    </script>
+}

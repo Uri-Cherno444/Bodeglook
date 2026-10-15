@@ -1,0 +1,158 @@
+/* 02 · Iniciar Sesión y Registro */
+
+.cuenta {
+    display: flex;
+    min-height: 880px;
+}
+
+.cuenta-marca {
+    flex: 0 0 860px;
+    background: var(--negro);
+    padding: 0 150px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 28px;
+}
+
+.cuenta-logo {
+    padding: 22px;
+    border-radius: 40px;
+    display: flex;
+    align-self: flex-start;
+}
+
+.cuenta-nombre {
+    margin: 0;
+    font-size: 64px;
+    font-weight: 700;
+    color: var(--blanco);
+}
+
+.cuenta-lema {
+    margin: 0;
+    max-width: 560px;
+    font-size: 26px;
+    line-height: 34px;
+    font-weight: 700;
+    color: var(--naranja);
+}
+
+.cuenta-descripcion {
+    margin: 0;
+    max-width: 520px;
+    font-size: 18px;
+    line-height: 28px;
+    color: var(--gris-medio);
+}
+
+.cuenta-panel {
+    flex: 1;
+    background: var(--blanco);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 16px;
+}
+
+.cuenta-formulario {
+    width: 300px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 24px;
+}
+
+.cuenta-formulario h1 {
+    margin: 0;
+    font-size: 44px;
+    white-space: nowrap;
+}
+
+.cuenta-subtitulo {
+    margin: 0;
+    font-size: 18px;
+    color: var(--gris-texto);
+}
+
+.cuenta-olvide {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--naranja);
+    text-decoration: none;
+}
+
+.cuenta-pie {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    font-size: 16px;
+    color: var(--gris-texto);
+}
+
+.cuenta-pie a {
+    font-weight: 700;
+    color: var(--naranja);
+    text-decoration: none;
+}
+
+/* El logo grande flota apenas */
+.cuenta-logo img {
+    animation: flotar 4s ease-in-out infinite;
+}
+
+@keyframes flotar {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
+
+@media (max-width: 900px) {
+    /* En celular no entra el tooltip centrado: se alinea a la derecha del ícono */
+    .campo-error {
+        left: auto;
+        right: 10px;
+    }
+
+    .campo-con-error input {
+        padding-right: 44px;
+    }
+
+    .tooltip {
+        left: auto;
+        right: -8px;
+        transform: none;
+    }
+
+    .tooltip::after {
+        left: auto;
+        right: 14px;
+        transform: none;
+    }
+
+    .cuenta-formulario {
+        width: 100%;
+        max-width: 300px;
+    }
+}
+
+@media (max-width: 1200px) {
+    .cuenta {
+        flex-direction: column;
+        min-height: 0;
+    }
+
+    .cuenta-marca {
+        flex: none;
+        padding: 48px 16px;
+    }
+
+    .cuenta-logo img {
+        width: 59px;
+        height: 90px;
+    }
+
+    .cuenta-nombre {
+        font-size: 44px;
+    }
+}

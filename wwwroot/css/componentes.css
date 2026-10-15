@@ -1,0 +1,1323 @@
+/* Componentes del UI Kit de Bodeglook (Figma) */
+
+:root {
+    --blanco: #ffffff;
+    --negro: #000000;
+    --naranja: #ff914d;
+    --crema: #fcf3e5;
+    --naranja-suave: #ffe9d9;
+    --linea: #e6dccb;
+    --gris-texto: #6b6b6b;
+    --gris-medio: #c9bfb0;
+    --rojo: #ff3131;
+    --arena: #efe4d3;
+    --verde: #27ae60;
+    --verde-suave: #e6f5ec;
+    --gris-claro: #999999;
+    --amarillo: #fbc756;
+    --naranja-oscuro: #f57f36;
+    --sombra-hover: 0 10px 24px rgba(0, 0, 0, 0.12);
+}
+
+/* ---------- Botones ---------- */
+
+.boton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 52px;
+    padding: 0 24px;
+    border-radius: 7px;
+    border: 2px solid var(--naranja);
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 16px;
+    line-height: 20px;
+    letter-spacing: -0.16px;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.boton:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(255, 145, 77, 0.3);
+}
+
+.boton:active {
+    transform: translateY(0) scale(0.98);
+}
+
+.boton:disabled {
+    cursor: default;
+    opacity: 0.7;
+    transform: none;
+    box-shadow: none;
+}
+
+.boton-primario {
+    background: var(--naranja);
+    color: var(--blanco);
+}
+
+.boton-primario:hover {
+    background: var(--naranja-oscuro);
+    border-color: var(--naranja-oscuro);
+}
+
+.boton-secundario {
+    background: var(--blanco);
+    color: var(--naranja);
+}
+
+.boton-secundario:hover {
+    background: var(--naranja-suave);
+}
+
+.boton-negro {
+    background: var(--negro);
+    border-color: var(--negro);
+    color: var(--blanco);
+}
+
+.boton-negro:hover {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+}
+
+/* Mientras espera la respuesta del servidor */
+.boton.cargando {
+    position: relative;
+    color: transparent;
+}
+
+.boton.cargando::after {
+    content: "";
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border: 3px solid var(--blanco);
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: girar 0.7s linear infinite;
+}
+
+.boton-grande {
+    height: 58px;
+    padding: 0 27px;
+    font-size: 18px;
+    line-height: 22px;
+    letter-spacing: -0.18px;
+}
+
+.boton-ancho {
+    width: 100%;
+}
+
+/* ---------- Campo de texto ---------- */
+
+.campo {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+}
+
+.campo label {
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.campo input {
+    width: 100%;
+    height: 44px;
+    padding: 8px 10px 8px 16px;
+    border: 1px solid var(--gris-medio);
+    border-radius: 7px;
+    background: var(--blanco);
+    font-family: inherit;
+    font-size: 16px;
+    letter-spacing: -0.16px;
+    color: var(--negro);
+}
+
+.campo input {
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.campo input:hover {
+    border-color: var(--gris-texto);
+}
+
+.campo input:focus {
+    outline: none;
+    border-color: var(--naranja);
+    box-shadow: 0 0 0 3px var(--naranja-suave);
+}
+
+.campo input::placeholder {
+    color: var(--gris-texto);
+}
+
+/* Estado de error del UI Kit: ícono de atención al costado y tooltip negro arriba */
+
+.campo-entrada {
+    position: relative;
+    width: 100%;
+}
+
+.campo-con-error input,
+.campo-con-error input:hover,
+.campo-con-error input:focus {
+    border-color: var(--rojo);
+    box-shadow: 0 0 0 3px rgba(255, 49, 49, 0.1);
+}
+
+.campo-con-error {
+    animation: sacudir 0.35s ease;
+}
+
+.campo-error {
+    position: absolute;
+    left: calc(100% + 9px);
+    top: 10px;
+    display: flex;
+}
+
+.campo-error img {
+    max-width: none;
+}
+
+.tooltip {
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: max-content;
+    max-width: 250px;
+    padding: 16px;
+    border-radius: 4px;
+    background: var(--negro);
+    color: var(--blanco);
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 20px;
+    letter-spacing: -0.13px;
+    box-shadow: 0 1.2px 1.8px rgba(0, 0, 0, 0.1), 0 6.4px 7.2px rgba(0, 0, 0, 0.13);
+    animation: aparecer-suave 0.25s ease;
+}
+
+/* Flechita del tooltip */
+.tooltip::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: var(--negro);
+}
+
+/* ---------- Aviso (Snackbar del UI Kit, variante amarilla) ---------- */
+
+.aviso {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 11px 12px 11px 16px;
+    border: 1px solid var(--amarillo);
+    border-radius: 7px;
+    background: rgba(251, 199, 86, 0.1);
+    color: var(--amarillo);
+    font-size: 16px;
+    line-height: 24px;
+    letter-spacing: -0.16px;
+}
+
+.aviso[hidden] {
+    display: none;
+}
+
+.aviso-visible {
+    animation: aparecer 0.3s ease;
+}
+
+.aviso-cerrar {
+    flex-shrink: 0;
+    display: flex;
+    padding: 0;
+    border: none;
+    background: none;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.aviso-cerrar:hover {
+    transform: rotate(90deg);
+}
+
+/* ---------- Diálogo (UI Kit) ---------- */
+
+.dialogo {
+    width: 504px;
+    max-width: calc(100% - 32px);
+    padding: 22px;
+    border: none;
+    border-radius: 9px;
+    background: var(--blanco);
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.25);
+    font-family: inherit;
+}
+
+.dialogo[open] {
+    animation: aparecer-dialogo 0.25s ease;
+}
+
+.dialogo::backdrop {
+    background: rgba(0, 0, 0, 0.4);
+}
+
+.dialogo-encabezado {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 9px;
+}
+
+.dialogo-titulo {
+    margin: 0;
+    font-size: 18px;
+    line-height: 22px;
+    letter-spacing: -0.18px;
+}
+
+.dialogo-descripcion {
+    margin: 9px 0 15px;
+    font-size: 14px;
+    line-height: 20px;
+}
+
+.dialogo-botones {
+    display: flex;
+    justify-content: flex-end;
+    gap: 9px;
+}
+
+.dialogo-botones .boton {
+    width: 110px;
+}
+
+.boton-icono {
+    display: flex;
+    padding: 0;
+    border: none;
+    background: none;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.boton-icono:hover {
+    transform: rotate(90deg);
+}
+
+/* ---------- Chips ---------- */
+
+.chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.chip-naranja {
+    background: var(--naranja-suave);
+    color: var(--naranja);
+}
+
+.chip-crema {
+    background: var(--crema);
+    color: var(--negro);
+}
+
+.chip-categoria {
+    padding: 4px 18px;
+    font-size: 15px;
+}
+
+/* ---------- Tarjeta base ---------- */
+
+.tarjeta {
+    background: var(--blanco);
+    border: 1px solid var(--linea);
+    border-radius: 16px;
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.tarjeta h3 {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.tarjeta p {
+    margin: 0;
+    font-size: 18px;
+    line-height: 28px;
+    color: var(--gris-texto);
+}
+
+/* Círculo con ícono o número */
+.icono-circulo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    border-radius: 28px;
+    background: var(--naranja-suave);
+    flex-shrink: 0;
+}
+
+.icono-circulo-naranja {
+    background: var(--naranja);
+    color: var(--blanco);
+    font-size: 24px;
+    font-weight: 700;
+}
+
+/* ---------- Tarjeta de lugar ---------- */
+
+/* Grilla de tarjetas de lugar, 4 por fila */
+.grilla-lugares {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+}
+
+.tarjeta-lugar {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    color: var(--negro);
+    text-decoration: none;
+    min-width: 0;
+}
+
+.tarjeta-lugar-foto {
+    position: relative;
+    height: 230px;
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.tarjeta-lugar-foto > img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.tarjeta-lugar-favorito {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 2;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: none;
+    border-radius: 18px;
+    background: var(--blanco);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Corazón que se puede tocar (03 · Inicio): vacío en negro, lleno en naranja si es favorito */
+.boton-favorito {
+    cursor: pointer;
+}
+
+.boton-favorito svg path {
+    fill: none;
+    stroke: var(--negro);
+    transition: fill 0.2s ease, stroke 0.2s ease;
+}
+
+.boton-favorito.es-favorito svg path {
+    fill: var(--naranja);
+    stroke: var(--naranja);
+}
+
+.boton-favorito.es-favorito svg {
+    animation: latido 0.35s ease;
+}
+
+.boton-favorito:disabled {
+    cursor: default;
+}
+
+.boton-favorito:focus-visible {
+    outline: 2px solid var(--naranja);
+    outline-offset: 2px;
+}
+
+/* La tarjeta con corazón es un <article>: el nombre es el link y su área cubre toda la tarjeta */
+.tarjeta-lugar {
+    position: relative;
+}
+
+.tarjeta-lugar-enlace {
+    color: inherit;
+    text-decoration: none;
+}
+
+.tarjeta-lugar-enlace::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+}
+
+.tarjeta-saliendo {
+    opacity: 0;
+    transform: scale(0.95);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.sin-favoritos {
+    margin: 0;
+    padding: 32px 24px;
+    border: 1px dashed var(--gris-medio);
+    border-radius: 16px;
+    text-align: center;
+    font-size: 18px;
+    color: var(--gris-texto);
+}
+
+.sin-favoritos[hidden] {
+    display: none;
+}
+
+.sin-favoritos a {
+    margin-left: 4px;
+    font-weight: 700;
+    color: var(--naranja);
+}
+
+@keyframes latido {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.3); }
+}
+
+.tarjeta-lugar-titulo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 700;
+}
+
+.tarjeta-lugar-nombre {
+    font-size: 20px;
+}
+
+.puntaje {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--naranja);
+}
+
+.tarjeta-lugar-detalle {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.ubicacion {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 14px;
+    color: var(--gris-texto);
+}
+
+/* ---------- Reseña ---------- */
+
+.tarjeta-resena {
+    background: var(--blanco);
+    border: 1px solid var(--linea);
+    border-radius: 16px;
+    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.resena-autor {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.resena-datos {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+}
+
+.resena-nombre {
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.resena-fecha {
+    font-size: 13px;
+    color: var(--gris-texto);
+}
+
+.resena-texto {
+    margin: 0;
+    font-size: 16px;
+    line-height: 24px;
+    color: var(--gris-texto);
+}
+
+.estrellas {
+    display: flex;
+    gap: 4px;
+}
+
+.avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 22px;
+    background: var(--naranja-suave);
+    color: var(--naranja);
+    font-size: 16px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+/* ---------- Logo ---------- */
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    color: var(--negro);
+    text-decoration: none;
+    font-size: 26px;
+    font-weight: 700;
+}
+
+/* ---------- Header ---------- */
+
+.encabezado {
+    height: 88px;
+    padding: 0 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--blanco);
+    border-bottom: 1px solid var(--linea);
+}
+
+.encabezado-acciones {
+    display: flex;
+    gap: 12px;
+}
+
+/* Header con sesión iniciada */
+
+.encabezado-izquierda {
+    display: flex;
+    align-items: center;
+    gap: 48px;
+}
+
+.buscador {
+    width: 300px;
+}
+
+.encabezado-derecha {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.navegacion {
+    display: flex;
+    gap: 36px;
+}
+
+.navegacion a {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--negro);
+    text-decoration: none;
+}
+
+/* Raya de 3px debajo de cada pestaña; solo se ve en la activa */
+.navegacion a::after {
+    content: "";
+    width: 48px;
+    height: 3px;
+    border-radius: 2px;
+}
+
+.navegacion a.activa {
+    color: var(--naranja);
+}
+
+.navegacion a.activa::after {
+    background: var(--naranja);
+}
+
+.avatar-chico {
+    width: 40px;
+    height: 40px;
+    border-radius: 20px;
+    font-size: 14px;
+}
+
+/* ---------- Chips de filtro ---------- */
+
+.chip-filtro {
+    padding: 8px 18px;
+    font-size: 15px;
+    text-decoration: none;
+}
+
+.chip-activo {
+    background: var(--naranja);
+    color: var(--blanco);
+}
+
+/* ---------- Footer ---------- */
+
+.pie {
+    background: var(--negro);
+    border-top: 1px solid #262626;
+    padding: 56px 112px 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 48px;
+}
+
+.pie-marca {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.pie-logo {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    color: var(--blanco);
+    font-size: 29px;
+    font-weight: 700;
+}
+
+.pie-logo-tile {
+    padding: 6px;
+    border-radius: 11px;
+    display: flex;
+}
+
+.pie-descripcion {
+    margin: 0;
+    width: 380px;
+    max-width: 100%;
+    font-size: 14px;
+    line-height: 22px;
+    color: var(--gris-medio);
+}
+
+.pie-copyright {
+    margin: 0;
+    font-size: 13px;
+    color: var(--gris-texto);
+}
+
+.pie-columnas {
+    display: flex;
+    gap: 96px;
+    font-size: 14px;
+}
+
+.pie-columna {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    color: var(--gris-medio);
+    white-space: nowrap;
+}
+
+.pie-columna strong {
+    color: var(--blanco);
+}
+
+.pie-columna a {
+    color: inherit;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.pie-columna a:hover {
+    color: var(--naranja);
+}
+
+@media (max-width: 1200px) {
+    .grilla-lugares {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .buscador {
+        display: none;
+    }
+}
+
+@media (max-width: 900px) {
+    .grilla-lugares {
+        grid-template-columns: 1fr;
+    }
+
+    .encabezado {
+        padding: 0 16px;
+    }
+
+    .navegacion {
+        display: none;
+    }
+
+    .pie {
+        padding: 40px 16px;
+        flex-direction: column;
+    }
+
+    .pie-columnas {
+        gap: 32px;
+        flex-wrap: wrap;
+    }
+}
+
+/* ---------- Pestañas (08 · Mis Planes) ---------- */
+
+.pestanas {
+    display: flex;
+    gap: 24px;
+}
+
+.pestana {
+    width: 100px;
+    padding: 0 0 9px;
+    border: none;
+    border-bottom: 2px solid var(--gris-medio);
+    background: none;
+    color: var(--gris-claro);
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 20px;
+    letter-spacing: -0.16px;
+    cursor: pointer;
+    transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.pestana:hover {
+    color: var(--naranja);
+}
+
+.pestana.activa {
+    color: var(--naranja);
+    border-bottom: 4px solid var(--naranja);
+    padding-bottom: 7px;
+}
+
+/* ---------- Tarjeta de plan ---------- */
+
+.tarjeta-plan {
+    display: flex;
+    min-width: 0;
+    border: 1px solid var(--linea);
+    border-radius: 16px;
+    background: var(--blanco);
+    overflow: hidden;
+    color: var(--negro);
+    text-decoration: none;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    animation: aparecer 0.35s ease both;
+}
+
+.tarjeta-plan:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--sombra-hover);
+}
+
+/* Franja de color a la izquierda: naranja en votación, verde confirmado */
+.tarjeta-plan-franja {
+    flex: 0 0 8px;
+    background: var(--naranja);
+}
+
+.tarjeta-plan-confirmado .tarjeta-plan-franja {
+    background: var(--verde);
+}
+
+.tarjeta-plan-contenido {
+    flex: 1;
+    min-width: 0;
+    padding: 22px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.tarjeta-plan-titulo,
+.tarjeta-plan-pie {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+.tarjeta-plan-nombre {
+    font-size: 20px;
+    font-weight: 700;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tarjeta-plan-detalle {
+    font-size: 14px;
+    color: var(--gris-texto);
+}
+
+.chip-estado {
+    padding: 6px 14px;
+    flex-shrink: 0;
+}
+
+.chip-confirmado {
+    background: var(--verde-suave);
+    color: var(--verde);
+}
+
+/* Iniciales superpuestas de los integrantes */
+.avatares {
+    display: flex;
+    flex-shrink: 0;
+}
+
+.avatar-mini {
+    width: 28px;
+    height: 28px;
+    border-radius: 14px;
+    border: 2px solid var(--blanco);
+    font-size: 10px;
+    margin-left: -10px;
+}
+
+.avatar-mini:first-child {
+    margin-left: 0;
+}
+
+/* ---------- Panel "Chats" ---------- */
+
+.panel-chats {
+    flex: 0 0 520px;
+    padding: 28px;
+    border: 1px solid var(--linea);
+    border-radius: 24px;
+    background: var(--blanco);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.panel-chats-encabezado {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.panel-chats-encabezado h2 {
+    margin: 0;
+    font-size: 32px;
+}
+
+.panel-chats-vacio {
+    margin: 8px 0;
+    color: var(--gris-texto);
+}
+
+.fila-chat {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 14px 0;
+    border-radius: 12px;
+    color: var(--negro);
+    text-decoration: none;
+    transition: background-color 0.2s ease, padding 0.2s ease;
+}
+
+.fila-chat:hover {
+    background: var(--crema);
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
+.fila-chat-abierta,
+.fila-chat-abierta:hover {
+    background: var(--naranja-suave);
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
+.foto-grupo {
+    flex: 0 0 64px;
+    height: 64px;
+    border-radius: 32px;
+    background: var(--arena);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.foto-grupo-imagen {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.fila-chat-datos {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.fila-chat-nombre {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.fila-chat-integrantes {
+    font-size: 14px;
+    color: var(--gris-texto);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.fila-chat-hora {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--gris-texto);
+}
+
+.contador-no-leidos {
+    min-width: 22px;
+    height: 22px;
+    padding: 0 6px;
+    border-radius: 11px;
+    background: var(--naranja);
+    color: var(--blanco);
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@media (max-width: 1200px) {
+    .panel-chats {
+        flex: none;
+        width: 100%;
+    }
+}
+
+/* ---------- Hover ---------- */
+
+.tarjeta,
+.tarjeta-resena,
+.dato {
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.tarjeta:hover,
+.tarjeta-resena:hover,
+.dato:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--sombra-hover);
+}
+
+.tarjeta-lugar-foto > img {
+    transition: transform 0.4s ease;
+}
+
+.tarjeta-lugar:hover .tarjeta-lugar-foto > img {
+    transform: scale(1.06);
+}
+
+.tarjeta-lugar-nombre {
+    transition: color 0.2s ease;
+}
+
+.tarjeta-lugar:hover .tarjeta-lugar-nombre {
+    color: var(--naranja);
+}
+
+.tarjeta-lugar-favorito {
+    transition: transform 0.2s ease;
+}
+
+.tarjeta-lugar-favorito:hover {
+    transform: scale(1.15);
+}
+
+.chip-filtro {
+    cursor: pointer;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.chip-filtro:hover {
+    transform: translateY(-2px);
+}
+
+.chip-crema.chip-filtro:hover {
+    background: var(--naranja-suave);
+}
+
+.navegacion a {
+    transition: color 0.2s ease;
+}
+
+.navegacion a::after {
+    background: var(--naranja);
+    transform: scaleX(0);
+    transition: transform 0.25s ease;
+}
+
+.navegacion a:hover {
+    color: var(--naranja);
+}
+
+.navegacion a:hover::after,
+.navegacion a.activa::after {
+    transform: scaleX(1);
+}
+
+.logo img,
+.pie-logo img {
+    transition: transform 0.3s ease;
+}
+
+.logo:hover img {
+    transform: translateY(-3px) rotate(-6deg);
+}
+
+.ver-todo,
+.cuenta-pie a,
+.cuenta-olvide {
+    transition: opacity 0.2s ease;
+}
+
+.ver-todo:hover,
+.cuenta-pie a:hover,
+.cuenta-olvide:hover {
+    opacity: 0.75;
+    text-decoration: underline;
+}
+
+/* ---------- Menú del avatar ---------- */
+
+.menu-usuario {
+    position: relative;
+}
+
+.avatar-boton {
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    font-family: inherit;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.avatar-boton:hover {
+    transform: scale(1.08);
+    box-shadow: 0 0 0 3px var(--naranja-suave);
+}
+
+/* Borde naranja mientras el menú está abierto (11 · Menú del avatar) */
+.avatar-boton[aria-expanded="true"] {
+    box-shadow: inset 0 0 0 2px var(--naranja);
+}
+
+.menu-usuario-lista {
+    position: absolute;
+    top: calc(100% + 16px);
+    right: 0;
+    z-index: 10;
+    width: 280px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    border: 1px solid var(--linea);
+    border-radius: 16px;
+    background: var(--blanco);
+    box-shadow: 0 1.2px 3.6px rgba(0, 0, 0, 0.1), 0 6.4px 14.4px rgba(0, 0, 0, 0.13);
+    animation: aparecer 0.2s ease;
+}
+
+.menu-usuario-lista[hidden] {
+    display: none;
+}
+
+.menu-usuario-datos {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px;
+}
+
+.avatar-menu {
+    font-size: 16px;
+}
+
+.menu-usuario-nombre {
+    margin: 0 0 2px;
+    font-size: 16px;
+    line-height: 22px;
+    font-weight: 700;
+}
+
+.menu-usuario-arroba {
+    margin: 0;
+    font-size: 14px;
+    line-height: 20px;
+    color: var(--gris-texto);
+}
+
+.menu-usuario-divisor {
+    height: 1px;
+    background: var(--linea);
+}
+
+.menu-usuario-opcion {
+    display: block;
+    width: 100%;
+    padding: 10px 8px;
+    border: none;
+    border-radius: 8px;
+    background: none;
+    color: var(--negro);
+    font-family: inherit;
+    font-size: 16px;
+    line-height: 24px;
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.menu-usuario-opcion:hover,
+.menu-usuario-opcion:focus-visible {
+    outline: none;
+    background: var(--crema);
+}
+
+.menu-usuario-salir {
+    font-weight: 700;
+    color: var(--rojo);
+}
+
+.dialogo::backdrop {
+    background: rgba(0, 0, 0, 0.5);
+}
+
+/* "Cerrar sesión" no entra en 110px con el padding del botón */
+.dialogo-botones .boton {
+    min-width: 110px;
+    width: auto;
+    padding: 0 16px;
+}
+
+/* ---------- Movimiento al cargar ---------- */
+
+/* Las secciones de cada pantalla entran de abajo, una después de la otra */
+main > section,
+main > .inicio > * {
+    animation: aparecer 0.6s ease both;
+}
+
+main > section:nth-child(2),
+main > .inicio > *:nth-child(2) { animation-delay: 0.08s; }
+main > section:nth-child(3),
+main > .inicio > *:nth-child(3) { animation-delay: 0.16s; }
+main > section:nth-child(4),
+main > .inicio > *:nth-child(4) { animation-delay: 0.24s; }
+main > section:nth-child(n+5) { animation-delay: 0.3s; }
+
+@keyframes aparecer {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes aparecer-suave {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes aparecer-dialogo {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes sacudir {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-6px); }
+    75% { transform: translateX(6px); }
+}
+
+@keyframes girar {
+    to { transform: rotate(360deg); }
+}
+
+/* Para quien tiene activado "reducir movimiento" en el sistema */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-delay: 0s !important;
+        transition-duration: 0.01ms !important;
+    }
+}

@@ -1,0 +1,40 @@
+@{
+    ViewData["Title"] = "Mis Planes";
+    ViewData["Pestaña"] = "MisPlanes";
+}
+
+@section Estilos {
+    <link rel="stylesheet" href="~/css/planes.css" asp-append-version="true" />
+}
+
+<div class="pagina-con-chats">
+    <section class="mis-planes">
+        <div class="mis-planes-encabezado">
+            <div>
+                <h1>Mis Planes</h1>
+                <p>Las encuestas de todos tus grupos: votá dónde ir o mirá las salidas confirmadas.</p>
+            </div>
+            <a class="boton boton-primario boton-grande" href="/Planes/NuevoPlan">+ Crear plan</a>
+        </div>
+
+        <div class="pestanas" role="tablist">
+            <button type="button" class="pestana activa" role="tab" aria-selected="true" data-filtro="todos">Todos</button>
+            <button type="button" class="pestana" role="tab" aria-selected="false" data-filtro="votacion">En votación</button>
+            <button type="button" class="pestana" role="tab" aria-selected="false" data-filtro="confirmados">Confirmados</button>
+        </div>
+
+        @* Las tarjetas las arma mis-planes.js con lo que devuelve /Planes/ListaPlanes *@
+        <div class="grilla-planes" id="grillaPlanes" aria-live="polite"></div>
+
+        <div class="sin-planes" id="sinPlanes" hidden>
+            <p>Todavía no tenés planes</p>
+            <a class="boton boton-primario" href="/Planes/NuevoPlan">+ Crear plan</a>
+        </div>
+    </section>
+
+    @await Html.PartialAsync("_Chats", (List<Bodeglook.Models.ResumenChat>)ViewBag.Chats)
+</div>
+
+@section Scripts {
+    <script src="~/js/mis-planes.js" asp-append-version="true"></script>
+}

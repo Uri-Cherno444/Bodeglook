@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Bodeglook</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&display=swap" />
+    <link rel="stylesheet" href="~/css/componentes.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    @await RenderSectionAsync("Estilos", required: false)
+</head>
+<body>
+    @{
+        string? usuarioJson = Context.Session.GetString("usuario");
+        string pestaña = ViewData["Pestaña"] as string ?? "";
+    }
+    @if (ViewData["SinHeader"] != null)
+    {
+        // 02 · Iniciar Sesión no lleva header
+    }
+    else if (usuarioJson != null)
+    {
+        Bodeglook.Models.Usuarios usuarioLogueado = System.Text.Json.JsonSerializer.Deserialize<Bodeglook.Models.Usuarios>(usuarioJson)!;
+        string iniciales = usuarioLogueado.ObtenerIniciales();
+
+        <header class="encabezado">
+            <div class="encabezado-izquierda">
+                <a class="logo" href="/Home/Inicio">
+                    <img src="~/img/logo-pin.svg" width="29" height="44" alt="" />
+                    Bodeglook
+                </a>
+                <div class="campo buscador">
+                    <input type="text" placeholder="Buscar restaurantes o bodegas" />
+                </div>
+            </div>
+            <div class="encabezado-derecha">
+                <nav class="navegacion">
+                    <a class="@(pestaña == "Inicio" ? "activa" : "")" href="/Home/Inicio">Inicio</a>
+                    <a class="@(pestaña == "Descubrir" ? "activa" : "")" href="/Restaurantes/Descubrir">Descubrir</a>
+                    <a class="@(pestaña == "MisPlanes" ? "activa" : "")" href="/Planes/MisPlanes">Mis Planes</a>
+                    <a class="@(pestaña == "Perfil" ? "activa" : "")" href="/Perfil">Perfil</a>
+                </nav>
+                <img src="~/img/icono-notificacion.svg" width="24" height="24" alt="Notificaciones" />
+                <!-- 11 · Menú del avatar -->
+                <div class="menu-usuario">
+                    <button type="button" class="avatar avatar-chico avatar-boton" id="botonAvatar" aria-haspopup="true" aria-expanded="false" aria-controls="menuUsuario">@iniciales</button>
+                    <div class="menu-usuario-lista" id="menuUsuario" hidden>
+                        <div class="menu-usuario-datos">
+                            <span class="avatar avatar-chico avatar-menu">@iniciales</span>
+                            <div>
+                                <p class="menu-usuario-nombre">@usuarioLogueado.Nombre</p>
+                                <p class="menu-usuario-arroba">@@@usuarioLogueado.NombreUsuario</p>
+                            </div>
+                        </div>
+                        <div class="menu-usuario-divisor"></div>
+                        <a class="menu-usuario-opcion" href="/Perfil">Mi perfil</a>
+                        <a class="menu-usuario-opcion" href="/Planes/MisPlanes">Mis Planes</a>
+                        <button type="button" class="menu-usuario-opcion menu-usuario-salir" id="botonCerrarSesion">Cerrar sesión</button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- 12 · Cerrar sesión -->
+        <dialog class="dialogo" id="dialogoCerrarSesion" aria-labelledby="dialogoCerrarSesionTitulo">
+            <div class="dialogo-encabezado">
+                <h2 class="dialogo-titulo" id="dialogoCerrarSesionTitulo">¿Querés cerrar sesión?</h2>
+                <button type="button" class="boton-icono" id="dialogoCerrar" aria-label="Cerrar">
+                    <img src="~/img/icono-cerrar.svg" width="24" height="24" alt="" />
+                </button>
+            </div>
+            <p class="dialogo-descripcion">Vas a tener que volver a ingresar para ver tus planes y chats.</p>
+            <div class="dialogo-botones">
+                <button type="button" class="boton boton-negro" id="dialogoCancelar">Cancelar</button>
+                <a class="boton boton-primario" href="/Cuenta/CerrarSesion">Cerrar sesión</a>
+            </div>
+        </dialog>
+    }
+    else
+    {
+        <header class="encabezado">
+            <a class="logo" href="/">
+                <img src="~/img/logo-pin.svg" width="29" height="44" alt="" />
+                Bodeglook
+            </a>
+            <div class="encabezado-acciones">
+                <a class="boton boton-secundario" href="/Cuenta/IniciarSesion">Iniciar sesión</a>
+                <a class="boton boton-primario" href="/Cuenta/Registro">Registrarse</a>
+            </div>
+        </header>
+    }
+
+    <main>
+        @RenderBody()
+    </main>
+
+    <footer class="pie">
+        <div class="pie-marca">
+            <div class="pie-logo">
+                <span class="pie-logo-tile">
+                    <img src="~/img/logo-pin-footer.svg" width="31" height="48" alt="" />
+                </span>
+                Bodeglook
+            </div>
+            <p class="pie-descripcion">Descubrí, reservá y compartí las mejores bodegas y restaurantes con tus amigos.</p>
+            <p class="pie-copyright">© 2026 Bodeglook · Hecho en Argentina</p>
+        </div>
+        <div class="pie-columnas">
+            <div class="pie-columna">
+                <strong>Explorar</strong>
+                <span>Descubrir</span>
+                <a href="/Planes/MisPlanes">Mis Planes</a>
+                <span>Mi Perfil</span>
+            </div>
+            <div class="pie-columna">
+                <strong>Bodeglook</strong>
+                <span>Quiénes somos</span>
+                <span>Cómo funciona</span>
+                <span>Contacto</span>
+            </div>
+            <div class="pie-columna">
+                <strong>Legal</strong>
+                <span>Términos y condiciones</span>
+                <span>Política de privacidad</span>
+                <span>Ayuda</span>
+            </div>
+        </div>
+    </footer>
+
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

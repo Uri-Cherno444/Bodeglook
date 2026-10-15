@@ -1,0 +1,45 @@
+@using Bodeglook.Models
+@model List<ResumenChat>
+@* Panel "Chats": lo usan 08 · Mis Planes, 06 · Votación y 10 · Chat de grupo.
+   ViewBag.GrupoAbierto marca en naranja suave el grupo que se está viendo (solo en el chat). *@
+@{
+    int grupoAbierto = ViewBag.GrupoAbierto ?? 0;
+}
+<aside class="panel-chats">
+    <div class="panel-chats-encabezado">
+        <h2>Chats</h2>
+        <img src="~/img/icono-mensaje.svg" width="24" height="24" alt="" />
+    </div>
+
+    @if (Model.Count == 0)
+    {
+        <p class="panel-chats-vacio">Todavía no estás en ningún grupo.</p>
+    }
+
+    @foreach (ResumenChat chat in Model)
+    {
+        <a class="fila-chat @(chat.IdGrupo == grupoAbierto ? "fila-chat-abierta" : "")" href="/Grupos/Chat/@chat.IdGrupo" data-id-grupo="@chat.IdGrupo">
+            <span class="foto-grupo">
+                @if (chat.Foto != null)
+                {
+                    <img class="foto-grupo-imagen" src="@chat.Foto" alt="" />
+                }
+                else
+                {
+                    <img src="~/img/icono-imagen.svg" width="21" height="21" alt="" />
+                }
+            </span>
+            <span class="fila-chat-datos">
+                <span class="fila-chat-nombre">@chat.Nombre</span>
+                <span class="fila-chat-integrantes">@chat.Integrantes</span>
+            </span>
+            <span class="fila-chat-hora">
+                <span>@chat.TextoHora()</span>
+                @if (chat.NoLeidos > 0)
+                {
+                    <span class="contador-no-leidos">@chat.NoLeidos</span>
+                }
+            </span>
+        </a>
+    }
+</aside>

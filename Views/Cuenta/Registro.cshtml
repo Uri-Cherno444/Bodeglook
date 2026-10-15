@@ -1,0 +1,84 @@
+@{
+    ViewData["Title"] = "Crear cuenta";
+    ViewData["SinHeader"] = true;
+}
+
+@section Estilos {
+    <link rel="stylesheet" href="~/css/cuenta.css" asp-append-version="true" />
+}
+
+@* Registro no tiene pantalla en el Figma: usa el mismo diseño que 02 · Iniciar Sesión.
+   Los campos son los que tiene la tabla Usuarios (Nombre, NombreUsuario, Email, Contraseña). *@
+<section class="cuenta">
+    <div class="cuenta-marca">
+        <span class="cuenta-logo">
+            <img src="~/img/logo-pin-grande.svg" width="118" height="180" alt="" />
+        </span>
+        <p class="cuenta-nombre">Bodeglook</p>
+        <p class="cuenta-lema">Organizar una salida nunca fue tan fácil</p>
+        <p class="cuenta-descripcion">Descubrí, reservá y compartí las mejores bodegas y restaurantes con tus amigos.</p>
+    </div>
+
+    <div class="cuenta-panel">
+        <form class="cuenta-formulario" id="formRegistro" novalidate>
+            <h1>Crear cuenta</h1>
+            <p class="cuenta-subtitulo">Completá tus datos para empezar</p>
+
+            <div class="aviso" id="aviso" hidden>
+                <span class="aviso-texto" id="avisoTexto"></span>
+                <button type="button" class="aviso-cerrar" aria-label="Cerrar aviso">
+                    <img src="~/img/icono-cerrar-aviso.svg" width="24" height="24" alt="" />
+                </button>
+            </div>
+
+            <div class="campo" data-campo="nombre">
+                <label for="nombre">Nombre</label>
+                <div class="campo-entrada">
+                    <input type="text" id="nombre" name="nombre" placeholder="Tu nombre y apellido" autocomplete="name" />
+                </div>
+            </div>
+
+            <div class="campo" data-campo="usuario">
+                <label for="usuario">Usuario</label>
+                <div class="campo-entrada">
+                    <input type="text" id="usuario" name="usuario" placeholder="Tu usuario" autocomplete="username" />
+                </div>
+            </div>
+
+            <div class="campo" data-campo="email">
+                <label for="email">Email</label>
+                <div class="campo-entrada">
+                    <input type="email" id="email" name="email" placeholder="Tu email" autocomplete="email" />
+                </div>
+            </div>
+
+            <div class="campo" data-campo="contrasena">
+                <label for="contrasena">Contraseña</label>
+                <div class="campo-entrada">
+                    <input type="password" id="contrasena" name="contrasena" placeholder="Tu contraseña" autocomplete="new-password" />
+                </div>
+            </div>
+
+            <button type="submit" class="boton boton-primario boton-grande boton-ancho">Crear cuenta</button>
+
+            <div class="cuenta-pie">
+                <span>¿Ya tenés cuenta?</span>
+                <a href="/Cuenta/IniciarSesion">Iniciá sesión</a>
+            </div>
+        </form>
+    </div>
+</section>
+
+@section Scripts {
+    <script src="~/js/cuenta.js" asp-append-version="true"></script>
+    <script>
+        prepararFormulario("formRegistro", "/Cuenta/Registrar", function () {
+            return {
+                nombre: document.getElementById("nombre").value,
+                nombreUsuario: document.getElementById("usuario").value,
+                email: document.getElementById("email").value,
+                contraseña: document.getElementById("contrasena").value
+            };
+        });
+    </script>
+}

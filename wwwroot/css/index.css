@@ -1,0 +1,305 @@
+/* 01 · Index (landing pública) */
+
+.seccion {
+    padding: 96px 112px;
+}
+
+.seccion-crema {
+    background: var(--crema);
+}
+
+.seccion-negra {
+    background: var(--negro);
+}
+
+/* ---------- Hero ---------- */
+
+.hero {
+    background: var(--crema);
+    padding: 72px 112px;
+    display: flex;
+    align-items: center;
+    gap: 64px;
+}
+
+.hero-texto {
+    flex: 0 1 780px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 28px;
+}
+
+.hero-texto h1 {
+    margin: 0;
+    font-size: 64px;
+    line-height: 72px;
+}
+
+.hero-texto p {
+    margin: 0;
+    max-width: 640px;
+    font-size: 20px;
+    line-height: 30px;
+    color: var(--gris-texto);
+}
+
+.hero-botones {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+}
+
+.hero-foto {
+    position: relative;
+    flex: 0 1 760px;
+    height: 480px;
+}
+
+.hero-foto > img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 24px;
+    display: block;
+}
+
+.tarjeta-flotante {
+    position: absolute;
+    left: -28px;
+    top: 380px;
+    width: 330px;
+    padding: 14px 20px 14px 14px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--blanco);
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+.tarjeta-flotante .icono-circulo {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+}
+
+.tarjeta-flotante-textos {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    white-space: nowrap;
+}
+
+.tarjeta-flotante-nombre {
+    font-size: 17px;
+    font-weight: 700;
+}
+
+.tarjeta-flotante-detalle {
+    font-size: 13px;
+    color: var(--gris-texto);
+}
+
+/* ---------- Beneficios y pasos ---------- */
+
+.beneficios {
+    padding: 72px 112px;
+}
+
+.fila-tarjetas {
+    display: flex;
+    gap: 32px;
+}
+
+.fila-tarjetas .tarjeta {
+    flex: 1 1 0;
+    min-width: 0;
+}
+
+.beneficios .tarjeta p {
+    max-width: 464px;
+}
+
+/* ---------- Encabezados de sección ---------- */
+
+.como-funciona {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 56px;
+}
+
+.encabezado-seccion {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    text-align: center;
+}
+
+.encabezado-seccion h2,
+.resenas-reales h2,
+.llamado-final h2 {
+    margin: 0;
+    font-size: 48px;
+    line-height: 56px;
+}
+
+.encabezado-seccion p {
+    margin: 0;
+    font-size: 20px;
+    line-height: 30px;
+    color: var(--gris-texto);
+}
+
+.como-funciona .fila-tarjetas {
+    width: 100%;
+}
+
+/* ---------- Lugares recomendados ---------- */
+
+.lugares {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+}
+
+.lugares-encabezado {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 24px;
+}
+
+.lugares-encabezado h2 {
+    margin: 0 0 12px;
+    font-size: 40px;
+    line-height: 48px;
+}
+
+.lugares-encabezado p {
+    margin: 0;
+    font-size: 20px;
+    line-height: 30px;
+    color: var(--gris-texto);
+}
+
+/* ---------- Reseñas reales ---------- */
+
+.resenas-reales {
+    display: flex;
+    align-items: center;
+    gap: 80px;
+}
+
+.resenas-reales-texto {
+    flex: 0 1 680px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 24px;
+    color: var(--blanco);
+}
+
+.resenas-reales-texto p {
+    margin: 0;
+    font-size: 20px;
+    line-height: 30px;
+    color: var(--gris-medio);
+}
+
+.resenas-reales-texto .subtitulo-dietarios {
+    color: var(--blanco);
+    font-weight: 700;
+}
+
+.chips-dietarios {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.resenas-lista {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* ---------- Llamado final ---------- */
+
+.llamado-final {
+    background: var(--naranja);
+    border-radius: 24px;
+    padding: 64px 80px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 32px;
+    color: var(--blanco);
+}
+
+.llamado-final p {
+    margin: 12px 0 0;
+    font-size: 20px;
+    line-height: 30px;
+}
+
+/* ---------- Pantallas chicas ---------- */
+
+@media (max-width: 1200px) {
+    .hero,
+    .resenas-reales {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .hero-foto,
+    .hero-texto,
+    .resenas-reales-texto {
+        flex: none;
+    }
+
+    .tarjeta-flotante {
+        left: 16px;
+        top: auto;
+        bottom: 16px;
+    }
+}
+
+@media (max-width: 900px) {
+    .seccion,
+    .hero,
+    .beneficios {
+        padding: 48px 16px;
+    }
+
+    .hero-texto h1 {
+        font-size: 40px;
+        line-height: 48px;
+    }
+
+    .hero-foto {
+        height: 320px;
+    }
+
+    .fila-tarjetas,
+    .lugares-encabezado,
+    .llamado-final {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .llamado-final {
+        padding: 40px 24px;
+    }
+
+    .encabezado-seccion h2,
+    .resenas-reales h2,
+    .llamado-final h2 {
+        font-size: 32px;
+        line-height: 40px;
+    }
+}
