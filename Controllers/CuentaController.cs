@@ -44,11 +44,11 @@ public class CuentaController : Controller
         return Json(new { ok = true });
     }
 
-    // Recibe: { nombre, nombreUsuario, email, contraseña }
+    // Recibe: { nombreCompleto, nombreUsuario, email, contraseña }
     [HttpPost]
     public IActionResult Registrar([FromBody] Usuarios datos)
     {
-        if (string.IsNullOrWhiteSpace(datos.Nombre))
+        if (string.IsNullOrWhiteSpace(datos.NombreCompleto))
             return Json(new { ok = false, campo = "nombre", mensaje = "Completá tu nombre." });
         if (string.IsNullOrWhiteSpace(datos.NombreUsuario))
             return Json(new { ok = false, campo = "usuario", mensaje = "Elegí un nombre de usuario." });
@@ -66,7 +66,7 @@ public class CuentaController : Controller
             return Json(new { ok = false, campo = "email", mensaje = "Ese email ya tiene una cuenta." });
 
         Usuarios nuevo = new Usuarios();
-        nuevo.Nombre = datos.Nombre.Trim();
+        nuevo.NombreCompleto = datos.NombreCompleto.Trim();
         nuevo.NombreUsuario = nombreUsuario;
         nuevo.Email = email;
         nuevo.Contraseña = HashearContraseña(datos.Contraseña);
@@ -95,11 +95,13 @@ public class CuentaController : Controller
     // ---------- Contraseñas ----------
     // Se guarda "sal:hash" en Base64. La sal es aleatoria para cada usuario,
     // así dos personas con la misma contraseña no tienen el mismo hash.
+    // Sal de 12 bytes (16 caracteres) + ":" + hash de 24 bytes (32 caracteres) = 49 caracteres,
+    // para que entre en Usuarios.Contraseña varchar(50).
 
     private static string HashearContraseña(string contraseña)
     {
-        byte[] sal = RandomNumberGenerator.GetBytes(16);
-        byte[] hash = Rfc2898DeriveBytes.Pbkdf2(contraseña, sal, 100000, HashAlgorithmName.SHA256, 32);
+        byte[] sal = RandomNumberGenerator.GetBytes(12);
+        byte[] hash = Rfc2898DeriveBytes.Pbkdf2(contraseña, sal, 100000, HashAlgorithmName.SHA256, 24);
         return Convert.ToBase64String(sal) + ":" + Convert.ToBase64String(hash);
     }
 
@@ -110,7 +112,7 @@ public class CuentaController : Controller
 
         byte[] sal = Convert.FromBase64String(partes[0]);
         byte[] hashGuardado = Convert.FromBase64String(partes[1]);
-        byte[] hashNuevo = Rfc2898DeriveBytes.Pbkdf2(contraseña, sal, 100000, HashAlgorithmName.SHA256, 32);
+        byte[] hashNuevo = Rfc2898DeriveBytes.Pbkdf2(contraseña, sal, 100000, HashAlgorithmName.SHA256, hashGuardado.Length);
         return CryptographicOperations.FixedTimeEquals(hashNuevo, hashGuardado);
     }
 }

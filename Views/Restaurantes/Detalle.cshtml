@@ -1,0 +1,204 @@
+@using Bodeglook.Models
+@model DetalleRestaurante
+@{
+    ViewData["Title"] = Model.Nombre;
+    ViewData["Pestaña"] = "Descubrir";
+    List<ResenaComunidad> resenas = ViewBag.Resenas;
+    string[] etiquetasPuntaje = { "Malo", "Regular", "Bueno", "Muy bueno", "Excelente" };
+}
+
+@section Estilos {
+    <link rel="stylesheet" href="~/css/detalle.css" asp-append-version="true" />
+}
+
+<div class="detalle" data-id-restaurante="@Model.Id">
+    <!-- Banner con foto, volver, puntaje y corazón -->
+    <section class="detalle-banner">
+        @if (Model.Foto != null)
+        {
+            <img class="detalle-banner-foto" src="@Model.Foto" alt="" />
+        }
+        <a class="detalle-volver" id="botonVolver" href="/Home/Inicio" aria-label="Volver">
+            <img src="~/img/icono-volver.svg" width="22" height="22" alt="" />
+        </a>
+        <div class="detalle-banner-acciones">
+            <span class="detalle-banner-puntaje" id="puntajeBanner" hidden="@(Model.Puntaje == null)">
+                <span class="texto-puntaje">@Model.TextoPuntaje()</span> ★
+            </span>
+            <button type="button"
+                    class="detalle-banner-favorito boton-favorito @(Model.EsFavorito ? "es-favorito" : "")"
+                    aria-pressed="@(Model.EsFavorito ? "true" : "false")"
+                    aria-label="@(Model.EsFavorito ? "Sacar de favoritos" : "Agregar a favoritos")">
+                <svg width="40" height="40" viewBox="0 0 18 18" aria-hidden="true">
+                    <path d="M15.63 3.4575C15.2469 3.07425 14.7921 2.77023 14.2915 2.56281C13.7909 2.35539 13.2544 2.24863 12.7125 2.24863C12.1706 2.24863 11.6341 2.35539 11.1335 2.56281C10.6329 2.77023 10.1781 3.07425 9.795 3.4575L9 4.2525L8.205 3.4575C7.43123 2.68373 6.38177 2.24903 5.2875 2.24903C4.19323 2.24903 3.14377 2.68373 2.37 3.4575C1.59623 4.23127 1.16153 5.28073 1.16153 6.375C1.16153 7.46927 1.59623 8.51873 2.37 9.2925L3.165 10.0875L9 15.9225L14.835 10.0875L15.63 9.2925C16.0132 8.90943 16.3173 8.45461 16.5247 7.95402C16.7321 7.45342 16.8389 6.91687 16.8389 6.375C16.8389 5.83313 16.7321 5.29658 16.5247 4.79598C16.3173 4.29539 16.0132 3.84057 15.63 3.4575Z" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+            </button>
+        </div>
+    </section>
+
+    <div class="detalle-contenido">
+        <div class="detalle-principal">
+            <!-- Nombre, categoría, puntaje, cantidad de reseñas, barrio y chips dietarios -->
+            <div class="detalle-titulo">
+                <h1>@Model.Nombre</h1>
+                <div class="detalle-datos">
+                    @if (Model.Categoria != null)
+                    {
+                        <span class="chip chip-crema">@Model.Categoria</span>
+                    }
+                    <span class="puntaje" id="puntajeTitulo" hidden="@(Model.Puntaje == null)">★ <span class="texto-puntaje">@Model.TextoPuntaje()</span></span>
+                    <span class="detalle-cantidad" id="cantidadResenas">@Model.TextoCantidadResenas()</span>
+                    @if (Model.Barrio != null)
+                    {
+                        <span class="ubicacion">
+                            <img src="~/img/icono-pin.svg" width="16" height="16" alt="" />
+                            @Model.Barrio
+                        </span>
+                    }
+                </div>
+                @if (Model.Restricciones.Count > 0)
+                {
+                    <div class="detalle-dietarios">
+                        @foreach (string restriccion in Model.Restricciones)
+                        {
+                            <span class="chip chip-naranja">
+                                <img src="~/img/icono-check.svg" width="14" height="14" alt="" />
+                                @restriccion
+                            </span>
+                        }
+                    </div>
+                }
+            </div>
+
+            <!-- Pestañas: cada bloque de abajo dice en qué pestañas se ve (data-pestanas) -->
+            <div class="pestanas" role="tablist">
+                <button type="button" class="pestana activa" role="tab" aria-selected="true" data-pestana="informacion">Información</button>
+                <button type="button" class="pestana" role="tab" aria-selected="false" data-pestana="resenas">Reseñas</button>
+                <button type="button" class="pestana" role="tab" aria-selected="false" data-pestana="fotos">Fotos</button>
+            </div>
+            <div class="detalle-divisor"></div>
+
+            @if (!string.IsNullOrWhiteSpace(Model.Descripcion))
+            {
+                <p class="detalle-descripcion" data-pestanas="informacion">@Model.Descripcion</p>
+            }
+
+            <!-- Fotos: por ahora, la foto del lugar en grande -->
+            <div class="detalle-fotos" data-pestanas="fotos" hidden>
+                @if (Model.Foto != null)
+                {
+                    <img src="@Model.Foto" alt="@Model.Nombre" />
+                }
+                else
+                {
+                    <p class="sin-favoritos">Este lugar todavía no tiene fotos.</p>
+                }
+            </div>
+
+            <!-- Dejar una reseña -->
+            <form class="dejar-resena" id="formularioResena" data-pestanas="informacion resenas" novalidate>
+                <h2>Dejar una reseña</h2>
+                <div class="barra-puntaje" id="barraPuntaje" role="radiogroup" aria-label="Puntaje">
+                    <div class="barra-puntaje-linea"></div>
+                    <div class="barra-puntaje-relleno"></div>
+                    @for (int punto = 1; punto <= 5; punto++)
+                    {
+                        <button type="button"
+                                class="barra-puntaje-punto @(punto <= 4 ? "pintado" : "")"
+                                role="radio"
+                                aria-checked="@(punto == 4 ? "true" : "false")"
+                                aria-label="@etiquetasPuntaje[punto - 1]"
+                                tabindex="@(punto == 4 ? "0" : "-1")"
+                                data-puntaje="@punto"
+                                style="--paso: @(punto - 1)"></button>
+                    }
+                    <span class="tooltip" id="etiquetaPuntaje" aria-hidden="true">Muy bueno</span>
+                </div>
+                <div class="campo">
+                    <textarea id="comentarioResena" aria-label="Tu reseña" placeholder="Contá tu experiencia con sinceridad…"></textarea>
+                </div>
+                <div class="aviso" id="aviso" hidden>
+                    <span class="aviso-texto" id="avisoTexto"></span>
+                    <button type="button" class="aviso-cerrar" aria-label="Cerrar aviso">
+                        <img src="~/img/icono-cerrar-aviso.svg" width="24" height="24" alt="" />
+                    </button>
+                </div>
+                <button type="submit" class="boton boton-primario" id="botonEnviarResena">Enviar reseña</button>
+            </form>
+
+            <!-- Reseñas de la comunidad: de la más nueva a la más vieja -->
+            <section class="resenas-comunidad" data-pestanas="informacion resenas">
+                <div class="resenas-comunidad-encabezado">
+                    <h2>Reseñas de la comunidad</h2>
+                    <button type="button" class="ver-todo" id="botonVerResenas" hidden="@(Model.CantidadResenas <= resenas.Count)">Ver las @Model.CantidadResenas</button>
+                </div>
+                <div class="resenas-comunidad-lista" id="listaResenas" aria-live="polite">
+                    @foreach (ResenaComunidad resena in resenas)
+                    {
+                        <div class="tarjeta-resena">
+                            <div class="resena-autor">
+                                <span class="avatar">@resena.ObtenerIniciales()</span>
+                                <div class="resena-datos">
+                                    <span class="resena-nombre">@resena.NombreCompleto</span>
+                                    <span class="resena-fecha">@resena.TextoHace()</span>
+                                </div>
+                                <div class="estrellas" aria-label="@resena.Puntaje de 5">
+                                    @for (int estrella = 1; estrella <= 5; estrella++)
+                                    {
+                                        <img src="@(estrella <= resena.Puntaje ? "/img/icono-estrella-llena.svg" : "/img/icono-estrella-vacia.svg")" width="16" height="16" alt="" />
+                                    }
+                                </div>
+                            </div>
+                            @if (resena.Comentario != null)
+                            {
+                                <p class="resena-texto">@resena.Comentario</p>
+                            }
+                        </div>
+                    }
+                </div>
+                <p class="sin-favoritos" id="sinResenas" hidden="@(resenas.Count > 0)">Todavía nadie dejó una reseña. ¡Sé el primero!</p>
+            </section>
+        </div>
+
+        <!-- Tarjeta lateral -->
+        <aside class="detalle-acciones">
+            <button type="button"
+                    class="boton boton-secundario boton-ancho detalle-boton-favorito"
+                    id="botonFavorito"
+                    aria-pressed="@(Model.EsFavorito ? "true" : "false")">
+                @(Model.EsFavorito ? "Sacar de favoritos" : "Agregar a favoritos")
+            </button>
+            <a class="boton boton-primario boton-grande boton-ancho" href="/Planes/NuevoPlan?idRestaurante=@Model.Id">Crear plan</a>
+            <div class="detalle-divisor"></div>
+            @if (Model.TextoHorario() != "")
+            {
+                <p class="detalle-dato">
+                    <img src="~/img/icono-reloj.svg" width="20" height="20" alt="" />
+                    Horarios: @Model.TextoHorario()
+                </p>
+            }
+            @if (Model.TextoTelefono() != "")
+            {
+                <p class="detalle-dato">
+                    <img src="~/img/icono-telefono.svg" width="20" height="20" alt="" />
+                    Teléfono: @Model.TextoTelefono()
+                </p>
+            }
+            @if (Model.TextoDireccion() != "")
+            {
+                <p class="detalle-dato">
+                    <img src="~/img/icono-pin-naranja.svg" width="20" height="20" alt="" />
+                    @Model.TextoDireccion()
+                </p>
+            }
+            @* El mini mapa queda como imagen fija por ahora *@
+            <div class="detalle-mapa">
+                <img src="~/img/icono-imagen-grande.svg" width="40" height="40" alt="" />
+            </div>
+        </aside>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/detalle.js" asp-append-version="true"></script>
+}

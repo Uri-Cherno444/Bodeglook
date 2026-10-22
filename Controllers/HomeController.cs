@@ -10,6 +10,8 @@ public class HomeController : Controller
     // 01 · Index (pública)
     public IActionResult Index()
     {
+        // Las tarjetas de "Lugares que recomienda la comunidad" (sin usuario: ninguna es favorita)
+        ViewBag.Lugares = BD.ObtenerMejorPuntuados(4, 0);
         return View();
     }
 

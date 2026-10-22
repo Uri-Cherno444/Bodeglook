@@ -1,5 +1,8 @@
-﻿@{
+﻿@using System.Globalization
+@using Bodeglook.Models
+@{
     ViewData["Title"] = "Inicio";
+    List<TarjetaRestaurante> lugares = ViewBag.Lugares;
 }
 
 @section Estilos {
@@ -97,84 +100,33 @@
         <a class="boton boton-secundario" href="/Cuenta/IniciarSesion">Explorar restaurantes</a>
     </div>
 
-    @* DATOS DE PRUEBA: estas 4 tarjetas están copiadas del Figma. Después salen de la base. *@
+    @* Los 4 mejor puntuados, igual que "Recomendado para vos". Llevan al Detalle (si no hay sesión, pide iniciarla). *@
     <div class="grilla-lugares">
-        <a class="tarjeta-lugar" href="/Cuenta/IniciarSesion">
-            <div class="tarjeta-lugar-foto">
-                <img src="~/img/bodega-los-alamos.jpg" alt="Bodega Los Alamos" />
-                <span class="tarjeta-lugar-favorito">
-                    <img src="~/img/icono-corazon.svg" width="18" height="18" alt="" />
-                </span>
-            </div>
-            <div class="tarjeta-lugar-titulo">
-                <span class="tarjeta-lugar-nombre">Bodega Los Alamos</span>
-                <span class="puntaje">★ 4.7</span>
-            </div>
-            <div class="tarjeta-lugar-detalle">
-                <span class="chip chip-crema chip-categoria">Vinoteca</span>
-                <span class="ubicacion">
-                    <img src="~/img/icono-pin.svg" width="16" height="16" alt="" />
-                    Cañuelas, Bs. As.
-                </span>
-            </div>
-        </a>
-        <a class="tarjeta-lugar" href="/Cuenta/IniciarSesion">
-            <div class="tarjeta-lugar-foto">
-                <img src="~/img/el-rincon-criollo.jpg" alt="El Rincón Criollo" />
-                <span class="tarjeta-lugar-favorito">
-                    <img src="~/img/icono-corazon.svg" width="18" height="18" alt="" />
-                </span>
-            </div>
-            <div class="tarjeta-lugar-titulo">
-                <span class="tarjeta-lugar-nombre">El Rincón Criollo</span>
-                <span class="puntaje">★ 4.5</span>
-            </div>
-            <div class="tarjeta-lugar-detalle">
-                <span class="chip chip-crema chip-categoria">Parrilla</span>
-                <span class="ubicacion">
-                    <img src="~/img/icono-pin.svg" width="16" height="16" alt="" />
-                    Palermo, CABA
-                </span>
-            </div>
-        </a>
-        <a class="tarjeta-lugar" href="/Cuenta/IniciarSesion">
-            <div class="tarjeta-lugar-foto">
-                <img src="~/img/vinos-del-sur.jpg" alt="Vinos del Sur" />
-                <span class="tarjeta-lugar-favorito">
-                    <img src="~/img/icono-corazon.svg" width="18" height="18" alt="" />
-                </span>
-            </div>
-            <div class="tarjeta-lugar-titulo">
-                <span class="tarjeta-lugar-nombre">Vinos del Sur</span>
-                <span class="puntaje">★ 4.8</span>
-            </div>
-            <div class="tarjeta-lugar-detalle">
-                <span class="chip chip-crema chip-categoria">Bar de vinos</span>
-                <span class="ubicacion">
-                    <img src="~/img/icono-pin.svg" width="16" height="16" alt="" />
-                    San Telmo, CABA
-                </span>
-            </div>
-        </a>
-        <a class="tarjeta-lugar" href="/Cuenta/IniciarSesion">
-            <div class="tarjeta-lugar-foto">
-                <img src="~/img/trattoria-nonna.jpg" alt="Trattoria Nonna" />
-                <span class="tarjeta-lugar-favorito">
-                    <img src="~/img/icono-corazon.svg" width="18" height="18" alt="" />
-                </span>
-            </div>
-            <div class="tarjeta-lugar-titulo">
-                <span class="tarjeta-lugar-nombre">Trattoria Nonna</span>
-                <span class="puntaje">★ 4.3</span>
-            </div>
-            <div class="tarjeta-lugar-detalle">
-                <span class="chip chip-crema chip-categoria">Italiana</span>
-                <span class="ubicacion">
-                    <img src="~/img/icono-pin.svg" width="16" height="16" alt="" />
-                    Belgrano, CABA
-                </span>
-            </div>
-        </a>
+        @foreach (TarjetaRestaurante lugar in lugares)
+        {
+            <a class="tarjeta-lugar" href="/Restaurantes/Detalle/@lugar.Id">
+                <div class="tarjeta-lugar-foto">
+                    <img src="@lugar.Foto" alt="@lugar.Nombre" />
+                    <span class="tarjeta-lugar-favorito">
+                        <img src="~/img/icono-corazon.svg" width="18" height="18" alt="" />
+                    </span>
+                </div>
+                <div class="tarjeta-lugar-titulo">
+                    <span class="tarjeta-lugar-nombre">@lugar.Nombre</span>
+                    @if (lugar.Puntaje != null)
+                    {
+                        <span class="puntaje">★ @lugar.Puntaje.Value.ToString("0.0", CultureInfo.InvariantCulture)</span>
+                    }
+                </div>
+                <div class="tarjeta-lugar-detalle">
+                    <span class="chip chip-crema chip-categoria">@lugar.Categoria</span>
+                    <span class="ubicacion">
+                        <img src="~/img/icono-pin.svg" width="16" height="16" alt="" />
+                        @lugar.Barrio
+                    </span>
+                </div>
+            </a>
+        }
     </div>
 </section>
 

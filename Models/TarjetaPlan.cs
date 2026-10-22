@@ -8,6 +8,7 @@ public class TarjetaPlan
     public string? Estado { get; set; }
     public int IdGrupo { get; set; }
     public int CantidadLugares { get; set; }
+    public int? IdRestauranteElegido { get; set; }
     public string? LugarElegido { get; set; }
     public List<string> Iniciales { get; set; } = new List<string>();
 }

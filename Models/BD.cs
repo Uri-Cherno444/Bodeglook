@@ -51,9 +51,9 @@ public static class BD
     public static int RegistrarUsuario(Usuarios usuario)
     {
         string consulta = @"
-            INSERT INTO Usuarios (Nombre, NombreUsuario, Email, Contraseña, FechaRegistro)
+            INSERT INTO Usuarios (NombreCompleto, NombreUsuario, Email, Contraseña, FechaRegistro)
             OUTPUT INSERTED.Id
-            VALUES (@Nombre, @NombreUsuario, @Email, @Contraseña, @FechaRegistro)";
+            VALUES (@NombreCompleto, @NombreUsuario, @Email, @Contraseña, @FechaRegistro)";
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
             return conexion.QueryFirst<int>(consulta, usuario);
@@ -66,11 +66,11 @@ public static class BD
     public static List<Usuarios> ObtenerIntegrantesDeGrupo(int idGrupo)
     {
         string consulta = @"
-            SELECT u.Id, u.Nombre, u.NombreUsuario
+            SELECT u.Id, u.NombreCompleto, u.NombreUsuario
             FROM Usuarios u
             JOIN UsuariosGrupos ug ON ug.IdUsuario = u.Id
             WHERE ug.IdGrupo = @idGrupo
-            ORDER BY u.Nombre";
+            ORDER BY u.NombreCompleto";
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
             return conexion.Query<Usuarios>(consulta, new { idGrupo }).ToList();
@@ -123,22 +123,24 @@ public static class BD
 
     // ---------- Planes ----------
 
-    // Los planes de todos los grupos del usuario. estado = null trae En votación y Confirmado (los cancelados no se muestran)
-    public static List<TarjetaPlan> ObtenerPlanesDeUsuario(int idUsuario, string? estado)
+    // Los planes de todos los grupos del usuario.
+    // Planes.Estado es un bit: 0 = En votación, 1 = Confirmado. confirmado = null trae los dos.
+    // La tarjeta muestra el texto del chip, por eso la consulta lo devuelve ya escrito.
+    public static List<TarjetaPlan> ObtenerPlanesDeUsuario(int idUsuario, bool? confirmado)
     {
         string consulta = @"
-            SELECT p.Id, p.Titulo, p.Estado, p.IdGrupo, r.Nombre AS LugarElegido,
+            SELECT p.Id, p.Titulo, p.IdGrupo, p.IdRestauranteElegido, r.Nombre AS LugarElegido,
+                   CASE WHEN p.Estado = 1 THEN 'Confirmado' ELSE 'En votación' END AS Estado,
                    (SELECT COUNT(*) FROM PlanesRestaurantes WHERE IdPlan = p.Id) AS CantidadLugares
             FROM Planes p
             JOIN UsuariosGrupos ug ON ug.IdGrupo = p.IdGrupo AND ug.IdUsuario = @idUsuario
             LEFT JOIN Restaurantes r ON r.Id = p.IdRestauranteElegido
-            WHERE p.Estado IN ('En votación', 'Confirmado')
-              AND (@estado IS NULL OR p.Estado = @estado)
+            WHERE @confirmado IS NULL OR p.Estado = @confirmado
             ORDER BY p.Id DESC";
         List<TarjetaPlan> planes;
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            planes = conexion.Query<TarjetaPlan>(consulta, new { idUsuario, estado }).ToList();
+            planes = conexion.Query<TarjetaPlan>(consulta, new { idUsuario, confirmado }).ToList();
         }
 
         // Abajo a la derecha de la tarjeta van las iniciales de los otros integrantes del grupo
@@ -180,6 +182,92 @@ public static class BD
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
             return conexion.QueryFirst<int>(consulta, new { idRestaurante }) > 0;
+        }
+    }
+
+    // Todo lo de 04 · Detalle + Reseña menos las reseñas. Devuelve null si el id no existe.
+    public static DetalleRestaurante? ObtenerDetalleRestaurante(int idRestaurante, int idUsuario)
+    {
+        string consulta = @"
+            SELECT r.Id, r.Nombre, r.Foto, r.Descripcion, c.Nombre AS Categoria, b.Nombre AS Barrio,
+                   r.DireccionCalle, r.DireccionNumero, r.DireccionCodigoPostal, r.Telefono,
+                   r.HorarioApertura, r.HorarioCerrado,
+                   (SELECT AVG(CAST(Puntaje AS float)) FROM Reseñas WHERE IdRestaurante = r.Id) AS Puntaje,
+                   (SELECT COUNT(*) FROM Reseñas WHERE IdRestaurante = r.Id) AS CantidadResenas,
+                   CAST(CASE WHEN EXISTS (SELECT 1 FROM Favoritos WHERE IdUsuario = @idUsuario AND IdRestaurante = r.Id)
+                        THEN 1 ELSE 0 END AS bit) AS EsFavorito
+            FROM Restaurantes r
+            LEFT JOIN Categorias c ON c.Id = r.IdCategoria
+            LEFT JOIN Barrios b ON b.Id = r.IdBarrio
+            WHERE r.Id = @idRestaurante";
+        DetalleRestaurante? detalle;
+        using (SqlConnection conexion = new SqlConnection(CadenaConexion))
+        {
+            detalle = conexion.QueryFirstOrDefault<DetalleRestaurante>(consulta, new { idRestaurante, idUsuario });
+        }
+
+        if (detalle != null) detalle.Restricciones = ObtenerRestriccionesDeRestaurante(idRestaurante);
+        return detalle;
+    }
+
+    // Los chips dietarios: "Sin TACC", "Vegetariano", etc.
+    public static List<string> ObtenerRestriccionesDeRestaurante(int idRestaurante)
+    {
+        string consulta = @"
+            SELECT re.Nombre
+            FROM RestriccionesRestaurantes rr
+            JOIN Restricciones re ON re.Id = rr.IdRestriccion
+            WHERE rr.IdRestaurante = @idRestaurante
+            ORDER BY re.Id";
+        using (SqlConnection conexion = new SqlConnection(CadenaConexion))
+        {
+            return conexion.Query<string>(consulta, new { idRestaurante }).ToList();
+        }
+    }
+
+    // Promedio y cantidad de reseñas (para actualizar la pantalla después de dejar una)
+    public static DetalleRestaurante ObtenerPuntajeRestaurante(int idRestaurante)
+    {
+        string consulta = @"
+            SELECT AVG(CAST(Puntaje AS float)) AS Puntaje, COUNT(*) AS CantidadResenas
+            FROM Reseñas WHERE IdRestaurante = @idRestaurante";
+        using (SqlConnection conexion = new SqlConnection(CadenaConexion))
+        {
+            return conexion.QueryFirst<DetalleRestaurante>(consulta, new { idRestaurante });
+        }
+    }
+
+    // ---------- Reseñas ----------
+
+    // Las reseñas de un lugar de la más nueva a la más vieja, salteando las primeras "desde".
+    // cantidad = null trae todas las que quedan.
+    public static List<ResenaComunidad> ObtenerResenasDeRestaurante(int idRestaurante, int desde, int? cantidad)
+    {
+        string consulta = @"
+            SELECT re.Id, re.Puntaje, re.Comentario, re.Fecha, u.NombreCompleto
+            FROM Reseñas re
+            JOIN Usuarios u ON u.Id = re.IdUsuario
+            WHERE re.IdRestaurante = @idRestaurante
+            ORDER BY re.Fecha DESC, re.Id DESC
+            OFFSET @desde ROWS";
+        if (cantidad != null) consulta += " FETCH NEXT @cantidad ROWS ONLY";
+
+        using (SqlConnection conexion = new SqlConnection(CadenaConexion))
+        {
+            return conexion.Query<ResenaComunidad>(consulta, new { idRestaurante, desde, cantidad }).ToList();
+        }
+    }
+
+    // Guarda la reseña y devuelve el Id nuevo
+    public static int GuardarResena(Reseñas resena)
+    {
+        string consulta = @"
+            INSERT INTO Reseñas (Puntaje, Comentario, Fecha, IdUsuario, IdRestaurante)
+            OUTPUT INSERTED.Id
+            VALUES (@Puntaje, @Comentario, @Fecha, @IdUsuario, @IdRestaurante)";
+        using (SqlConnection conexion = new SqlConnection(CadenaConexion))
+        {
+            return conexion.QueryFirst<int>(consulta, resena);
         }
     }
 

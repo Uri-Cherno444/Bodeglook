@@ -22,12 +22,32 @@ public class PlanesController : Controller
     {
         if (HttpContext.Session.GetString("usuario") == null) return Unauthorized();
 
-        string? estado = null;
-        if (filtro == "votacion") estado = "En votación";
-        if (filtro == "confirmados") estado = "Confirmado";
+        bool? confirmado = null;
+        if (filtro == "votacion") confirmado = false;
+        if (filtro == "confirmados") confirmado = true;
 
         Usuarios usuario = UsuarioDeSesion();
-        return Json(BD.ObtenerPlanesDeUsuario(usuario.Id, estado));
+        return Json(BD.ObtenerPlanesDeUsuario(usuario.Id, confirmado));
+    }
+
+    // 06 · Crear Plan todavía no está hecho. idRestaurante es el lugar que viene del Detalle.
+    public IActionResult NuevoPlan(int? idRestaurante)
+    {
+        if (HttpContext.Session.GetString("usuario") == null) return RedirectToAction("IniciarSesion", "Cuenta");
+
+        ViewData["Title"] = "Crear plan";
+        ViewData["Pestaña"] = "MisPlanes";
+        return View("NoDesarrollado");
+    }
+
+    // La votación de un plan todavía no está hecha
+    public IActionResult Votacion(int id)
+    {
+        if (HttpContext.Session.GetString("usuario") == null) return RedirectToAction("IniciarSesion", "Cuenta");
+
+        ViewData["Title"] = "Votación";
+        ViewData["Pestaña"] = "MisPlanes";
+        return View("NoDesarrollado");
     }
 
     private Usuarios UsuarioDeSesion()

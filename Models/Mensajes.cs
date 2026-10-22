@@ -7,5 +7,4 @@ public class Mensajes
     public DateTime? FechaHora { get; set; }
     public int? IdGrupo { get; set; }
     public int? IdUsuario { get; set; }
-    public int? IdPlan { get; set; }
 }

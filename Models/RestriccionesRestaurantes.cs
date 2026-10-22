@@ -1,6 +1,6 @@
 namespace Bodeglook.Models;
 
-public class RestaurantesRestricciones
+public class RestriccionesRestaurantes
 {
     public int Id { get; set; }
     public int? IdRestaurante { get; set; }
