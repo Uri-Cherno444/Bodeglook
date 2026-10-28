@@ -36,7 +36,7 @@ public class PlanesController : Controller
         if (HttpContext.Session.GetString("usuario") == null) return RedirectToAction("IniciarSesion", "Cuenta");
 
         ViewData["Title"] = "Crear plan";
-        ViewData["Pestaña"] = "MisPlanes";
+        ViewData["Pestaña"] = "MisChats";
         return View("NoDesarrollado");
     }
 
@@ -46,7 +46,7 @@ public class PlanesController : Controller
         if (HttpContext.Session.GetString("usuario") == null) return RedirectToAction("IniciarSesion", "Cuenta");
 
         ViewData["Title"] = "Votación";
-        ViewData["Pestaña"] = "MisPlanes";
+        ViewData["Pestaña"] = "MisChats";
         return View("NoDesarrollado");
     }
 

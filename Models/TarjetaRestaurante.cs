@@ -11,4 +11,9 @@ public class TarjetaRestaurante
     public string? Barrio { get; set; }
     public double? Puntaje { get; set; }
     public bool EsFavorito { get; set; }
+
+    // Para 05 · Descubrir: chip "Recomendado" y pin en el mapa
+    public bool EsPro { get; set; }
+    public decimal? Latitud { get; set; }
+    public decimal? Longitud { get; set; }
 }

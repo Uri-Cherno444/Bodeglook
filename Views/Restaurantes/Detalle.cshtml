@@ -4,7 +4,20 @@
     ViewData["Title"] = Model.Nombre;
     ViewData["Pestaña"] = "Descubrir";
     List<ResenaComunidad> resenas = ViewBag.Resenas;
-    string[] etiquetasPuntaje = { "Malo", "Regular", "Bueno", "Muy bueno", "Excelente" };
+    bool yaReseno = ViewBag.YaReseno;
+    Planes? visita = ViewBag.Visita;
+
+    // "Sáb 24/10" para el chip de "Visita verificada"
+    string[] dias = { "Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb" };
+    string fechaVisita = visita?.FechaSalida == null ? "" : dias[(int)visita.FechaSalida.Value.DayOfWeek] + " " + visita.FechaSalida.Value.ToString("dd/MM");
+
+    // Los cuatro puntajes del modal 04b: nombre del campo, título y subtítulo
+    string[,] dimensiones = {
+        { "comida", "Comida", "Sabor, presentación, temperatura y porción" },
+        { "ambiente", "Ambiente", "Ruido, luz, comodidad y limpieza" },
+        { "atencion", "Atención", "Velocidad, amabilidad y manejo de restricciones dietarias" },
+        { "precio", "Precio y valor", "¿Valió lo que costó?" }
+    };
 }
 
 @section Estilos {
@@ -18,7 +31,7 @@
         {
             <img class="detalle-banner-foto" src="@Model.Foto" alt="" />
         }
-        <a class="detalle-volver" id="botonVolver" href="/Home/Inicio" aria-label="Volver">
+        <a class="boton-volver detalle-volver" id="botonVolver" href="/Home/Inicio" aria-label="Volver">
             <img src="~/img/icono-volver.svg" width="22" height="22" alt="" />
         </a>
         <div class="detalle-banner-acciones">
@@ -95,36 +108,18 @@
                 }
             </div>
 
-            <!-- Dejar una reseña -->
-            <form class="dejar-resena" id="formularioResena" data-pestanas="informacion resenas" novalidate>
-                <h2>Dejar una reseña</h2>
-                <div class="barra-puntaje" id="barraPuntaje" role="radiogroup" aria-label="Puntaje">
-                    <div class="barra-puntaje-linea"></div>
-                    <div class="barra-puntaje-relleno"></div>
-                    @for (int punto = 1; punto <= 5; punto++)
-                    {
-                        <button type="button"
-                                class="barra-puntaje-punto @(punto <= 4 ? "pintado" : "")"
-                                role="radio"
-                                aria-checked="@(punto == 4 ? "true" : "false")"
-                                aria-label="@etiquetasPuntaje[punto - 1]"
-                                tabindex="@(punto == 4 ? "0" : "-1")"
-                                data-puntaje="@punto"
-                                style="--paso: @(punto - 1)"></button>
-                    }
-                    <span class="tooltip" id="etiquetaPuntaje" aria-hidden="true">Muy bueno</span>
-                </div>
-                <div class="campo">
-                    <textarea id="comentarioResena" aria-label="Tu reseña" placeholder="Contá tu experiencia con sinceridad…"></textarea>
-                </div>
-                <div class="aviso" id="aviso" hidden>
-                    <span class="aviso-texto" id="avisoTexto"></span>
+            <!-- Dejar una reseña: abre el modal 04b. Se deja una sola por lugar. -->
+            <div class="dejar-resena" data-pestanas="informacion resenas">
+                <button type="button" class="boton boton-primario" id="botonDejarResena" disabled="@yaReseno">
+                    @(yaReseno ? "Ya dejaste una reseña" : "Dejar una reseña")
+                </button>
+                <div class="aviso" id="avisoDetalle" hidden>
+                    <span class="aviso-texto" id="avisoDetalleTexto"></span>
                     <button type="button" class="aviso-cerrar" aria-label="Cerrar aviso">
                         <img src="~/img/icono-cerrar-aviso.svg" width="24" height="24" alt="" />
                     </button>
                 </div>
-                <button type="submit" class="boton boton-primario" id="botonEnviarResena">Enviar reseña</button>
-            </form>
+            </div>
 
             <!-- Reseñas de la comunidad: de la más nueva a la más vieja -->
             <section class="resenas-comunidad" data-pestanas="informacion resenas">
@@ -168,7 +163,7 @@
                     aria-pressed="@(Model.EsFavorito ? "true" : "false")">
                 @(Model.EsFavorito ? "Sacar de favoritos" : "Agregar a favoritos")
             </button>
-            <a class="boton boton-primario boton-grande boton-ancho" href="/Planes/NuevoPlan?idRestaurante=@Model.Id">Crear plan</a>
+            <a class="boton boton-primario boton-grande boton-ancho" href="/Grupos">Crear plan</a>
             <div class="detalle-divisor"></div>
             @if (Model.TextoHorario() != "")
             {
@@ -198,6 +193,90 @@
         </aside>
     </div>
 </div>
+
+<!-- 04b · Dejar una reseña (modal). <dialog> ya se cierra con Escape. -->
+<dialog class="modal-resena" id="modalResena" aria-labelledby="modalResenaTitulo">
+    <form id="formularioResena" method="dialog" novalidate>
+        <div class="modal-resena-encabezado">
+            <div>
+                <h2 id="modalResenaTitulo">Dejar una reseña</h2>
+                <p class="modal-resena-lugar">@Model.Nombre@(Model.Barrio != null ? " · " + Model.Barrio.Split(',')[0] : "")</p>
+            </div>
+            <button type="button" class="boton-cerrar-modal" id="cerrarModalResena" aria-label="Cerrar">✕</button>
+        </div>
+
+        @if (visita != null)
+        {
+            <span class="chip chip-verificada">Visita verificada · @visita.Titulo · @fechaVisita</span>
+        }
+
+        <div class="dimensiones">
+            @for (int i = 0; i < dimensiones.GetLength(0); i++)
+            {
+                <fieldset class="dimension">
+                    <legend class="dimension-textos">
+                        <span class="dimension-titulo">@dimensiones[i, 1]</span>
+                        <span class="dimension-subtitulo">@dimensiones[i, 2]</span>
+                    </legend>
+                    <div class="notas">
+                        @for (int nota = 1; nota <= 5; nota++)
+                        {
+                            <label class="nota">
+                                <input type="radio" name="@dimensiones[i, 0]" value="@nota" />
+                                <span>@nota</span>
+                            </label>
+                        }
+                    </div>
+                </fieldset>
+            }
+        </div>
+
+        <div class="puntaje-general">
+            <div>
+                <p class="puntaje-general-titulo">Puntaje general</p>
+                <p class="puntaje-general-texto">Promedio de las cuatro dimensiones.</p>
+            </div>
+            <span class="puntaje-general-valor" id="puntajeGeneral" aria-live="polite">–</span>
+        </div>
+
+        <div class="campo">
+            <textarea id="comentarioResena" aria-label="Tu reseña" placeholder="Contá tu experiencia con sinceridad..."></textarea>
+        </div>
+
+        <fieldset class="como-fue">
+            <legend>¿Cómo fue la visita?</legend>
+            <label class="opcion-visita">
+                <input type="radio" name="visita" value="pague" checked />
+                <span class="radio-chico"><img src="~/img/icono-radio-marcado-chico.svg" width="24" height="24" alt="" /></span>
+                <span class="opcion-visita-textos">
+                    <span class="opcion-visita-titulo">Pagué yo</span>
+                </span>
+            </label>
+            <label class="opcion-visita">
+                <input type="radio" name="visita" value="canje" />
+                <span class="radio-chico"><img src="~/img/icono-radio-marcado-chico.svg" width="24" height="24" alt="" /></span>
+                <span class="opcion-visita-textos">
+                    <span class="opcion-visita-titulo">Me invitaron o fue un canje</span>
+                    <span class="opcion-visita-texto">Se marca con una etiqueta y no suma al puntaje del restaurante.</span>
+                </span>
+            </label>
+        </fieldset>
+
+        <p class="modal-resena-nota">Tu reseña se publica 24 horas después de la visita, así queda pensada con calma.</p>
+
+        <div class="aviso" id="aviso" hidden>
+            <span class="aviso-texto" id="avisoTexto"></span>
+            <button type="button" class="aviso-cerrar" aria-label="Cerrar aviso">
+                <img src="~/img/icono-cerrar-aviso.svg" width="24" height="24" alt="" />
+            </button>
+        </div>
+
+        <div class="modal-resena-botones">
+            <button type="button" class="boton boton-blanco" id="cancelarResena">Cancelar</button>
+            <button type="submit" class="boton boton-primario" id="botonPublicarResena">Publicar reseña</button>
+        </div>
+    </form>
+</dialog>
 
 @section Scripts {
     <script src="~/js/detalle.js" asp-append-version="true"></script>

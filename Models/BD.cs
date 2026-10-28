@@ -60,6 +60,81 @@ public static class BD
         }
     }
 
+    // ---------- 08 · Perfil ----------
+
+    // "Palermo, CABA". null si el usuario no tiene barrio (el registro no lo pide).
+    public static string? ObtenerNombreBarrio(int? idBarrio)
+    {
+        if (idBarrio == null) return null;
+        string consulta = "SELECT Nombre FROM Barrios WHERE Id = @idBarrio";
+        using (SqlConnection conexion = new SqlConnection(CadenaConexion))
+        {
+            return conexion.QueryFirstOrDefault<string>(consulta, new { idBarrio });
+        }
+    }
+
+    // Todas las reseñas que escribió, publicadas o no
+    public static int ContarResenasDeUsuario(int idUsuario)
+    {
+        string consulta = "SELECT COUNT(*) FROM Reseñas WHERE IdUsuario = @idUsuario";
+        using (SqlConnection conexion = new SqlConnection(CadenaConexion))
+        {
+            return conexion.QueryFirst<int>(consulta, new { idUsuario });
+        }
+    }
+
+    // ---------- Onboarding (gustos y filtro dietario) ----------
+
+    // Todas las restricciones: son los chips de "Restricciones dietarias"
+    public static List<Restricciones> ObtenerRestricciones()
+    {
+        string consulta = "SELECT Id, Nombre FROM Restricciones ORDER BY Id";
+        using (SqlConnection conexion = new SqlConnection(CadenaConexion))
+        {
+            return conexion.Query<Restricciones>(consulta).ToList();
+        }
+    }
+
+    // Todos los barrios: son los chips de "Zonas que te interesan"
+    public static List<Barrios> ObtenerBarrios()
+    {
+        string consulta = "SELECT Id, Nombre FROM Barrios ORDER BY Id";
+        using (SqlConnection conexion = new SqlConnection(CadenaConexion))
+        {
+            return conexion.Query<Barrios>(consulta).ToList();
+        }
+    }
+
+    // Las restricciones que marcó el usuario
+    public static List<Restricciones> ObtenerRestriccionesDeUsuario(int idUsuario)
+    {
+        string consulta = @"
+            SELECT re.Id, re.Nombre
+            FROM RestriccionesUsuarios ru
+            JOIN Restricciones re ON re.Id = ru.IdRestricciones
+            WHERE ru.IdUsuario = @idUsuario
+            ORDER BY re.Id";
+        using (SqlConnection conexion = new SqlConnection(CadenaConexion))
+        {
+            return conexion.Query<Restricciones>(consulta, new { idUsuario }).ToList();
+        }
+    }
+
+    // Borra las restricciones que tenía el usuario y guarda las nuevas
+    public static void GuardarRestriccionesDeUsuario(int idUsuario, List<int> idsRestricciones)
+    {
+        using (SqlConnection conexion = new SqlConnection(CadenaConexion))
+        {
+            conexion.Execute("DELETE FROM RestriccionesUsuarios WHERE IdUsuario = @idUsuario", new { idUsuario });
+            foreach (int idRestriccion in idsRestricciones)
+            {
+                conexion.Execute(
+                    "INSERT INTO RestriccionesUsuarios (IdUsuario, IdRestricciones) VALUES (@idUsuario, @idRestriccion)",
+                    new { idUsuario, idRestriccion });
+            }
+        }
+    }
+
     // ---------- Grupos y chats ----------
 
     // Integrantes de un grupo (sin la contraseña)
@@ -158,21 +233,134 @@ public static class BD
 
     // Los restaurantes con mejor promedio de reseñas. Los que no tienen reseñas van al final.
     // EsFavorito dice si el usuario ya lo guardó (para pintar el corazón).
-    public static List<TarjetaRestaurante> ObtenerMejorPuntuados(int cantidad, int idUsuario)
+    // soloApto = true deja solo los que cumplen al menos una restricción del usuario
+    // (si el usuario no marcó ninguna, trae todos).
+    public static List<TarjetaRestaurante> ObtenerMejorPuntuados(int cantidad, int idUsuario, bool soloApto)
     {
         string consulta = @"
             SELECT TOP (@cantidad) r.Id, r.Nombre, r.Foto, c.Nombre AS Categoria, b.Nombre AS Barrio,
-                   (SELECT AVG(CAST(Puntaje AS float)) FROM Reseñas WHERE IdRestaurante = r.Id) AS Puntaje,
+                   (SELECT AVG(CAST(Puntaje AS float)) FROM Reseñas WHERE IdRestaurante = r.Id AND Fecha <= DATEADD(hour, -24, GETDATE())) AS Puntaje,
                    CAST(CASE WHEN EXISTS (SELECT 1 FROM Favoritos WHERE IdUsuario = @idUsuario AND IdRestaurante = r.Id)
                         THEN 1 ELSE 0 END AS bit) AS EsFavorito
             FROM Restaurantes r
             LEFT JOIN Categorias c ON c.Id = r.IdCategoria
             LEFT JOIN Barrios b ON b.Id = r.IdBarrio
-            ORDER BY CASE WHEN (SELECT AVG(CAST(Puntaje AS float)) FROM Reseñas WHERE IdRestaurante = r.Id) IS NULL THEN 1 ELSE 0 END,
+            WHERE @soloApto = 0
+               OR NOT EXISTS (SELECT 1 FROM RestriccionesUsuarios WHERE IdUsuario = @idUsuario)
+               OR EXISTS (SELECT 1 FROM RestriccionesRestaurantes rr
+                          JOIN RestriccionesUsuarios ru ON ru.IdRestricciones = rr.IdRestriccion
+                          WHERE rr.IdRestaurante = r.Id AND ru.IdUsuario = @idUsuario)
+            ORDER BY CASE WHEN (SELECT AVG(CAST(Puntaje AS float)) FROM Reseñas WHERE IdRestaurante = r.Id AND Fecha <= DATEADD(hour, -24, GETDATE())) IS NULL THEN 1 ELSE 0 END,
                      Puntaje DESC, r.Id";
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            return conexion.Query<TarjetaRestaurante>(consulta, new { cantidad, idUsuario }).ToList();
+            return conexion.Query<TarjetaRestaurante>(consulta, new { cantidad, idUsuario, soloApto }).ToList();
+        }
+    }
+
+    // ---------- 05 · Descubrir ----------
+
+    // Las palabras que no sirven para buscar ("parrilla en Palermo" -> "parrilla", "Palermo")
+    private static readonly List<string> PalabrasVacias = new List<string> { "en", "de", "la", "el", "los", "las", "del", "con", "y" };
+
+    // Arma el WHERE de la búsqueda. Cada palabra tiene que aparecer en el nombre, el barrio o la categoría.
+    // Si termina en "s" también se prueba sin la "s" ("Parrillas" encuentra "Parrilla").
+    // COLLATE ..._CI_AI hace que no importen mayúsculas ni tildes ("nunez" encuentra "Núñez").
+    // soloApto: igual que en Inicio, solo los que cumplen al menos una restricción del usuario.
+    private static string ArmarFiltroBusqueda(string texto, int idUsuario, bool soloApto, DynamicParameters parametros)
+    {
+        string filtro = @"
+            WHERE (@soloApto = 0
+               OR NOT EXISTS (SELECT 1 FROM RestriccionesUsuarios WHERE IdUsuario = @idUsuario)
+               OR EXISTS (SELECT 1 FROM RestriccionesRestaurantes rr
+                          JOIN RestriccionesUsuarios ru ON ru.IdRestricciones = rr.IdRestriccion
+                          WHERE rr.IdRestaurante = r.Id AND ru.IdUsuario = @idUsuario))";
+        parametros.Add("idUsuario", idUsuario);
+        parametros.Add("soloApto", soloApto);
+
+        int numero = 0;
+        foreach (string palabra in texto.Split(' ', StringSplitOptions.RemoveEmptyEntries))
+        {
+            if (PalabrasVacias.Contains(palabra.ToLower())) continue;
+
+            string sinS = palabra.Length > 3 && palabra.EndsWith("s") ? palabra.Substring(0, palabra.Length - 1) : palabra;
+            parametros.Add("palabra" + numero, "%" + palabra + "%");
+            parametros.Add("sinS" + numero, "%" + sinS + "%");
+
+            filtro += $@"
+              AND (r.Nombre COLLATE Latin1_General_CI_AI LIKE @palabra{numero}
+                OR b.Nombre COLLATE Latin1_General_CI_AI LIKE @palabra{numero}
+                OR c.Nombre COLLATE Latin1_General_CI_AI LIKE @palabra{numero}
+                OR c.Nombre COLLATE Latin1_General_CI_AI LIKE @sinS{numero})";
+            numero++;
+        }
+        return filtro;
+    }
+
+    // Una página de resultados. Primero los Pro (salen destacados) y después por mejor puntaje.
+    public static List<TarjetaRestaurante> BuscarRestaurantes(string texto, int idUsuario, bool soloApto, int desde, int cantidad)
+    {
+        DynamicParameters parametros = new DynamicParameters();
+        string filtro = ArmarFiltroBusqueda(texto, idUsuario, soloApto, parametros);
+        parametros.Add("desde", desde);
+        parametros.Add("cantidad", cantidad);
+
+        string consulta = @"
+            SELECT r.Id, r.Nombre, r.Foto, c.Nombre AS Categoria, b.Nombre AS Barrio, r.EsPro, r.Latitud, r.Longitud,
+                   (SELECT AVG(CAST(Puntaje AS float)) FROM Reseñas WHERE IdRestaurante = r.Id AND Fecha <= DATEADD(hour, -24, GETDATE())) AS Puntaje,
+                   CAST(CASE WHEN EXISTS (SELECT 1 FROM Favoritos WHERE IdUsuario = @idUsuario AND IdRestaurante = r.Id)
+                        THEN 1 ELSE 0 END AS bit) AS EsFavorito
+            FROM Restaurantes r
+            LEFT JOIN Categorias c ON c.Id = r.IdCategoria
+            LEFT JOIN Barrios b ON b.Id = r.IdBarrio" + filtro + @"
+            ORDER BY r.EsPro DESC,
+                     CASE WHEN (SELECT AVG(CAST(Puntaje AS float)) FROM Reseñas WHERE IdRestaurante = r.Id AND Fecha <= DATEADD(hour, -24, GETDATE())) IS NULL THEN 1 ELSE 0 END,
+                     Puntaje DESC, r.Id
+            OFFSET @desde ROWS FETCH NEXT @cantidad ROWS ONLY";
+        using (SqlConnection conexion = new SqlConnection(CadenaConexion))
+        {
+            return conexion.Query<TarjetaRestaurante>(consulta, parametros).ToList();
+        }
+    }
+
+    // Cuántos resultados hay en total (para la paginación)
+    public static int ContarRestaurantes(string texto, int idUsuario, bool soloApto)
+    {
+        DynamicParameters parametros = new DynamicParameters();
+        string filtro = ArmarFiltroBusqueda(texto, idUsuario, soloApto, parametros);
+
+        string consulta = @"
+            SELECT COUNT(*)
+            FROM Restaurantes r
+            LEFT JOIN Categorias c ON c.Id = r.IdCategoria
+            LEFT JOIN Barrios b ON b.Id = r.IdBarrio" + filtro;
+        using (SqlConnection conexion = new SqlConnection(CadenaConexion))
+        {
+            return conexion.QueryFirst<int>(consulta, parametros);
+        }
+    }
+
+    public static void GuardarBusqueda(int idUsuario, string texto)
+    {
+        string consulta = "INSERT INTO Busquedas (IdUsuario, Texto, Fecha) VALUES (@idUsuario, @texto, GETDATE())";
+        using (SqlConnection conexion = new SqlConnection(CadenaConexion))
+        {
+            conexion.Execute(consulta, new { idUsuario, texto });
+        }
+    }
+
+    // Las últimas búsquedas del usuario, sin repetir, la más nueva primero
+    public static List<string> ObtenerBusquedasRecientes(int idUsuario, int cantidad)
+    {
+        string consulta = @"
+            SELECT TOP (@cantidad) Texto
+            FROM Busquedas
+            WHERE IdUsuario = @idUsuario
+            GROUP BY Texto
+            ORDER BY MAX(Fecha) DESC, MAX(Id) DESC";
+        using (SqlConnection conexion = new SqlConnection(CadenaConexion))
+        {
+            return conexion.Query<string>(consulta, new { idUsuario, cantidad }).ToList();
         }
     }
 
@@ -192,8 +380,8 @@ public static class BD
             SELECT r.Id, r.Nombre, r.Foto, r.Descripcion, c.Nombre AS Categoria, b.Nombre AS Barrio,
                    r.DireccionCalle, r.DireccionNumero, r.DireccionCodigoPostal, r.Telefono,
                    r.HorarioApertura, r.HorarioCerrado,
-                   (SELECT AVG(CAST(Puntaje AS float)) FROM Reseñas WHERE IdRestaurante = r.Id) AS Puntaje,
-                   (SELECT COUNT(*) FROM Reseñas WHERE IdRestaurante = r.Id) AS CantidadResenas,
+                   (SELECT AVG(CAST(Puntaje AS float)) FROM Reseñas WHERE IdRestaurante = r.Id AND Fecha <= DATEADD(hour, -24, GETDATE())) AS Puntaje,
+                   (SELECT COUNT(*) FROM Reseñas WHERE IdRestaurante = r.Id AND Fecha <= DATEADD(hour, -24, GETDATE())) AS CantidadResenas,
                    CAST(CASE WHEN EXISTS (SELECT 1 FROM Favoritos WHERE IdUsuario = @idUsuario AND IdRestaurante = r.Id)
                         THEN 1 ELSE 0 END AS bit) AS EsFavorito
             FROM Restaurantes r
@@ -230,7 +418,7 @@ public static class BD
     {
         string consulta = @"
             SELECT AVG(CAST(Puntaje AS float)) AS Puntaje, COUNT(*) AS CantidadResenas
-            FROM Reseñas WHERE IdRestaurante = @idRestaurante";
+            FROM Reseñas WHERE IdRestaurante = @idRestaurante AND Fecha <= DATEADD(hour, -24, GETDATE())";
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
             return conexion.QueryFirst<DetalleRestaurante>(consulta, new { idRestaurante });
@@ -238,6 +426,34 @@ public static class BD
     }
 
     // ---------- Reseñas ----------
+    // Reseñas.Fecha es la fecha de la visita. Una reseña se publica 24 horas después:
+    // por eso todas las consultas que muestran o promedian reseñas piden Fecha <= ahora - 24 horas.
+
+    // Si el usuario ya dejó una reseña de ese lugar (publicada o no). Se deja una sola por lugar.
+    public static bool YaReseno(int idUsuario, int idRestaurante)
+    {
+        string consulta = "SELECT COUNT(*) FROM Reseñas WHERE IdUsuario = @idUsuario AND IdRestaurante = @idRestaurante";
+        using (SqlConnection conexion = new SqlConnection(CadenaConexion))
+        {
+            return conexion.QueryFirst<int>(consulta, new { idUsuario, idRestaurante }) > 0;
+        }
+    }
+
+    // "Visita verificada": el último plan confirmado de un grupo del usuario en ese lugar
+    // que ya pasó. Devuelve null si no hay ninguno.
+    public static Planes? ObtenerVisitaVerificada(int idUsuario, int idRestaurante)
+    {
+        string consulta = @"
+            SELECT TOP 1 p.*
+            FROM Planes p
+            JOIN UsuariosGrupos ug ON ug.IdGrupo = p.IdGrupo AND ug.IdUsuario = @idUsuario
+            WHERE p.Estado = 1 AND p.IdRestauranteElegido = @idRestaurante AND p.FechaSalida <= GETDATE()
+            ORDER BY p.FechaSalida DESC";
+        using (SqlConnection conexion = new SqlConnection(CadenaConexion))
+        {
+            return conexion.QueryFirstOrDefault<Planes>(consulta, new { idUsuario, idRestaurante });
+        }
+    }
 
     // Las reseñas de un lugar de la más nueva a la más vieja, salteando las primeras "desde".
     // cantidad = null trae todas las que quedan.
@@ -247,7 +463,7 @@ public static class BD
             SELECT re.Id, re.Puntaje, re.Comentario, re.Fecha, u.NombreCompleto
             FROM Reseñas re
             JOIN Usuarios u ON u.Id = re.IdUsuario
-            WHERE re.IdRestaurante = @idRestaurante
+            WHERE re.IdRestaurante = @idRestaurante AND re.Fecha <= DATEADD(hour, -24, GETDATE())
             ORDER BY re.Fecha DESC, re.Id DESC
             OFFSET @desde ROWS";
         if (cantidad != null) consulta += " FETCH NEXT @cantidad ROWS ONLY";
@@ -278,7 +494,7 @@ public static class BD
     {
         string consulta = @"
             SELECT r.Id, r.Nombre, r.Foto, c.Nombre AS Categoria, b.Nombre AS Barrio,
-                   (SELECT AVG(CAST(Puntaje AS float)) FROM Reseñas WHERE IdRestaurante = r.Id) AS Puntaje,
+                   (SELECT AVG(CAST(Puntaje AS float)) FROM Reseñas WHERE IdRestaurante = r.Id AND Fecha <= DATEADD(hour, -24, GETDATE())) AS Puntaje,
                    CAST(1 AS bit) AS EsFavorito
             FROM Favoritos f
             JOIN Restaurantes r ON r.Id = f.IdRestaurante

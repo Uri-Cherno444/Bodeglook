@@ -20,24 +20,6 @@
     position: absolute;
     top: 32px;
     left: 64px;
-    width: 44px;
-    height: 44px;
-    border-radius: 22px;
-    background: var(--blanco);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.detalle-volver:hover {
-    transform: translateX(-2px);
-    box-shadow: var(--sombra-hover);
-}
-
-.detalle-volver:focus-visible {
-    outline: 2px solid var(--naranja);
-    outline-offset: 2px;
 }
 
 /* Puntaje y corazón arriba a la derecha */
@@ -150,21 +132,306 @@
     display: block;
 }
 
-/* ---------- Dejar una reseña ---------- */
+/* ---------- Dejar una reseña (botón que abre el modal 04b) ---------- */
 
 .dejar-resena {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     gap: 16px;
-    padding: 28px;
-    border-radius: 20px;
-    background: var(--crema);
 }
 
-.dejar-resena h2 {
+/* ---------- 04b · Modal "Dejar una reseña" ---------- */
+
+.modal-resena {
+    width: min(760px, calc(100% - 32px));
+    max-height: calc(100% - 32px);
+    padding: 36px 40px;
+    border: 1px solid var(--linea);
+    border-radius: 24px;
+    background: var(--blanco);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+    color: var(--negro);
+}
+
+.modal-resena::backdrop {
+    background: rgba(0, 0, 0, 0.45);
+}
+
+.modal-resena[open] {
+    animation: aparecer 0.25s ease;
+}
+
+.modal-resena form {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 26px;
+}
+
+.modal-resena-encabezado {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.modal-resena-encabezado h2 {
     margin: 0;
-    font-size: 24px;
+    font-size: 36px;
+}
+
+.modal-resena-lugar {
+    margin: 6px 0 0;
+    font-size: 16px;
+    color: var(--gris-texto);
+}
+
+/* La X: círculo naranja suave */
+.boton-cerrar-modal {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 20px;
+    background: var(--naranja-suave);
+    color: var(--naranja);
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.boton-cerrar-modal:hover {
+    transform: rotate(90deg);
+}
+
+.chip-verificada {
+    padding: 8px 14px;
+    background: var(--verde-suave);
+    color: var(--verde);
+}
+
+/* Cada dimensión: título y subtítulo a la izquierda, notas del 1 al 5 a la derecha */
+.dimensiones {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.dimension {
+    margin: 0;
+    padding: 16px 0;
+    border: none;
+    border-top: 1px solid var(--linea);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+}
+
+.dimension:first-child {
+    border-top: none;
+}
+
+/* La legend va adentro del flex como un bloque más */
+.dimension-textos {
+    float: left;
+    padding: 0;
+    width: 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.dimension-titulo {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.dimension-subtitulo {
+    font-size: 14px;
+    line-height: 20px;
+    color: var(--gris-texto);
+}
+
+.notas {
+    display: flex;
+    gap: 8px;
+}
+
+.nota input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.nota span {
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--linea);
+    border-radius: 20px;
+    background: var(--blanco);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.nota span:hover {
+    border-color: var(--naranja);
+}
+
+.nota input:checked + span {
+    background: var(--naranja);
+    border-color: var(--naranja);
+    color: var(--blanco);
+}
+
+.nota input:focus-visible + span {
+    outline: 2px solid var(--naranja);
+    outline-offset: 2px;
+}
+
+.puntaje-general {
+    width: 100%;
+    padding: 16px 20px;
+    border: 1px solid var(--linea);
+    border-radius: 12px;
+    background: var(--crema);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+}
+
+.puntaje-general p {
+    margin: 0;
+}
+
+.puntaje-general-titulo {
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.puntaje-general-texto {
+    margin-top: 2px !important;
+    font-size: 14px;
+    color: var(--gris-texto);
+}
+
+.puntaje-general-valor {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--naranja);
+}
+
+.modal-resena .campo textarea {
+    height: 96px;
+    border-color: var(--linea);
+    border-radius: 10px;
+}
+
+.como-fue {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    border: none;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.como-fue legend {
+    margin-bottom: 12px;
+    padding: 0;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.opcion-visita {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    cursor: pointer;
+}
+
+.opcion-visita input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Sin marcar: círculo con borde. Marcado: el ícono del Figma. */
+.radio-chico {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    border: 2px solid var(--linea);
+    border-radius: 12px;
+    background: var(--blanco);
+}
+
+.radio-chico img {
+    display: none;
+}
+
+.opcion-visita input:checked + .radio-chico {
+    border: none;
+}
+
+.opcion-visita input:checked + .radio-chico img {
+    display: block;
+}
+
+.opcion-visita input:focus-visible + .radio-chico {
+    outline: 2px solid var(--naranja);
+    outline-offset: 2px;
+}
+
+.opcion-visita-textos {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.opcion-visita-titulo {
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.opcion-visita-texto {
+    font-size: 14px;
+    line-height: 20px;
+    color: var(--gris-texto);
+}
+
+.modal-resena-nota {
+    margin: 0;
+    font-size: 14px;
+    line-height: 20px;
+    color: var(--gris-texto);
+}
+
+.modal-resena .aviso {
+    width: 100%;
+}
+
+.modal-resena-botones {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.modal-resena-botones .boton {
+    height: 53px;
+    padding: 0 32px;
 }
 
 /* ---------- Reseñas de la comunidad ---------- */
@@ -275,6 +542,23 @@
 
     .detalle-contenido {
         padding: 24px 16px 48px;
+    }
+
+    .modal-resena {
+        padding: 24px 20px;
+    }
+
+    .modal-resena-encabezado h2 {
+        font-size: 28px;
+    }
+
+    .dimension {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .dimension-textos {
+        width: auto;
     }
 
     .detalle-titulo h1 {

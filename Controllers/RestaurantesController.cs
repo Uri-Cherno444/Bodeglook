@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Bodeglook.Models;
@@ -9,6 +10,10 @@ public class RestaurantesController : Controller
     // Reseñas que se muestran al entrar; "Ver las N" carga el resto
     private const int ResenasIniciales = 3;
 
+    // 05 · Descubrir: 5 resultados por página y las últimas 3 búsquedas
+    private const int ResultadosPorPagina = 5;
+    private const int BusquedasRecientes = 3;
+
     // 04 · Detalle + Reseña (privada)
     public IActionResult Detalle(int id)
     {
@@ -19,6 +24,8 @@ public class RestaurantesController : Controller
         if (detalle == null) return NotFound();
 
         ViewBag.Resenas = BD.ObtenerResenasDeRestaurante(id, 0, ResenasIniciales);
+        ViewBag.YaReseno = BD.YaReseno(usuario.Id, id);
+        ViewBag.Visita = BD.ObtenerVisitaVerificada(usuario.Id, id);
         return View(detalle);
     }
 
@@ -35,39 +42,56 @@ public class RestaurantesController : Controller
         return Json(resenas);
     }
 
-    // La llama "Enviar reseña" con fetch. Recibe { idRestaurante, puntaje, comentario }.
-    // Devuelve la reseña nueva y el promedio y la cantidad actualizados.
+    // La llama "Publicar reseña" del modal 04b con fetch. Recibe NuevaResena.
+    // Devuelve { ok, mensaje } si no se puede guardar, o { ok, publicada, ... } si se guardó.
+    // Fecha de la visita: la del plan confirmado ("Visita verificada") o, si no hay, ahora.
+    // La reseña se publica 24 horas después de esa fecha.
     [HttpPost]
-    public IActionResult DejarResena([FromBody] Reseñas datos)
+    public IActionResult DejarResena([FromBody] NuevaResena datos)
     {
         if (HttpContext.Session.GetString("usuario") == null) return Unauthorized();
-        if (datos.IdRestaurante == null || !BD.ExisteRestaurante(datos.IdRestaurante.Value))
-            return Json(new { ok = false });
-        if (datos.Puntaje == null || datos.Puntaje < 1 || datos.Puntaje > 5)
-            return Json(new { ok = false });
+        if (!BD.ExisteRestaurante(datos.IdRestaurante)) return Json(new { ok = false, mensaje = "Ese lugar no existe." });
+
+        int[] puntajes = { datos.Comida, datos.Ambiente, datos.Atencion, datos.Precio };
+        if (puntajes.Any(p => p < 1 || p > 5))
+            return Json(new { ok = false, mensaje = "Elegí un puntaje del 1 al 5 en Comida, Ambiente, Atención y Precio y valor." });
+
+        // La base no tiene dónde marcar los canjes: sin esa marca sumarían al puntaje, así que no se publican
+        if (datos.EsCanje)
+            return Json(new { ok = false, mensaje = "Por ahora no se pueden publicar reseñas de invitaciones o canjes." });
 
         Usuarios usuario = UsuarioDeSesion();
+        if (BD.YaReseno(usuario.Id, datos.IdRestaurante))
+            return Json(new { ok = false, mensaje = "Ya dejaste una reseña de este lugar." });
 
+        Planes? visita = BD.ObtenerVisitaVerificada(usuario.Id, datos.IdRestaurante);
+        DateTime fechaVisita = visita?.FechaSalida ?? DateTime.Now;
+
+        // En la tabla entra un entero: se guarda el promedio de los cuatro, redondeado
         Reseñas nueva = new Reseñas();
-        nueva.Puntaje = datos.Puntaje;
+        nueva.Puntaje = (int)Math.Round(puntajes.Average(), MidpointRounding.AwayFromZero);
         nueva.Comentario = string.IsNullOrWhiteSpace(datos.Comentario) ? null : datos.Comentario.Trim();
-        nueva.Fecha = DateTime.Now;
+        nueva.Fecha = fechaVisita;
         nueva.IdUsuario = usuario.Id;
         nueva.IdRestaurante = datos.IdRestaurante;
         nueva.Id = BD.GuardarResena(nueva);
 
-        // Para la tarjeta de la lista: el nombre sale de la sesión
+        bool publicada = fechaVisita <= DateTime.Now.AddHours(-24);
+        if (!publicada) return Json(new { ok = true, publicada = false });
+
+        // Ya pasaron 24 horas de la visita: se muestra enseguida. El nombre sale de la sesión.
         ResenaComunidad tarjeta = new ResenaComunidad();
         tarjeta.Id = nueva.Id;
         tarjeta.Puntaje = nueva.Puntaje.Value;
         tarjeta.Comentario = nueva.Comentario;
-        tarjeta.Fecha = nueva.Fecha.Value;
+        tarjeta.Fecha = fechaVisita;
         tarjeta.NombreCompleto = usuario.NombreCompleto;
 
-        DetalleRestaurante puntaje = BD.ObtenerPuntajeRestaurante(datos.IdRestaurante.Value);
+        DetalleRestaurante puntaje = BD.ObtenerPuntajeRestaurante(datos.IdRestaurante);
         return Json(new
         {
             ok = true,
+            publicada = true,
             resena = ResenaParaJson(tarjeta),
             puntaje = puntaje.TextoPuntaje(),
             cantidad = puntaje.CantidadResenas,
@@ -75,13 +99,68 @@ public class RestaurantesController : Controller
         });
     }
 
-    // Descubrir todavía no está hecho
-    public IActionResult Descubrir()
+    // 05 · Descubrir Restaurantes (privada). q viene del buscador del header o de un link.
+    // Los resultados los pide descubrir.js con fetch a /Restaurantes/Resultados.
+    public IActionResult Descubrir(string? q)
     {
         if (HttpContext.Session.GetString("usuario") == null) return RedirectToAction("IniciarSesion", "Cuenta");
 
-        ViewData["Title"] = "Descubrir";
-        ViewData["Pestaña"] = "Descubrir";
+        ViewBag.Texto = (q ?? "").Trim();
+        ViewBag.Recientes = BD.ObtenerBusquedasRecientes(UsuarioDeSesion().Id, BusquedasRecientes);
+        return View();
+    }
+
+    // La llama descubrir.js con fetch al buscar y al cambiar de página.
+    // Devuelve { pagina, totalPaginas, resultados, recientes }. Cada búsqueda nueva (pagina 1 con texto) se guarda.
+    public IActionResult Resultados(string? texto, int pagina)
+    {
+        if (HttpContext.Session.GetString("usuario") == null) return Unauthorized();
+
+        Usuarios usuario = UsuarioDeSesion();
+        texto = (texto ?? "").Trim();
+        if (texto.Length > 100) texto = texto.Substring(0, 100);
+
+        // "Solo lo apto para mí" del onboarding (queda en la sesión)
+        bool soloApto = HttpContext.Session.GetString("soloApto") == "1";
+
+        int total = BD.ContarRestaurantes(texto, usuario.Id, soloApto);
+        int totalPaginas = Math.Max(1, (int)Math.Ceiling(total / (double)ResultadosPorPagina));
+        if (pagina < 1) pagina = 1;
+        if (pagina > totalPaginas) pagina = totalPaginas;
+
+        if (pagina == 1 && texto != "") BD.GuardarBusqueda(usuario.Id, texto);
+
+        List<object> resultados = new List<object>();
+        foreach (TarjetaRestaurante lugar in BD.BuscarRestaurantes(texto, usuario.Id, soloApto, (pagina - 1) * ResultadosPorPagina, ResultadosPorPagina))
+        {
+            resultados.Add(new
+            {
+                id = lugar.Id,
+                nombre = lugar.Nombre,
+                foto = lugar.Foto,
+                categoria = lugar.Categoria,
+                barrio = lugar.Barrio,
+                puntaje = lugar.Puntaje == null ? null : lugar.Puntaje.Value.ToString("0.0", CultureInfo.InvariantCulture),
+                esFavorito = lugar.EsFavorito,
+                esPro = lugar.EsPro,
+                latitud = lugar.Latitud,
+                longitud = lugar.Longitud
+            });
+        }
+
+        return Json(new
+        {
+            pagina,
+            totalPaginas,
+            resultados,
+            recientes = BD.ObtenerBusquedasRecientes(usuario.Id, BusquedasRecientes)
+        });
+    }
+
+    // Registro de restaurante (pública) todavía no está hecho. Llegan desde la Landing y desde Iniciar sesión.
+    public IActionResult Registro()
+    {
+        ViewData["Title"] = "Registro de restaurante";
         return View("NoDesarrollado");
     }
 

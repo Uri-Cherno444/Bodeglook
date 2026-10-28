@@ -1,0 +1,247 @@
+/* 02c · Onboarding · Gustos y 02d · Filtro dietario */
+
+.onboarding {
+    padding: 56px 16px 80px;
+    display: flex;
+    justify-content: center;
+}
+
+/* La tarjeta queda centrada y la flecha a su izquierda */
+.onboarding-contenedor {
+    position: relative;
+    width: 100%;
+    max-width: 920px;
+}
+
+.onboarding-volver {
+    position: absolute;
+    top: 1px;
+    left: -80px;
+}
+
+.tarjeta-onboarding {
+    background: var(--blanco);
+    border: 1px solid var(--linea);
+    border-radius: 24px;
+    padding: 48px 56px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+}
+
+/* ---------- Progreso ---------- */
+
+.progreso {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.progreso-texto {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--naranja);
+}
+
+.progreso-barra {
+    height: 6px;
+    border-radius: 3px;
+    background: var(--arena);
+    overflow: hidden;
+}
+
+.progreso-avance {
+    height: 100%;
+    background: var(--naranja);
+}
+
+/* ---------- Título ---------- */
+
+.onboarding-titulo {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.onboarding-titulo h1 {
+    margin: 0;
+    font-size: 40px;
+    line-height: 48px;
+}
+
+.onboarding-titulo p {
+    margin: 0;
+    font-size: 18px;
+    line-height: 28px;
+    color: var(--gris-texto);
+}
+
+/* En el paso 2 la pregunta va más grande */
+.onboarding-titulo-pregunta {
+    gap: 10px;
+}
+
+.onboarding-titulo-pregunta p {
+    font-size: 20px;
+    line-height: 30px;
+}
+
+/* ---------- Paso 1: secciones con chips ---------- */
+
+.onboarding-seccion {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.onboarding-seccion h2 {
+    margin: 0;
+    font-size: 20px;
+}
+
+.onboarding-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+/* ---------- Paso 2: tarjetas con radio ---------- */
+
+.opciones-filtro {
+    display: flex;
+    gap: 20px;
+}
+
+.opcion-filtro {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 28px;
+    border: 1px solid var(--linea);
+    border-radius: 16px;
+    background: var(--blanco);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.opcion-filtro:hover {
+    border-color: var(--naranja);
+}
+
+/* La elegida: fondo naranja suave y borde naranja de 2px (se resta 1px de padding para que no salte) */
+.opcion-filtro:has(input:checked) {
+    padding: 27px;
+    border: 2px solid var(--naranja);
+    background: var(--naranja-suave);
+}
+
+/* El radio de verdad queda oculto: se ve el círculo de abajo */
+.opcion-filtro input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.opcion-filtro:has(input:focus-visible) {
+    outline: 2px solid var(--naranja);
+    outline-offset: 2px;
+}
+
+.opcion-filtro-titulo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.radio {
+    flex-shrink: 0;
+    width: 26px;
+    height: 26px;
+    border: 2px solid var(--linea);
+    border-radius: 13px;
+    background: var(--blanco);
+}
+
+.radio img {
+    display: none;
+}
+
+/* Marcado: se ve el ícono del Figma en lugar del círculo vacío */
+.opcion-filtro:has(input:checked) .radio {
+    border: none;
+}
+
+.opcion-filtro:has(input:checked) .radio img {
+    display: block;
+}
+
+.opcion-filtro-texto {
+    font-size: 16px;
+    line-height: 24px;
+    color: var(--gris-texto);
+}
+
+.onboarding-nota {
+    margin: 0;
+    font-size: 14px;
+    line-height: 20px;
+    color: var(--gris-texto);
+}
+
+/* ---------- Botones de abajo ---------- */
+
+.onboarding-acciones {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
+}
+
+.onboarding-omitir {
+    margin-right: 12px;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--gris-texto);
+    text-decoration: none;
+}
+
+.onboarding-omitir:hover {
+    color: var(--negro);
+}
+
+/* ---------- Pantallas chicas ---------- */
+
+@media (max-width: 1100px) {
+    /* No entra la flecha al costado: va arriba de la tarjeta */
+    .onboarding-volver {
+        position: static;
+        margin-bottom: 16px;
+    }
+}
+
+@media (max-width: 700px) {
+    .onboarding {
+        padding: 24px 16px 48px;
+    }
+
+    .tarjeta-onboarding {
+        padding: 32px 20px;
+    }
+
+    .onboarding-titulo h1 {
+        font-size: 32px;
+        line-height: 40px;
+    }
+
+    .opciones-filtro {
+        flex-direction: column;
+    }
+
+    .opcion-filtro {
+        flex: none;
+    }
+}

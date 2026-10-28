@@ -228,6 +228,89 @@
     gap: 16px;
 }
 
+/* ---------- Para restaurantes ---------- */
+
+.para-restaurantes {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 56px;
+}
+
+.planes-restaurante {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+}
+
+.tarjeta-precio {
+    flex: 0 1 520px;
+    min-height: 593px;
+    padding: 40px;
+    gap: 24px;
+}
+
+.tarjeta-precio-destacada {
+    border: 2px solid var(--naranja);
+}
+
+.tarjeta-precio-encabezado {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.precio {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    white-space: nowrap;
+}
+
+.precio-monto {
+    font-size: 48px;
+    line-height: 56px;
+    font-weight: 700;
+}
+
+.tarjeta-precio-destacada .precio-monto {
+    color: var(--naranja);
+}
+
+.precio-periodo {
+    font-size: 18px;
+    line-height: 28px;
+    color: var(--gris-texto);
+}
+
+.lista-beneficios {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.lista-beneficios li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 18px;
+    line-height: 26px;
+}
+
+.lista-beneficios img {
+    flex-shrink: 0;
+}
+
+/* El botón queda abajo de todo, como el espaciador del Figma */
+.tarjeta-precio .boton {
+    margin-top: auto;
+}
+
 /* ---------- Llamado final ---------- */
 
 .llamado-final {
@@ -286,6 +369,7 @@
     }
 
     .fila-tarjetas,
+    .planes-restaurante,
     .lugares-encabezado,
     .llamado-final {
         flex-direction: column;
@@ -294,6 +378,20 @@
 
     .llamado-final {
         padding: 40px 24px;
+    }
+
+    .planes-restaurante {
+        align-items: stretch;
+    }
+
+    .tarjeta-precio {
+        flex: none;
+        min-height: 0;
+        padding: 32px 24px;
+    }
+
+    .tarjeta-precio .boton {
+        margin-top: 16px;
     }
 
     .encabezado-seccion h2,

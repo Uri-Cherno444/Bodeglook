@@ -31,15 +31,16 @@
                     <img src="~/img/logo-pin.svg" width="29" height="44" alt="" />
                     Bodeglook
                 </a>
-                <div class="campo buscador">
-                    <input type="text" placeholder="Buscar restaurantes o bodegas" />
-                </div>
+                @* Al apretar Enter lleva a 05 · Descubrir con lo que escribió *@
+                <form class="campo buscador" action="/Restaurantes/Descubrir" method="get" role="search">
+                    <input type="search" name="q" placeholder="Buscar restaurantes o bodegas" aria-label="Buscar restaurantes o bodegas" value="@(pestaña == "Descubrir" ? Context.Request.Query["q"].ToString() : "")" />
+                </form>
             </div>
             <div class="encabezado-derecha">
                 <nav class="navegacion">
                     <a class="@(pestaña == "Inicio" ? "activa" : "")" href="/Home/Inicio">Inicio</a>
                     <a class="@(pestaña == "Descubrir" ? "activa" : "")" href="/Restaurantes/Descubrir">Descubrir</a>
-                    <a class="@(pestaña == "MisPlanes" ? "activa" : "")" href="/Planes/MisPlanes">Mis Planes</a>
+                    <a class="@(pestaña == "MisChats" ? "activa" : "")" href="/Grupos">Mis Chats</a>
                     <a class="@(pestaña == "Perfil" ? "activa" : "")" href="/Perfil">Perfil</a>
                 </nav>
                 <img src="~/img/icono-notificacion.svg" width="24" height="24" alt="Notificaciones" />
@@ -56,7 +57,7 @@
                         </div>
                         <div class="menu-usuario-divisor"></div>
                         <a class="menu-usuario-opcion" href="/Perfil">Mi perfil</a>
-                        <a class="menu-usuario-opcion" href="/Planes/MisPlanes">Mis Planes</a>
+                        <a class="menu-usuario-opcion" href="/Grupos">Mis Chats</a>
                         <button type="button" class="menu-usuario-opcion menu-usuario-salir" id="botonCerrarSesion">Cerrar sesión</button>
                     </div>
                 </div>
@@ -110,9 +111,9 @@
         <div class="pie-columnas">
             <div class="pie-columna">
                 <strong>Explorar</strong>
-                <span>Descubrir</span>
-                <a href="/Planes/MisPlanes">Mis Planes</a>
-                <span>Mi Perfil</span>
+                <a href="/Restaurantes/Descubrir">Descubrir</a>
+                <a href="/Grupos">Mis Chats</a>
+                <a href="/Perfil">Mi Perfil</a>
             </div>
             <div class="pie-columna">
                 <strong>Bodeglook</strong>

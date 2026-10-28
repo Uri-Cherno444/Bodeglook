@@ -19,7 +19,7 @@ Repo: Uri-Cherno444/Bodeglook
 
 ## Estructura
 
-- Solo `Controllers/`, `Models/`, `Views/` y `wwwroot/`, más `BD.sql` en la raíz.
+- Solo `Controllers/`, `Models/`, `Views/` y `wwwroot/`, más `bodeglook.sql` en la raíz.
 - No crear carpetas nuevas (Componentes, Helpers, Filtros, Services, etc.) sin preguntar.
 - El acceso a datos va en una clase `BD` estática dentro de `Models/`, con un método por consulta usando Dapper.
 - La connection string está en `appsettings.json` (`ConnectionStrings:Bodeglook`), nunca escrita en `BD.cs`.

@@ -81,6 +81,17 @@
     color: var(--blanco);
 }
 
+/* Blanco con borde fino ("Atrás" del onboarding) */
+.boton-blanco {
+    background: var(--blanco);
+    border: 1px solid var(--linea);
+    color: var(--negro);
+}
+
+.boton-blanco:hover {
+    box-shadow: var(--sombra-hover);
+}
+
 .boton-negro:hover {
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
 }
@@ -459,6 +470,34 @@
 
 .boton-icono:hover {
     transform: rotate(90deg);
+}
+
+/* Botón redondo con flecha para volver (Detalle e Iniciar sesión) */
+.boton-volver {
+    width: 44px;
+    height: 44px;
+    border-radius: 22px;
+    background: var(--blanco);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.boton-volver:hover {
+    transform: translateX(-2px);
+    box-shadow: var(--sombra-hover);
+}
+
+.boton-volver:focus-visible {
+    outline: 2px solid var(--naranja);
+    outline-offset: 2px;
+}
+
+/* Sobre fondo blanco (onboarding) va en naranja suave con borde */
+.boton-volver-suave {
+    background: var(--naranja-suave);
+    border: 1px solid var(--linea);
 }
 
 /* ---------- Chips ---------- */
@@ -847,6 +886,95 @@
 .chip-activo {
     background: var(--naranja);
     color: var(--blanco);
+}
+
+/* ---------- Paginación (Pagination del UI Kit) ---------- */
+/* Flechas grises, números en gris claro y la página actual en un cuadrado naranja */
+
+.paginacion {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.paginacion-numero,
+.paginacion-flecha {
+    min-width: 14px;
+    padding: 0;
+    border: none;
+    background: none;
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 24px;
+    color: var(--gris-claro);
+    cursor: pointer;
+}
+
+.paginacion-numero:hover {
+    color: var(--negro);
+}
+
+.paginacion-numero[aria-current="page"] {
+    width: 40px;
+    height: 40px;
+    border-radius: 7px;
+    background: var(--naranja);
+    color: var(--blanco);
+    cursor: default;
+}
+
+.paginacion-flecha {
+    display: flex;
+    align-items: center;
+    height: 24px;
+}
+
+.paginacion-flecha:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
+.paginacion-puntos {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--gris-claro);
+}
+
+.paginacion-numero:focus-visible,
+.paginacion-flecha:focus-visible {
+    outline: 2px solid var(--naranja);
+    outline-offset: 2px;
+}
+
+/* ---------- Chips seleccionables (onboarding) ---------- */
+/* Botón con aria-pressed: sin elegir va blanco con borde, elegido va naranja */
+
+.chip-opcion {
+    padding: 9px 16px;
+    border: 1px solid var(--linea);
+    border-radius: 24px;
+    background: var(--blanco);
+    color: var(--negro);
+    font-family: inherit;
+    font-size: 15px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.chip-opcion:hover {
+    border-color: var(--naranja);
+}
+
+.chip-opcion[aria-pressed="true"] {
+    background: var(--naranja);
+    border-color: var(--naranja);
+    color: var(--blanco);
+}
+
+.chip-opcion:focus-visible {
+    outline: 2px solid var(--naranja);
+    outline-offset: 2px;
 }
 
 /* ---------- Footer ---------- */

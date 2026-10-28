@@ -1,0 +1,72 @@
+@{
+    ViewData["Title"] = "Una última pregunta";
+    bool soloApto = ViewBag.SoloApto;
+}
+
+@section Estilos {
+    <link rel="stylesheet" href="~/css/onboarding.css" asp-append-version="true" />
+}
+
+@* 02d · Filtro dietario (paso 2 de 2). Solo se llega si en el paso 1 marcó alguna restricción. *@
+<section class="onboarding">
+    <div class="onboarding-contenedor">
+        <a class="boton-volver boton-volver-suave onboarding-volver" href="/Cuenta/Gustos" aria-label="Volver al paso 1">
+            <img src="~/img/icono-volver.svg" width="22" height="22" alt="" />
+        </a>
+
+        <div class="tarjeta-onboarding">
+            <div class="progreso">
+                <span class="progreso-texto">Paso 2 de 2</span>
+                <div class="progreso-barra"><div class="progreso-avance" style="width: 100%"></div></div>
+            </div>
+
+            <div class="onboarding-titulo onboarding-titulo-pregunta">
+                <h1>Una última pregunta</h1>
+                <p>Marcaste @ViewBag.TextoRestricciones. ¿Querés ver solo lugares y reseñas aptos para vos, o preferís ver todo?</p>
+            </div>
+
+            <div class="aviso" id="aviso" hidden>
+                <span class="aviso-texto" id="avisoTexto"></span>
+                <button type="button" class="aviso-cerrar" aria-label="Cerrar aviso">
+                    <img src="~/img/icono-cerrar-aviso.svg" width="24" height="24" alt="" />
+                </button>
+            </div>
+
+            <div class="opciones-filtro">
+                <label class="opcion-filtro">
+                    <input type="radio" name="filtro" value="apto" checked="@soloApto" />
+                    <span class="opcion-filtro-titulo">
+                        <span class="radio">
+                            <img src="~/img/icono-radio-marcado.svg" width="26" height="26" alt="" />
+                        </span>
+                        Solo lo apto para mí
+                    </span>
+                    <span class="opcion-filtro-texto">El inicio, el explorador, las búsquedas y las sugerencias de planes se filtran por tu dieta.</span>
+                </label>
+                <label class="opcion-filtro">
+                    <input type="radio" name="filtro" value="todo" checked="@(!soloApto)" />
+                    <span class="opcion-filtro-titulo">
+                        <span class="radio">
+                            <img src="~/img/icono-radio-marcado.svg" width="26" height="26" alt="" />
+                        </span>
+                        Ver todo
+                    </span>
+                    <span class="opcion-filtro-texto">Te mostramos todos los lugares y marcamos cuáles son aptos para vos.</span>
+                </label>
+            </div>
+
+            <p class="onboarding-nota">Podés cambiarlo cuando quieras desde tu perfil, o desactivarlo solo por una sesión.</p>
+
+            <div class="onboarding-acciones">
+                <a class="boton boton-blanco" href="/Cuenta/Gustos">Atrás</a>
+                <button type="button" class="boton boton-primario" id="botonEntrar">Entrar a Bodeglook</button>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script src="~/js/cuenta.js" asp-append-version="true"></script>
+    <script src="~/js/onboarding.js" asp-append-version="true"></script>
+    <script>prepararFiltroDietario();</script>
+}

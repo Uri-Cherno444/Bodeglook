@@ -6,6 +6,7 @@
 }
 
 .cuenta-marca {
+    position: relative;
     flex: 0 0 860px;
     background: var(--negro);
     padding: 0 150px;
@@ -97,6 +98,44 @@
     text-decoration: none;
 }
 
+/* 02b · Crear cuenta: formulario un poco más ancho y más apretado que el de Iniciar sesión */
+.cuenta-formulario-registro {
+    width: 340px;
+    gap: 14px;
+}
+
+.cuenta-formulario-registro h1 {
+    font-size: 40px;
+}
+
+.cuenta-formulario-registro .cuenta-subtitulo {
+    font-size: 16px;
+    line-height: 24px;
+}
+
+.cuenta-legal {
+    margin: 0;
+    font-size: 12px;
+    line-height: 18px;
+    color: var(--gris-texto);
+}
+
+.cuenta-pie-registro {
+    font-size: 15px;
+}
+
+/* "¿Tenés un restaurante?" va un poco más chico */
+.cuenta-pie-chico {
+    font-size: 14px;
+}
+
+/* Botón para volver a la Landing, arriba a la izquierda del panel negro */
+.cuenta-volver {
+    position: absolute;
+    top: 48px;
+    left: 64px;
+}
+
 /* El logo grande flota apenas */
 .cuenta-logo img {
     animation: flotar 4s ease-in-out infinite;
@@ -134,6 +173,10 @@
         width: 100%;
         max-width: 300px;
     }
+
+    .cuenta-formulario-registro {
+        max-width: 340px;
+    }
 }
 
 @media (max-width: 1200px) {
@@ -145,6 +188,12 @@
     .cuenta-marca {
         flex: none;
         padding: 48px 16px;
+    }
+
+    /* En celular va arriba de todo, en el flujo de la columna */
+    .cuenta-volver {
+        position: static;
+        align-self: flex-start;
     }
 
     .cuenta-logo img {

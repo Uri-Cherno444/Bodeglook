@@ -15,4 +15,7 @@ public class Restaurantes
     public string? Foto { get; set; }
     public int? IdBarrio { get; set; }
     public int? IdCategoria { get; set; }
+    public bool EsPro { get; set; }
+    public decimal? Latitud { get; set; }
+    public decimal? Longitud { get; set; }
 }

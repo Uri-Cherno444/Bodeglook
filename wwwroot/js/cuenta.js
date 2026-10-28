@@ -31,7 +31,7 @@ function prepararFormulario(idFormulario, url, obtenerDatos) {
             const resultado = await respuesta.json();
 
             if (resultado.ok) {
-                window.location.href = "/Home/Inicio";
+                window.location.href = resultado.destino;
                 return;
             }
 

@@ -1,4 +1,4 @@
-// 04 · Detalle + Reseña: volver, pestañas, puntaje, dejar reseña, "Ver las N" y favoritos.
+// 04 · Detalle + Reseña: volver, pestañas, modal "Dejar una reseña" (04b), "Ver las N" y favoritos.
 // Todo se manda con fetch y se actualiza sin recargar.
 
 const detalle = document.querySelector(".detalle");
@@ -42,45 +42,6 @@ pestanas.forEach(function (pestana) {
             bloque.hidden = !bloque.dataset.pestanas.split(" ").includes(elegida);
         });
     });
-});
-
-// ---------- Barra de puntaje ----------
-
-const barraPuntaje = document.getElementById("barraPuntaje");
-const puntos = barraPuntaje.querySelectorAll(".barra-puntaje-punto");
-const etiquetaPuntaje = document.getElementById("etiquetaPuntaje");
-const puntajeInicial = 4;
-let puntajeElegido = puntajeInicial;
-
-function elegirPuntaje(puntaje) {
-    puntajeElegido = puntaje;
-    barraPuntaje.style.setProperty("--posicion", (puntaje - 1) / 4);
-
-    puntos.forEach(function (punto) {
-        const valor = Number(punto.dataset.puntaje);
-        punto.classList.toggle("pintado", valor <= puntaje);
-        punto.setAttribute("aria-checked", valor === puntaje ? "true" : "false");
-        punto.tabIndex = valor === puntaje ? 0 : -1;
-        if (valor === puntaje) etiquetaPuntaje.textContent = punto.getAttribute("aria-label");
-    });
-}
-
-puntos.forEach(function (punto) {
-    punto.addEventListener("click", function () {
-        elegirPuntaje(Number(punto.dataset.puntaje));
-    });
-});
-
-// Con las flechas del teclado también se cambia el puntaje
-barraPuntaje.addEventListener("keydown", function (evento) {
-    let nuevo = puntajeElegido;
-    if (evento.key === "ArrowRight" || evento.key === "ArrowUp") nuevo = Math.min(5, puntajeElegido + 1);
-    if (evento.key === "ArrowLeft" || evento.key === "ArrowDown") nuevo = Math.max(1, puntajeElegido - 1);
-    if (nuevo === puntajeElegido) return;
-
-    evento.preventDefault();
-    elegirPuntaje(nuevo);
-    puntos[nuevo - 1].focus();
 });
 
 // ---------- Reseñas de la comunidad ----------
@@ -149,15 +110,55 @@ botonVerResenas.addEventListener("click", async function () {
     botonVerResenas.disabled = false;
 });
 
-// ---------- Dejar una reseña ----------
+// ---------- Dejar una reseña (modal 04b) ----------
+// <dialog> se cierra solo con Escape; la X y Cancelar lo cierran a mano.
 
+const modalResena = document.getElementById("modalResena");
 const formularioResena = document.getElementById("formularioResena");
 const comentarioResena = document.getElementById("comentarioResena");
-const botonEnviarResena = document.getElementById("botonEnviarResena");
+const botonDejarResena = document.getElementById("botonDejarResena");
+const botonPublicarResena = document.getElementById("botonPublicarResena");
+const puntajeGeneral = document.getElementById("puntajeGeneral");
+const dimensiones = ["comida", "ambiente", "atencion", "precio"];
 
-function mostrarAviso(mensaje) {
-    const aviso = document.getElementById("aviso");
-    document.getElementById("avisoTexto").textContent = mensaje;
+botonDejarResena.addEventListener("click", function () {
+    modalResena.showModal();
+});
+
+document.getElementById("cerrarModalResena").addEventListener("click", function () {
+    modalResena.close();
+});
+
+document.getElementById("cancelarResena").addEventListener("click", function () {
+    modalResena.close();
+});
+
+// Clic en el fondo oscuro (fuera de la caja) también cierra
+modalResena.addEventListener("click", function (evento) {
+    if (evento.target === modalResena) modalResena.close();
+});
+
+function puntajeDe(dimension) {
+    const elegido = formularioResena.querySelector('input[name="' + dimension + '"]:checked');
+    return elegido ? Number(elegido.value) : 0;
+}
+
+// "Puntaje general": promedio de las dimensiones elegidas, con un decimal y coma ("4,0")
+function actualizarPuntajeGeneral() {
+    const elegidos = dimensiones.map(puntajeDe).filter(function (puntaje) { return puntaje > 0; });
+    if (elegidos.length === 0) {
+        puntajeGeneral.textContent = "–";
+        return;
+    }
+    const promedio = elegidos.reduce(function (suma, puntaje) { return suma + puntaje; }, 0) / elegidos.length;
+    puntajeGeneral.textContent = promedio.toFixed(1).replace(".", ",");
+}
+
+formularioResena.addEventListener("change", actualizarPuntajeGeneral);
+
+function mostrarAviso(idAviso, mensaje) {
+    const aviso = document.getElementById(idAviso);
+    document.getElementById(idAviso + "Texto").textContent = mensaje;
     aviso.hidden = false;
     // Se vuelve a poner la clase para que la animación arranque de nuevo
     aviso.classList.remove("aviso-visible");
@@ -165,8 +166,10 @@ function mostrarAviso(mensaje) {
     aviso.classList.add("aviso-visible");
 }
 
-document.querySelector(".aviso-cerrar").addEventListener("click", function () {
-    document.getElementById("aviso").hidden = true;
+document.querySelectorAll(".aviso-cerrar").forEach(function (boton) {
+    boton.addEventListener("click", function () {
+        boton.closest(".aviso").hidden = true;
+    });
 });
 
 // El puntaje aparece en el banner y al lado del nombre
@@ -182,8 +185,14 @@ function actualizarPuntaje(puntaje, textoCantidad) {
 formularioResena.addEventListener("submit", async function (evento) {
     evento.preventDefault();
     document.getElementById("aviso").hidden = true;
-    botonEnviarResena.disabled = true;
-    botonEnviarResena.classList.add("cargando");
+
+    if (dimensiones.some(function (dimension) { return puntajeDe(dimension) === 0; })) {
+        mostrarAviso("aviso", "Elegí un puntaje del 1 al 5 en Comida, Ambiente, Atención y Precio y valor.");
+        return;
+    }
+
+    botonPublicarResena.disabled = true;
+    botonPublicarResena.classList.add("cargando");
 
     try {
         const respuesta = await fetch("/Restaurantes/DejarResena", {
@@ -191,34 +200,44 @@ formularioResena.addEventListener("submit", async function (evento) {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 idRestaurante: idRestaurante,
-                puntaje: puntajeElegido,
-                comentario: comentarioResena.value
+                comida: puntajeDe("comida"),
+                ambiente: puntajeDe("ambiente"),
+                atencion: puntajeDe("atencion"),
+                precio: puntajeDe("precio"),
+                comentario: comentarioResena.value,
+                esCanje: formularioResena.querySelector('input[name="visita"]:checked').value === "canje"
             })
         });
         if (irAlLoginSiHaceFalta(respuesta)) return;
 
         const resultado = await respuesta.json();
         if (resultado.ok) {
-            // La nueva es la más reciente: va primera en la lista
-            const tarjeta = crearTarjetaResena(resultado.resena);
-            tarjeta.classList.add("resena-nueva");
-            listaResenas.prepend(tarjeta);
+            modalResena.close();
+            // Se deja una sola reseña por lugar
+            botonDejarResena.disabled = true;
+            botonDejarResena.textContent = "Ya dejaste una reseña";
 
-            cantidadResenas = resultado.cantidad;
-            actualizarVerResenas();
-            actualizarPuntaje(resultado.puntaje, resultado.textoCantidad);
+            if (resultado.publicada) {
+                // La nueva es la más reciente: va primera en la lista
+                const tarjeta = crearTarjetaResena(resultado.resena);
+                tarjeta.classList.add("resena-nueva");
+                listaResenas.prepend(tarjeta);
 
-            comentarioResena.value = "";
-            elegirPuntaje(puntajeInicial);
+                cantidadResenas = resultado.cantidad;
+                actualizarVerResenas();
+                actualizarPuntaje(resultado.puntaje, resultado.textoCantidad);
+            } else {
+                mostrarAviso("avisoDetalle", "Tu reseña se publica 24 horas después de la visita.");
+            }
         } else {
-            mostrarAviso("No se pudo guardar la reseña. Probá de nuevo.");
+            mostrarAviso("aviso", resultado.mensaje || "No se pudo guardar la reseña. Probá de nuevo.");
         }
     } catch (error) {
-        mostrarAviso("No se pudo guardar la reseña. Revisá tu conexión y probá de nuevo.");
+        mostrarAviso("aviso", "No se pudo guardar la reseña. Revisá tu conexión y probá de nuevo.");
     }
 
-    botonEnviarResena.disabled = false;
-    botonEnviarResena.classList.remove("cargando");
+    botonPublicarResena.disabled = false;
+    botonPublicarResena.classList.remove("cargando");
 });
 
 // ---------- Favoritos ----------

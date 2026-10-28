@@ -1,0 +1,92 @@
+@using Bodeglook.Models
+@{
+    ViewData["Title"] = "Contanos cómo comés";
+    List<Restricciones> restricciones = ViewBag.Restricciones;
+    List<Barrios> barrios = ViewBag.Barrios;
+    List<int> marcadas = ViewBag.Marcadas;
+}
+
+@section Estilos {
+    <link rel="stylesheet" href="~/css/onboarding.css" asp-append-version="true" />
+}
+
+@* 02c · Onboarding · Gustos (paso 1 de 2).
+   Solo se guardan las restricciones: zonas, frecuencia y con quién sale no tienen dónde guardarse en la base. *@
+<section class="onboarding">
+    <div class="onboarding-contenedor">
+        @* El paso anterior es Crear cuenta, pero la cuenta ya está creada: vuelve a Inicio, igual que "Omitir por ahora" *@
+        <a class="boton-volver boton-volver-suave onboarding-volver" href="/Home/Inicio" aria-label="Volver">
+            <img src="~/img/icono-volver.svg" width="22" height="22" alt="" />
+        </a>
+
+        <div class="tarjeta-onboarding">
+            <div class="progreso">
+                <span class="progreso-texto">Paso 1 de 2</span>
+                <div class="progreso-barra"><div class="progreso-avance" style="width: 50%"></div></div>
+            </div>
+
+            <div class="onboarding-titulo">
+                <h1>Contanos cómo comés</h1>
+                <p>Con esto personalizamos tu inicio y los lugares que te mostramos. Podés cambiarlo cuando quieras.</p>
+            </div>
+
+            <div class="aviso" id="aviso" hidden>
+                <span class="aviso-texto" id="avisoTexto"></span>
+                <button type="button" class="aviso-cerrar" aria-label="Cerrar aviso">
+                    <img src="~/img/icono-cerrar-aviso.svg" width="24" height="24" alt="" />
+                </button>
+            </div>
+
+            <div class="onboarding-seccion">
+                <h2 id="tituloRestricciones">Restricciones dietarias</h2>
+                <div class="onboarding-chips" id="chipsRestricciones" data-tipo="varias" role="group" aria-labelledby="tituloRestricciones">
+                    @foreach (Restricciones restriccion in restricciones)
+                    {
+                        <button type="button" class="chip chip-opcion" data-id="@restriccion.Id" aria-pressed="@(marcadas.Contains(restriccion.Id) ? "true" : "false")">@restriccion.Nombre</button>
+                    }
+                    <button type="button" class="chip chip-opcion" data-ninguna aria-pressed="false">Ninguna</button>
+                </div>
+            </div>
+
+            <div class="onboarding-seccion">
+                <h2 id="tituloZonas">Zonas que te interesan</h2>
+                <div class="onboarding-chips" data-tipo="varias" role="group" aria-labelledby="tituloZonas">
+                    @foreach (Barrios barrio in barrios)
+                    {
+                        <button type="button" class="chip chip-opcion" data-id="@barrio.Id" aria-pressed="false">@barrio.Nombre</button>
+                    }
+                </div>
+            </div>
+
+            <div class="onboarding-seccion">
+                <h2 id="tituloFrecuencia">¿Con qué frecuencia salís a comer?</h2>
+                <div class="onboarding-chips" data-tipo="una" role="group" aria-labelledby="tituloFrecuencia">
+                    <button type="button" class="chip chip-opcion" aria-pressed="false">Varias veces por semana</button>
+                    <button type="button" class="chip chip-opcion" aria-pressed="false">Una vez por semana</button>
+                    <button type="button" class="chip chip-opcion" aria-pressed="false">Cada tanto</button>
+                </div>
+            </div>
+
+            <div class="onboarding-seccion">
+                <h2 id="tituloCompania">¿Con quién salís?</h2>
+                <div class="onboarding-chips" data-tipo="varias" role="group" aria-labelledby="tituloCompania">
+                    <button type="button" class="chip chip-opcion" aria-pressed="false">Amigos</button>
+                    <button type="button" class="chip chip-opcion" aria-pressed="false">Pareja</button>
+                    <button type="button" class="chip chip-opcion" aria-pressed="false">Familia</button>
+                    <button type="button" class="chip chip-opcion" aria-pressed="false">Compañeros de trabajo</button>
+                </div>
+            </div>
+
+            <div class="onboarding-acciones">
+                <a class="onboarding-omitir" href="/Home/Inicio">Omitir por ahora</a>
+                <button type="button" class="boton boton-primario" id="botonSeguir">Seguir</button>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script src="~/js/cuenta.js" asp-append-version="true"></script>
+    <script src="~/js/onboarding.js" asp-append-version="true"></script>
+    <script>prepararGustos();</script>
+}

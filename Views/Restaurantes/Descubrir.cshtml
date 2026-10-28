@@ -1,0 +1,103 @@
+@{
+    ViewData["Title"] = "Descubrir";
+    ViewData["Pestaña"] = "Descubrir";
+    List<string> recientes = ViewBag.Recientes;
+}
+
+@section Estilos {
+    @* Mapa: Leaflet con los mapas de OpenStreetMap *@
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+    <link rel="stylesheet" href="~/css/descubrir.css" asp-append-version="true" />
+}
+
+@* 05 · Descubrir Restaurantes *@
+<div class="descubrir">
+    <section class="descubrir-encabezado">
+        <a class="boton-volver" href="/Home/Inicio" aria-label="Volver">
+            <img src="~/img/icono-volver.svg" width="22" height="22" alt="" />
+        </a>
+
+        <div class="descubrir-buscador">
+            <h1>¿A dónde querés ir?</h1>
+            <p class="descubrir-subtitulo">Buscá un restaurante o bodega por su nombre, barrio o tipo de comida.</p>
+
+            <form class="barra-busqueda" id="formBusqueda" role="search">
+                <img src="~/img/icono-buscar-barra.svg" width="24" height="24" alt="" />
+                <input type="search" id="textoBusqueda" value="@ViewBag.Texto" placeholder="Ej: Bodega Los Alamos, parrilla en Palermo, sushi…" aria-label="Buscar restaurantes o bodegas" />
+                <button type="submit" class="boton boton-primario boton-grande">Buscar</button>
+            </form>
+
+            <div class="busquedas-recientes" id="busquedasRecientes" hidden="@(recientes.Count == 0)">
+                <span class="busquedas-recientes-titulo">Búsquedas recientes:</span>
+                <div class="busquedas-recientes-chips" id="chipsRecientes">
+                    @foreach (string texto in recientes)
+                    {
+                        <button type="button" class="chip chip-crema chip-filtro chip-reciente">@texto</button>
+                    }
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="resultados-y-mapa">
+        <section class="resultados">
+            <div class="resultados-encabezado">
+                <h2>Lugares cerca tuyo</h2>
+                @* Por ahora el único orden: el Figma no muestra las otras opciones del desplegable *@
+                <span class="resultados-orden">
+                    Mejor puntuados
+                    <img src="~/img/icono-chevron.svg" width="16" height="16" alt="" />
+                </span>
+            </div>
+
+            @* Las tarjetas las arma descubrir.js con lo que devuelve /Restaurantes/Resultados *@
+            <div class="lista-resultados" id="listaResultados" aria-live="polite"></div>
+            <p class="sin-resultados" id="sinResultados" hidden>No encontramos lugares con esa búsqueda.</p>
+
+            <nav class="paginacion" id="paginacion" aria-label="Páginas de resultados"></nav>
+        </section>
+
+        <div class="mapa" id="mapa" role="region" aria-label="Mapa de resultados"></div>
+    </div>
+</div>
+
+@* Molde de cada resultado. El nombre es el link al Detalle y se estira a toda la tarjeta;
+   el corazón es un botón aparte, por encima (igual que en las tarjetas de Inicio). *@
+<template id="plantillaResultado">
+    <article class="resultado">
+        <img class="resultado-foto" src="" alt="" />
+        <div class="resultado-textos">
+            <span class="chip chip-naranja chip-recomendado">Recomendado</span>
+            <a class="resultado-nombre" href=""></a>
+            <span class="resultado-categoria"></span>
+            <span class="resultado-ubicacion">
+                <img src="~/img/icono-pin-chico.svg" width="14" height="14" alt="" />
+                <span class="resultado-barrio"></span>
+            </span>
+        </div>
+        <button type="button" class="resultado-favorito boton-favorito" aria-pressed="false" aria-label="Agregar a favoritos">
+            <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true">
+                <path d="M19.1033 4.22583C18.6351 3.75742 18.0792 3.38584 17.4674 3.13233C16.8556 2.87881 16.1998 2.74833 15.5375 2.74833C14.8752 2.74833 14.2194 2.87881 13.6076 3.13233C12.9958 3.38584 12.4399 3.75742 11.9717 4.22583L11 5.1975L10.0283 4.22583C9.08262 3.28012 7.79995 2.74882 6.4625 2.74882C5.12505 2.74882 3.84238 3.28012 2.89667 4.22583C1.95095 5.17155 1.41965 6.45422 1.41965 7.79167C1.41965 9.12911 1.95095 10.4118 2.89667 11.3575L3.86833 12.3292L11 19.4608L18.1317 12.3292L19.1033 11.3575C19.5717 10.8893 19.9433 10.3334 20.1968 9.72158C20.4504 9.10974 20.5808 8.45395 20.5808 7.79167C20.5808 7.12939 20.4504 6.4736 20.1968 5.86176C19.9433 5.24992 19.5717 4.69403 19.1033 4.22583Z" stroke-width="1.83333" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+        </button>
+    </article>
+</template>
+
+@* Tarjetita del pin elegido en el mapa *@
+<template id="plantillaTarjetaMapa">
+    <a class="mapa-tarjeta" href="">
+        <span class="mapa-tarjeta-foto">
+            <img class="mapa-tarjeta-imagen" src="" alt="" />
+            <img class="mapa-tarjeta-sin-foto" src="~/img/icono-imagen-chica.svg" width="16" height="16" alt="" />
+        </span>
+        <span class="mapa-tarjeta-textos">
+            <span class="mapa-tarjeta-nombre"></span>
+            <span class="mapa-tarjeta-detalle"></span>
+        </span>
+    </a>
+</template>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    <script src="~/js/descubrir.js" asp-append-version="true"></script>
+}

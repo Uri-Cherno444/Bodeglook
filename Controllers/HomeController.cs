@@ -11,7 +11,7 @@ public class HomeController : Controller
     public IActionResult Index()
     {
         // Las tarjetas de "Lugares que recomienda la comunidad" (sin usuario: ninguna es favorita)
-        ViewBag.Lugares = BD.ObtenerMejorPuntuados(4, 0);
+        ViewBag.Lugares = BD.ObtenerMejorPuntuados(4, 0, false);
         return View();
     }
 
@@ -24,7 +24,10 @@ public class HomeController : Controller
 
         // En el banner va solo el primer nombre ("Hola, Camila")
         ViewBag.PrimerNombre = usuario.ObtenerPrimerNombre();
-        ViewBag.Recomendados = BD.ObtenerMejorPuntuados(4, usuario.Id);
+        // "Solo lo apto para mí" se elige en el paso 2 del onboarding y queda en la sesión
+        // (la base no tiene columna para guardarlo)
+        bool soloApto = HttpContext.Session.GetString("soloApto") == "1";
+        ViewBag.Recomendados = BD.ObtenerMejorPuntuados(4, usuario.Id, soloApto);
         ViewBag.Favoritos = BD.ObtenerFavoritos(usuario.Id);
         return View();
     }

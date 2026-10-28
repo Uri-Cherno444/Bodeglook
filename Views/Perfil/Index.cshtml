@@ -1,0 +1,157 @@
+@using Bodeglook.Models
+@model Usuarios
+@{
+    ViewData["Title"] = "Perfil";
+    ViewData["Pestaña"] = "Perfil";
+    string? barrio = ViewBag.Barrio;
+    List<Restricciones> restricciones = ViewBag.Restricciones;
+    List<TarjetaRestaurante> restaurantes = ViewBag.Restaurantes;
+    List<TarjetaPlan> planes = ViewBag.Planes;
+    // "Mis Planes" muestra 6 (tres filas); "Ver todos" muestra el resto
+    int planesIniciales = 6;
+}
+
+@section Estilos {
+    <link rel="stylesheet" href="~/css/perfil.css" asp-append-version="true" />
+}
+
+@* 08 · Perfil y Amigos *@
+<div class="perfil">
+    <a class="boton-volver perfil-volver" href="/Home/Inicio" aria-label="Volver">
+        <img src="~/img/icono-volver.svg" width="22" height="22" alt="" />
+    </a>
+
+    <!-- Tarjeta de perfil -->
+    <section class="tarjeta-perfil">
+        <span class="perfil-foto">
+            @if (Model.FotoPerfil != null)
+            {
+                <img class="perfil-foto-imagen" src="@Model.FotoPerfil" alt="" />
+            }
+            else
+            {
+                <img src="~/img/icono-imagen-grande.svg" width="40" height="40" alt="" />
+            }
+        </span>
+        <h1 class="perfil-nombre">@Model.NombreCompleto</h1>
+        <p class="perfil-usuario">@@@Model.NombreUsuario@(barrio != null ? " · " + barrio : "")</p>
+
+        <a class="boton boton-secundario boton-ancho" href="/Perfil/Editar">Editar perfil</a>
+
+        <div class="perfil-numeros">
+            <div class="perfil-dato">
+                <span class="perfil-dato-numero">@ViewBag.CantidadResenas</span>
+                <span class="perfil-dato-texto">reseñas</span>
+            </div>
+            @* Las amistades todavía no tienen tabla en la base *@
+            <div class="perfil-dato">
+                <span class="perfil-dato-numero">0</span>
+                <span class="perfil-dato-texto">amigos</span>
+            </div>
+            <div class="perfil-dato">
+                <span class="perfil-dato-numero">@planes.Count</span>
+                <span class="perfil-dato-texto">planes</span>
+            </div>
+        </div>
+
+        <div class="perfil-seccion">
+            <h2>Gustos y restricciones</h2>
+            @if (restricciones.Count > 0)
+            {
+                <div class="perfil-chips">
+                    @foreach (Restricciones restriccion in restricciones)
+                    {
+                        <span class="chip chip-naranja chip-perfil">@restriccion.Nombre</span>
+                    }
+                </div>
+            }
+            else
+            {
+                <p class="perfil-vacio">Todavía no elegiste restricciones.</p>
+            }
+        </div>
+
+        <div class="perfil-seccion">
+            <h2>Restaurantes en mi perfil</h2>
+            @if (restaurantes.Count > 0)
+            {
+                <div class="perfil-chips">
+                    @foreach (TarjetaRestaurante restaurante in restaurantes)
+                    {
+                        <a class="chip chip-crema chip-perfil" href="/Restaurantes/Detalle/@restaurante.Id">@restaurante.Nombre</a>
+                    }
+                </div>
+            }
+            else
+            {
+                <p class="perfil-vacio">Todavía no guardaste favoritos.</p>
+            }
+        </div>
+    </section>
+
+    <div class="perfil-columna">
+        <!-- Mis Amigos: las amistades todavía no tienen tabla en la base -->
+        <section class="perfil-bloque">
+            <div class="perfil-bloque-encabezado">
+                <h2>Mis Amigos</h2>
+            </div>
+            <p class="perfil-vacio">Todavía no tenés amigos en Bodeglook.</p>
+        </section>
+
+        <!-- Mis Planes: los de todos los grupos del usuario -->
+        <section class="perfil-bloque">
+            <div class="perfil-bloque-encabezado">
+                <h2>Mis Planes</h2>
+                <button type="button" class="ver-todo" id="verTodosPlanes" hidden="@(planes.Count <= planesIniciales)">Ver todos</button>
+            </div>
+
+            @if (planes.Count == 0)
+            {
+                <p class="perfil-vacio">Todavía no tenés planes.</p>
+            }
+
+            <div class="grilla-planes-perfil">
+                @for (int i = 0; i < planes.Count; i++)
+                {
+                    TarjetaPlan plan = planes[i];
+                    bool confirmado = plan.Estado == "Confirmado";
+                    string detalle = confirmado
+                        ? "Confirmado en " + plan.LugarElegido
+                        : plan.CantidadLugares + (plan.CantidadLugares == 1 ? " lugar propuesto" : " lugares propuestos");
+
+                    @* El Detalle del plan todavía no tiene pantalla: lleva a la votación *@
+                    <a class="tarjeta-plan @(confirmado ? "tarjeta-plan-confirmado" : "tarjeta-plan-votacion")" href="/Planes/Votacion/@plan.Id" hidden="@(i >= planesIniciales)">
+                        <span class="tarjeta-plan-franja"></span>
+                        <span class="tarjeta-plan-contenido">
+                            <span class="tarjeta-plan-titulo">
+                                <span class="tarjeta-plan-nombre">@plan.Titulo</span>
+                                <span class="chip chip-estado @(confirmado ? "chip-confirmado" : "chip-naranja")">@plan.Estado</span>
+                            </span>
+                            <span class="tarjeta-plan-pie">
+                                <span class="tarjeta-plan-detalle">@detalle</span>
+                                <span class="avatares">
+                                    @foreach (string inicial in plan.Iniciales)
+                                    {
+                                        <span class="avatar avatar-mini">@inicial</span>
+                                    }
+                                </span>
+                            </span>
+                        </span>
+                    </a>
+                }
+            </div>
+        </section>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // "Ver todos" muestra los planes que quedaron ocultos
+        document.getElementById("verTodosPlanes").addEventListener("click", function () {
+            document.querySelectorAll(".grilla-planes-perfil .tarjeta-plan[hidden]").forEach(function (tarjeta) {
+                tarjeta.hidden = false;
+            });
+            this.hidden = true;
+        });
+    </script>
+}

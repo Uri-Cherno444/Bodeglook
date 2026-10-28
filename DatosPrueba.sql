@@ -22,7 +22,7 @@ GO
 
 -- PRUEBA: filtros dietarios del Figma
 INSERT INTO Restricciones (Nombre) VALUES
-('Sin TACC'), ('Vegetariano'), ('Vegano'), ('Sin lactosa');
+('Sin TACC'), ('Vegetariano'), ('Vegano'), ('Sin lactosa'), ('Kosher');
 GO
 
 -- PRUEBA: restaurantes del Figma (pantallas 01, 03 y 06).
@@ -66,6 +66,22 @@ INSERT INTO RestriccionesRestaurantes (idRestaurante, idRestriccion) VALUES
 ((SELECT ID FROM Restaurantes WHERE Nombre = 'Vinos del Sur'), (SELECT ID FROM Restricciones WHERE Nombre = 'Sin TACC'));
 GO
 
+-- PRUEBA: Bodega Los Alamos es Pro (chip "Recomendado" en 05 · Descubrir)
+UPDATE Restaurantes SET EsPro = 1 WHERE Nombre = 'Bodega Los Alamos';
+GO
+
+-- PRUEBA: coordenadas para el mapa de 05 · Descubrir.
+-- Son APROXIMADAS: el centro del barrio de cada uno (las direcciones de prueba están vacías).
+UPDATE Restaurantes SET Latitud = -35.051700, Longitud = -58.761400 WHERE Nombre = 'Bodega Los Alamos';
+UPDATE Restaurantes SET Latitud = -34.588900, Longitud = -58.430000 WHERE Nombre = 'El Rincón Criollo';
+UPDATE Restaurantes SET Latitud = -34.621200, Longitud = -58.373100 WHERE Nombre = 'Vinos del Sur';
+UPDATE Restaurantes SET Latitud = -34.562700, Longitud = -58.456500 WHERE Nombre = 'Trattoria Nonna';
+UPDATE Restaurantes SET Latitud = -34.587500, Longitud = -58.397400 WHERE Nombre = 'Asador Don Pepe';
+UPDATE Restaurantes SET Latitud = -34.611800, Longitud = -58.362700 WHERE Nombre = 'La Bodega del Puerto';
+UPDATE Restaurantes SET Latitud = -34.544600, Longitud = -58.463200 WHERE Nombre = 'Sushi Bar Nami';
+UPDATE Restaurantes SET Latitud = -34.618900, Longitud = -58.442100 WHERE Nombre = 'Cantina Vecchia';
+GO
+
 -- =====================================================================
 -- PRUEBA: usuarios, grupos, planes, votos, mensajes y favoritos
 -- Todos los usuarios de prueba entran con la contraseña "Prueba123".
@@ -91,6 +107,13 @@ INSERT INTO Favoritos (idUsuario, idRestaurante) VALUES
 ((SELECT ID FROM Usuarios WHERE NombreUsuario = 'camilaf'), (SELECT ID FROM Restaurantes WHERE Nombre = 'Asador Don Pepe')),
 ((SELECT ID FROM Usuarios WHERE NombreUsuario = 'camilaf'), (SELECT ID FROM Restaurantes WHERE Nombre = 'Sushi Bar Nami')),
 ((SELECT ID FROM Usuarios WHERE NombreUsuario = 'camilaf'), (SELECT ID FROM Restaurantes WHERE Nombre = 'Cantina Vecchia'));
+GO
+
+-- PRUEBA: búsquedas recientes de Camila (las de 05 · Descubrir; la más nueva primero)
+INSERT INTO Busquedas (idUsuario, Texto, Fecha) VALUES
+((SELECT ID FROM Usuarios WHERE NombreUsuario = 'camilaf'), 'Parrillas en Palermo', DATEADD(day, -3, GETDATE())),
+((SELECT ID FROM Usuarios WHERE NombreUsuario = 'camilaf'), 'Sushi Bar Nami', DATEADD(day, -2, GETDATE())),
+((SELECT ID FROM Usuarios WHERE NombreUsuario = 'camilaf'), 'Bodega Los Alamos', DATEADD(day, -1, GETDATE()));
 GO
 
 -- PRUEBA: las 3 reseñas de Bodega Los Alamos del Figma (pantallas 01 y 04)
@@ -177,9 +200,10 @@ GO
 -- DELETE FROM Grupos WHERE Nombre IN ('Grupo Colegio','Grupo Club','Grupo Random');
 -- DELETE FROM Reseñas WHERE idUsuario IN (SELECT ID FROM Usuarios WHERE Email LIKE '%@prueba.com');
 -- DELETE FROM Favoritos WHERE idUsuario IN (SELECT ID FROM Usuarios WHERE Email LIKE '%@prueba.com');
+-- DELETE FROM Busquedas WHERE idUsuario IN (SELECT ID FROM Usuarios WHERE Email LIKE '%@prueba.com');
 -- DELETE FROM Usuarios WHERE Email LIKE '%@prueba.com';
 -- DELETE FROM RestriccionesRestaurantes WHERE idRestaurante IN (SELECT ID FROM Restaurantes WHERE Nombre IN ('Bodega Los Alamos','El Rincón Criollo','Vinos del Sur','Trattoria Nonna','Asador Don Pepe','La Bodega del Puerto','Sushi Bar Nami','Cantina Vecchia'));
 -- DELETE FROM Restaurantes WHERE Nombre IN ('Bodega Los Alamos','El Rincón Criollo','Vinos del Sur','Trattoria Nonna','Asador Don Pepe','La Bodega del Puerto','Sushi Bar Nami','Cantina Vecchia');
--- DELETE FROM Restricciones WHERE Nombre IN ('Sin TACC','Vegetariano','Vegano','Sin lactosa');
+-- DELETE FROM Restricciones WHERE Nombre IN ('Sin TACC','Vegetariano','Vegano','Sin lactosa','Kosher');
 -- DELETE FROM Barrios WHERE Nombre IN ('Cañuelas, Bs. As.','Palermo, CABA','San Telmo, CABA','Belgrano, CABA','Recoleta, CABA','Puerto Madero, CABA','Núñez, CABA','Caballito, CABA');
 -- DELETE FROM Categorias WHERE Nombre IN ('Vinoteca','Parrilla','Bar de vinos','Italiana','Japonesa');
