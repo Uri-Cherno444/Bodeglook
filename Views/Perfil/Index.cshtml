@@ -120,7 +120,7 @@
                         : plan.CantidadLugares + (plan.CantidadLugares == 1 ? " lugar propuesto" : " lugares propuestos");
 
                     @* El Detalle del plan todavía no tiene pantalla: lleva a la votación *@
-                    <a class="tarjeta-plan @(confirmado ? "tarjeta-plan-confirmado" : "tarjeta-plan-votacion")" href="/Planes/Votacion/@plan.Id" hidden="@(i >= planesIniciales)">
+                    <a class="tarjeta-plan @(confirmado ? "tarjeta-plan-confirmado" : "tarjeta-plan-votacion")" href="/Planes/Detalle/@plan.Id" hidden="@(i >= planesIniciales)">
                         <span class="tarjeta-plan-franja"></span>
                         <span class="tarjeta-plan-contenido">
                             <span class="tarjeta-plan-titulo">

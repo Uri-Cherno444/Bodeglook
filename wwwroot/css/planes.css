@@ -62,6 +62,326 @@
     font-weight: 700;
 }
 
+/* 07h · Detalle del plan en votación / 07i · confirmado */
+
+.detalle-plan {
+    padding: 40px 112px 96px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.volver-chat {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 16px;
+    color: var(--gris-texto);
+    text-decoration: none;
+}
+
+.volver-chat:hover {
+    color: var(--negro);
+}
+
+.detalle-plan-cuerpo {
+    display: flex;
+    align-items: flex-start;
+    gap: 32px;
+}
+
+.detalle-plan-principal {
+    flex: 1;
+    min-width: 0;
+    padding: 36px 40px;
+    border: 1px solid var(--linea);
+    border-radius: 20px;
+    background: var(--blanco);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.detalle-plan-etiqueta {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--naranja);
+}
+
+.detalle-plan-titulo {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px;
+}
+
+.detalle-plan-titulo h1 {
+    margin: 0;
+    font-size: 34px;
+}
+
+.detalle-plan-titulo .chip-estado {
+    padding: 6px 14px;
+    font-size: 13px;
+}
+
+/* Grupo · Día (u hora) · Organiza (o Confirmó) */
+.detalle-plan-datos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 32px;
+}
+
+.detalle-plan-datos > span {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.detalle-plan-datos > span > span {
+    font-size: 14px;
+    color: var(--gris-texto);
+}
+
+.detalle-plan-datos strong {
+    font-size: 16px;
+}
+
+.detalle-plan-divisor {
+    height: 1px;
+    background: var(--linea);
+}
+
+.detalle-plan-principal h2,
+.tarjeta-lateral h2 {
+    margin: 0;
+    font-size: 20px;
+}
+
+/* Cada opción de lugar o de horario */
+.opcion-detalle {
+    padding: 20px 24px;
+    border: 1px solid var(--linea);
+    border-radius: 14px;
+    background: var(--blanco);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* La que va ganando (o la que ganó) */
+.opcion-detalle-resaltada {
+    border-color: var(--naranja);
+    background: var(--naranja-suave);
+}
+
+.opcion-detalle-fila {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+}
+
+.opcion-detalle-nombre {
+    margin: 0 0 4px;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.opcion-detalle-texto {
+    margin: 0;
+    font-size: 14px;
+    color: var(--gris-texto);
+}
+
+.opcion-detalle-votos {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--gris-texto);
+    white-space: nowrap;
+}
+
+.opcion-detalle-resaltada .opcion-detalle-votos {
+    color: var(--naranja);
+}
+
+.opcion-detalle-barra {
+    height: 10px;
+    border-radius: 6px;
+    background: var(--arena);
+    overflow: hidden;
+}
+
+/* Sin votos queda un puntito, como en el Figma */
+.opcion-detalle-barra span {
+    display: block;
+    height: 100%;
+    min-width: 10px;
+    border-radius: 6px;
+    background: var(--naranja);
+}
+
+.opcion-detalle-votaron {
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--gris-texto);
+}
+
+.avatar-votante {
+    width: 32px;
+    height: 32px;
+    border-radius: 16px;
+    font-size: 11px;
+}
+
+/* Lugar elegido (07i) */
+.lugar-elegido {
+    padding: 24px 28px;
+    border: 1px solid var(--naranja);
+    border-radius: 14px;
+    background: var(--naranja-suave);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.lugar-elegido-nombre {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.lugar-elegido-texto {
+    margin: 0;
+    font-size: 15px;
+    color: var(--gris-texto);
+}
+
+.lugar-elegido-botones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.lugar-elegido-botones .boton,
+.tarjeta-acciones .boton {
+    height: 48px;
+}
+
+.lugar-elegido-nota {
+    margin: 0;
+    font-size: 13px;
+    color: var(--gris-texto);
+}
+
+/* Columna de la derecha: Participantes / Quiénes van y la tarjeta de estado */
+.detalle-plan-lateral {
+    flex: 0 0 380px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.tarjeta-lateral {
+    padding: 28px;
+    border: 1px solid var(--linea);
+    border-radius: 20px;
+    background: var(--blanco);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.participante {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.avatar-participante {
+    width: 36px;
+    height: 36px;
+    border-radius: 18px;
+    font-size: 13px;
+}
+
+.participante-nombre {
+    margin: 0 0 2px;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.participante-voto {
+    margin: 0;
+    font-size: 13px;
+    color: var(--gris-texto);
+}
+
+.tarjeta-acciones {
+    gap: 12px;
+    background: var(--crema);
+}
+
+.tarjeta-acciones-texto {
+    margin: 0;
+    font-size: 14px;
+    color: var(--gris-texto);
+}
+
+.boton-texto-rojo {
+    align-self: center;
+    padding: 4px;
+    border: none;
+    background: none;
+    color: var(--rojo);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.boton-texto-rojo:hover {
+    text-decoration: underline;
+}
+
+/* Diálogo de confirmar: elegir entre los empatados */
+.desempate {
+    margin: 14px 0 0;
+    padding: 0;
+    border: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.desempate legend {
+    margin-bottom: 8px;
+    padding: 0;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.desempate-opcion {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.dialogo-error {
+    margin: 0 0 12px;
+    font-size: 14px;
+    color: var(--rojo);
+}
+
 @media (max-width: 1200px) {
     .pagina-con-chats {
         flex-direction: column;
@@ -70,6 +390,20 @@
 
     .mis-planes {
         width: 100%;
+    }
+
+    .detalle-plan {
+        padding: 32px 32px 64px;
+    }
+
+    .detalle-plan-cuerpo {
+        flex-direction: column;
+    }
+
+    .detalle-plan-principal,
+    .detalle-plan-lateral {
+        width: 100%;
+        flex: none;
     }
 }
 
@@ -90,5 +424,25 @@
 
     .grilla-planes {
         grid-template-columns: 1fr;
+    }
+
+    .detalle-plan {
+        padding: 24px 16px 48px;
+    }
+
+    .detalle-plan-principal {
+        padding: 24px 20px;
+    }
+
+    .detalle-plan-titulo h1 {
+        font-size: 28px;
+    }
+
+    .opcion-detalle {
+        padding: 16px;
+    }
+
+    .tarjeta-lateral {
+        padding: 20px;
     }
 }

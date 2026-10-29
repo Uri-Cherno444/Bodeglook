@@ -163,7 +163,8 @@
                     aria-pressed="@(Model.EsFavorito ? "true" : "false")">
                 @(Model.EsFavorito ? "Sacar de favoritos" : "Agregar a favoritos")
             </button>
-            <a class="boton boton-primario boton-grande boton-ancho" href="/Grupos">Crear plan</a>
+            @* Abre el modal Crear plan en el chat más reciente, con este lugar en el primer campo *@
+            <a class="boton boton-primario boton-grande boton-ancho" href="/Planes/NuevoPlan?idRestaurante=@Model.Id">Crear plan</a>
             <div class="detalle-divisor"></div>
             @if (Model.TextoHorario() != "")
             {

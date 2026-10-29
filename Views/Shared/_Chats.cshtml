@@ -8,7 +8,10 @@
 <aside class="panel-chats">
     <div class="panel-chats-encabezado">
         <h2>Chats</h2>
-        <img src="~/img/icono-mensaje.svg" width="24" height="24" alt="" />
+        @* Abre el modal Crear grupo. En el chat lo abre chat.js sin salir de la página. *@
+        <a class="panel-chats-crear" href="/Grupos?crear=1" aria-label="Crear grupo">
+            <img src="~/img/icono-mensaje.svg" width="24" height="24" alt="" />
+        </a>
     </div>
 
     @if (Model.Count == 0)

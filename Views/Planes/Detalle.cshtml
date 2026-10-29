@@ -1,0 +1,27 @@
+@using Bodeglook.Models
+@model EncuestaPlan
+@{
+    ViewData["Title"] = Model.Titulo;
+    ViewData["Pestaña"] = "MisChats";
+}
+
+@section Estilos {
+    <link rel="stylesheet" href="~/css/planes.css" asp-append-version="true" />
+}
+
+@* 07h · Detalle del plan en votación / 07i · confirmado *@
+<section class="detalle-plan" id="detallePlan" data-id-plan="@Model.Id">
+    <a class="volver-chat" href="/Grupos/Chat/@Model.IdGrupo">
+        <span class="boton-volver"><img src="~/img/icono-volver.svg" width="22" height="22" alt="" /></span>
+        Volver al chat
+    </a>
+
+    @* Lo de adentro lo vuelve a pedir detalle-plan.js cada 3 segundos (/Planes/DetalleParcial) *@
+    <div id="contenidoPlan" aria-live="polite">
+        @await Html.PartialAsync("_DetallePlan", Model)
+    </div>
+</section>
+
+@section Scripts {
+    <script src="~/js/detalle-plan.js" asp-append-version="true"></script>
+}

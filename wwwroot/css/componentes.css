@@ -1190,6 +1190,49 @@
     color: var(--verde);
 }
 
+/* Plan cancelado por su creador */
+.chip-cancelado {
+    background: var(--arena);
+    color: var(--gris-texto);
+}
+
+/* ---------- Radio (Radio Button del UI Kit) ---------- */
+/* El input real queda invisible y se dibuja el círculo de al lado. Lo usan la encuesta y el Detalle del plan. */
+
+.radio {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+}
+
+.radio-circulo {
+    flex: 0 0 30px;
+    height: 30px;
+    border: 1px solid var(--gris-medio);
+    border-radius: 15px;
+    background: var(--blanco);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.radio:checked + .radio-circulo {
+    border-color: var(--naranja);
+}
+
+.radio:checked + .radio-circulo::after {
+    content: "";
+    width: 16px;
+    height: 16px;
+    border-radius: 8px;
+    background: var(--naranja);
+}
+
+.radio:focus-visible + .radio-circulo {
+    box-shadow: 0 0 0 3px var(--naranja-suave);
+}
+
 /* Iniciales superpuestas de los integrantes */
 .avatares {
     display: flex;
@@ -1258,8 +1301,17 @@
 .fila-chat-abierta,
 .fila-chat-abierta:hover {
     background: var(--naranja-suave);
-    padding-left: 8px;
-    padding-right: 8px;
+    padding-left: 12px;
+    padding-right: 12px;
+}
+
+.panel-chats-crear {
+    display: flex;
+    transition: transform 0.2s ease;
+}
+
+.panel-chats-crear:hover {
+    transform: scale(1.15);
 }
 
 .foto-grupo {

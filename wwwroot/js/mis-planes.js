@@ -23,7 +23,7 @@ function crearTarjetaPlan(plan) {
     const tarjeta = document.createElement("a");
     tarjeta.className = "tarjeta-plan " + (confirmado ? "tarjeta-plan-confirmado" : "tarjeta-plan-votacion");
     // Confirmado: al Detalle del lugar elegido. En votación todavía no hay lugar: a la votación.
-    tarjeta.href = confirmado ? "/Restaurantes/Detalle/" + plan.idRestauranteElegido : "/Planes/Votacion/" + plan.id;
+    tarjeta.href = confirmado ? "/Restaurantes/Detalle/" + plan.idRestauranteElegido : "/Planes/Detalle/" + plan.id;
 
     const detalle = confirmado
         ? "Confirmado en " + plan.lugarElegido

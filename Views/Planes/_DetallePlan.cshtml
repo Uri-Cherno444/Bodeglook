@@ -1,0 +1,234 @@
+@using Bodeglook.Models
+@model EncuestaPlan
+@* La parte del Detalle del plan que se actualiza sola: datos, opciones, participantes, estado y diálogos.
+   La usan Detalle.cshtml (al abrir) y /Planes/DetalleParcial (cada 3 segundos). *@
+@{
+    int idUsuario = ViewBag.IdUsuario;
+    List<string> restricciones = ViewBag.Restricciones;
+    bool esCreador = Model.IdCreador == idUsuario;
+    bool enVotacion = Model.EnVotacion();
+    bool confirmado = Model.Confirmado();
+    int votaron = Model.CantidadVotaron();
+    int faltan = Model.CantidadIntegrantes - votaron;
+
+    // En votación se resalta lo que va ganando (si hay empate, todos los empatados); confirmado, lo elegido
+    int maximoLugar = Model.Opciones.Count == 0 ? 0 : Model.Opciones.Max(o => o.Votos);
+    int maximoHorario = Model.Horarios.Count == 0 ? 0 : Model.Horarios.Max(h => h.Votos);
+    List<OpcionPlan> lugaresGanadores = Model.LugaresMasVotados();
+    List<OpcionHorario> horariosGanadores = Model.HorariosMasVotados();
+    OpcionPlan? lugarElegido = Model.LugarElegido();
+
+    // "Vinoteca · Cañuelas · Opciones sin TACC verificadas" (las restricciones que cumple el lugar)
+    string textoLugarElegido = lugarElegido?.TextoDetalle() ?? "";
+    if (restricciones.Count > 0)
+        textoLugarElegido += " · Opciones " + string.Join(" y ", restricciones.Select(r => char.ToLower(r[0]) + r.Substring(1))) + " verificadas";
+
+    string etiqueta = enVotacion ? "PLAN EN VOTACIÓN" : confirmado ? "PLAN CONFIRMADO" : "PLAN CANCELADO";
+    string chipTexto = enVotacion ? "En votación" : confirmado ? "Confirmado" : "Cancelado";
+    string chipClase = enVotacion ? "chip-naranja" : confirmado ? "chip-confirmado" : "chip-cancelado";
+
+    // Una opción de lugar o de horario: nombre, detalle, votos, barra e iniciales de quién votó
+    void DibujarOpcion(string nombre, string detalle, int votos, List<Participante> votantes, bool resaltada)
+    {
+        <div class="opcion-detalle @(resaltada ? "opcion-detalle-resaltada" : "")">
+            <div class="opcion-detalle-fila">
+                <div>
+                    <p class="opcion-detalle-nombre">@nombre</p>
+                    <p class="opcion-detalle-texto">@detalle</p>
+                </div>
+                <span class="opcion-detalle-votos">@votos @(votos == 1 ? "voto" : "votos")</span>
+            </div>
+            <div class="opcion-detalle-barra"><span style="width: @(Model.Porcentaje(votos))%"></span></div>
+            @if (votantes.Count == 0)
+            {
+                <p class="opcion-detalle-votaron">Todavía sin votos</p>
+            }
+            else
+            {
+                <div class="opcion-detalle-votaron">
+                    @foreach (Participante votante in votantes)
+                    {
+                        <span class="avatar avatar-votante" title="@votante.Nombre(idUsuario)">@votante.Iniciales(idUsuario)</span>
+                    }
+                    <span>votaron por esta opción</span>
+                </div>
+            }
+        </div>
+    }
+}
+
+<div class="detalle-plan-cuerpo">
+    <div class="detalle-plan-principal">
+        <span class="detalle-plan-etiqueta">@etiqueta</span>
+        <div class="detalle-plan-titulo">
+            <h1>@Model.Titulo</h1>
+            <span class="chip chip-estado @chipClase">@chipTexto</span>
+        </div>
+        <div class="detalle-plan-datos">
+            <span><span>Grupo</span> <strong>@Model.NombreGrupo</strong></span>
+            @if (confirmado)
+            {
+                <span><span>Día y hora</span> <strong>@Model.TextoDiaYHora()</strong></span>
+                <span><span>Confirmó</span> <strong>@Model.PrimerNombreCreador()</strong></span>
+            }
+            else
+            {
+                @* Mientras se vota todavía no hay hora: solo el día *@
+                <span><span>Día</span> <strong>@Model.TextoDia()</strong></span>
+                <span><span>Organiza</span> <strong>@Model.PrimerNombreCreador()</strong></span>
+            }
+        </div>
+        <div class="detalle-plan-divisor"></div>
+
+        @if (confirmado && lugarElegido != null)
+        {
+            <h2>Lugar elegido</h2>
+            <div class="lugar-elegido">
+                <p class="lugar-elegido-nombre">@lugarElegido.Nombre</p>
+                <p class="lugar-elegido-texto">@textoLugarElegido</p>
+                <div class="lugar-elegido-botones">
+                    <a class="boton boton-primario" href="/Restaurantes/Detalle/@lugarElegido.IdRestaurante">Ver ficha del restaurante</a>
+                    @if (!string.IsNullOrWhiteSpace(lugarElegido.SitioWeb))
+                    {
+                        <a class="boton boton-secundario" href="@lugarElegido.SitioWeb" target="_blank" rel="noopener noreferrer">Reservar en la web del restaurante ↗</a>
+                    }
+                </div>
+                <p class="lugar-elegido-nota">La reserva la hace el grupo directamente en el sitio del restaurante, fuera de Bodeglook.</p>
+            </div>
+        }
+
+        <h2>@(confirmado ? "Resultado del lugar" : "Opciones de lugar")</h2>
+        @foreach (OpcionPlan opcion in Model.Opciones)
+        {
+            bool resaltada = confirmado ? opcion.IdRestaurante == Model.IdRestauranteElegido : enVotacion && maximoLugar > 0 && opcion.Votos == maximoLugar;
+            DibujarOpcion(opcion.Nombre!, opcion.TextoDetalle(), opcion.Votos,
+                Model.Participantes.Where(p => p.IdLugarVotado == opcion.IdRestaurante).ToList(), resaltada);
+        }
+
+        <h2>@(confirmado ? "Resultado del horario" : "Opciones de horario")</h2>
+        @foreach (OpcionHorario horario in Model.Horarios)
+        {
+            bool resaltada = confirmado ? horario.IdHorario == Model.HorarioElegido()?.IdHorario : enVotacion && maximoHorario > 0 && horario.Votos == maximoHorario;
+            DibujarOpcion(horario.TextoHorario(), Model.TextoDiaLargo(), horario.Votos,
+                Model.Participantes.Where(p => p.IdHorarioVotado == horario.IdHorario).ToList(), resaltada);
+        }
+    </div>
+
+    <aside class="detalle-plan-lateral">
+        <div class="tarjeta-lateral">
+            <h2>@(confirmado ? "Quiénes van" : "Participantes")</h2>
+            @foreach (Participante participante in Model.Participantes)
+            {
+                <div class="participante">
+                    <span class="avatar avatar-participante">@participante.Iniciales(idUsuario)</span>
+                    <div>
+                        <p class="participante-nombre">@participante.Nombre(idUsuario)</p>
+                        @if (!confirmado)
+                        {
+                            <p class="participante-voto">@participante.TextoVoto(idUsuario)</p>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="tarjeta-lateral tarjeta-acciones">
+            @if (enVotacion)
+            {
+                <p class="tarjeta-acciones-texto">
+                    @if (faltan <= 0)
+                    {
+                        @(esCreador ? "Todos votaron. Ya podés confirmar el lugar y el horario ganadores." : "Todos votaron. " + Model.PrimerNombreCreador() + " confirma el lugar y el horario.")
+                    }
+                    else
+                    {
+                        @((faltan == 1 ? "Falta que vote 1 persona." : "Faltan votar " + faltan + " personas.") + (esCreador ? " Podés confirmar igual." : ""))
+                    }
+                </p>
+                @if (esCreador)
+                {
+                    <button type="button" class="boton boton-primario boton-ancho" id="abrirConfirmarPlan">Confirmar lugar y horario</button>
+                }
+            }
+            <a class="boton boton-secundario boton-ancho" href="/Grupos/Chat/@Model.IdGrupo">Volver al chat</a>
+            @if (enVotacion && esCreador)
+            {
+                <button type="button" class="boton-texto-rojo" id="abrirCancelarPlan">Cancelar plan</button>
+            }
+        </div>
+    </aside>
+</div>
+
+@if (enVotacion && esCreador)
+{
+    @* Diálogo del kit para confirmar. Si hay empate en lugar o en horario, el creador elige entre los empatados. *@
+    <dialog class="dialogo" id="dialogoConfirmarPlan" aria-labelledby="dialogoConfirmarTitulo" data-dia="@Model.TextoDia()">
+        <div class="dialogo-encabezado">
+            <h2 class="dialogo-titulo" id="dialogoConfirmarTitulo">¿Confirmar el plan?</h2>
+            <button type="button" class="boton-icono" data-cerrar aria-label="Cerrar">
+                <img src="~/img/icono-cerrar.svg" width="24" height="24" alt="" />
+            </button>
+        </div>
+
+        @if (lugaresGanadores.Count == 1)
+        {
+            <input type="hidden" name="lugarElegido" value="@lugaresGanadores[0].IdRestaurante" data-texto="@lugaresGanadores[0].Nombre" />
+        }
+        else
+        {
+            <fieldset class="desempate">
+                <legend>Hay empate en el lugar. Elegí uno:</legend>
+                @foreach (OpcionPlan opcion in lugaresGanadores)
+                {
+                    <label class="desempate-opcion">
+                        <input type="radio" class="radio" name="lugarElegido" value="@opcion.IdRestaurante" data-texto="@opcion.Nombre" />
+                        <span class="radio-circulo" aria-hidden="true"></span>
+                        @opcion.Nombre
+                    </label>
+                }
+            </fieldset>
+        }
+
+        @if (horariosGanadores.Count == 1)
+        {
+            <input type="hidden" name="horarioElegido" value="@horariosGanadores[0].IdHorario" data-texto="@horariosGanadores[0].TextoHorario()" />
+        }
+        else
+        {
+            <fieldset class="desempate">
+                <legend>Hay empate en el horario. Elegí uno:</legend>
+                @foreach (OpcionHorario horario in horariosGanadores)
+                {
+                    <label class="desempate-opcion">
+                        <input type="radio" class="radio" name="horarioElegido" value="@horario.IdHorario" data-texto="@horario.TextoHorario()" />
+                        <span class="radio-circulo" aria-hidden="true"></span>
+                        @horario.TextoHorario()
+                    </label>
+                }
+            </fieldset>
+        }
+
+        @* El resumen lo completa detalle-plan.js: "Bodega Los Alamos · Sáb 24/10 a las 21:00" *@
+        <p class="dialogo-descripcion" id="resumenConfirmar"></p>
+        <p class="dialogo-error" id="errorConfirmar" hidden></p>
+        <div class="dialogo-botones">
+            <button type="button" class="boton boton-negro" data-cerrar>Cancelar</button>
+            <button type="button" class="boton boton-primario" id="confirmarPlan">Confirmar</button>
+        </div>
+    </dialog>
+
+    <dialog class="dialogo" id="dialogoCancelarPlan" aria-labelledby="dialogoCancelarTitulo">
+        <div class="dialogo-encabezado">
+            <h2 class="dialogo-titulo" id="dialogoCancelarTitulo">¿Cancelar el plan?</h2>
+            <button type="button" class="boton-icono" data-cerrar aria-label="Cerrar">
+                <img src="~/img/icono-cerrar.svg" width="24" height="24" alt="" />
+            </button>
+        </div>
+        <p class="dialogo-descripcion">La encuesta queda cancelada para todo el grupo.</p>
+        <p class="dialogo-error" id="errorCancelar" hidden></p>
+        <div class="dialogo-botones">
+            <button type="button" class="boton boton-negro" data-cerrar>Volver</button>
+            <button type="button" class="boton boton-primario" id="cancelarPlan">Cancelar plan</button>
+        </div>
+    </dialog>
+}

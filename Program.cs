@@ -16,6 +16,8 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+// MapStaticAssets solo sirve los archivos que había al compilar; esto sirve las fotos de grupo que se suben
+app.UseStaticFiles();
 app.UseRouting();
 
 app.UseSession();

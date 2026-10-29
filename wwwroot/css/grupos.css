@@ -1,0 +1,815 @@
+/* 07 · Chat de grupo y 07g · Crear grupo */
+
+.pagina-chat {
+    padding: 56px 112px 96px;
+    display: flex;
+    align-items: flex-start;
+    gap: 32px;
+}
+
+/* ---------- Conversación ---------- */
+
+.conversacion {
+    flex: 1;
+    min-width: 0;
+    border: 1px solid var(--linea);
+    border-radius: 16px;
+    background: var(--blanco);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.conversacion-vacia {
+    padding: 48px 28px;
+    text-align: center;
+    color: var(--gris-texto);
+}
+
+.conversacion-vacia p {
+    margin: 0;
+}
+
+.conversacion-cabecera {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px 28px;
+    border-bottom: 1px solid var(--linea);
+}
+
+.conversacion-datos {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.conversacion-datos h1 {
+    margin: 0;
+    font-size: 24px;
+    line-height: 32px;
+}
+
+.conversacion-datos p {
+    margin: 0;
+    font-size: 15px;
+    line-height: 22px;
+    color: var(--gris-texto);
+}
+
+/* En el Figma mide 905px de alto; en pantallas más bajas se achica para que entre con el campo de escribir */
+.conversacion-mensajes {
+    height: 905px;
+    max-height: calc(100vh - 220px);
+    min-height: 420px;
+    overflow-y: auto;
+    padding: 28px;
+    background: var(--crema);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.conversacion-mensajes > * {
+    flex-shrink: 0;
+}
+
+/* Separador por día ("Hoy") */
+.mensaje-dia {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--gris-texto);
+}
+
+/* Mensaje de otro: iniciales a la izquierda, nombre arriba y burbuja blanca */
+.mensaje {
+    max-width: 70%;
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+    animation: aparecer-suave 0.25s ease;
+}
+
+.avatar-mensaje {
+    width: 36px;
+    height: 36px;
+    border-radius: 18px;
+    font-size: 13px;
+}
+
+.mensaje-burbuja {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+}
+
+.mensaje-autor {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--gris-texto);
+}
+
+.mensaje-texto {
+    max-width: 100%;
+    padding: 12px 16px;
+    border-radius: 16px;
+    background: var(--blanco);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+}
+
+.mensaje-texto p {
+    margin: 0;
+    font-size: 16px;
+    line-height: 24px;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.mensaje-hora {
+    font-size: 12px;
+    color: var(--gris-texto);
+}
+
+/* Mensaje mío: a la derecha y en naranja */
+.mensaje-mio {
+    align-self: flex-end;
+}
+
+.mensaje-mio .mensaje-texto {
+    background: var(--naranja);
+    color: var(--blanco);
+    align-items: flex-end;
+}
+
+.mensaje-mio .mensaje-hora {
+    color: var(--blanco);
+}
+
+.conversacion-escribir {
+    min-height: 140px;
+    padding: 20px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.campo-mensaje {
+    width: 300px;
+}
+
+/* ---------- 07g · Crear grupo ---------- */
+
+.dialogo-grupo {
+    width: 640px;
+    padding: 36px 40px;
+    border: 1px solid var(--linea);
+    border-radius: 24px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+}
+
+.formulario-grupo {
+    display: flex;
+    flex-direction: column;
+    gap: 26px;
+}
+
+.dialogo-grupo-encabezado {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.dialogo-grupo-encabezado h2 {
+    margin: 0 0 6px;
+    font-size: 36px;
+}
+
+.dialogo-grupo-encabezado p {
+    margin: 0;
+    font-size: 16px;
+    color: var(--gris-texto);
+}
+
+.dialogo-grupo-cerrar {
+    flex: 0 0 40px;
+    height: 40px;
+    border: none;
+    border-radius: 20px;
+    background: var(--naranja-suave);
+    color: var(--naranja);
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.dialogo-grupo-cerrar:hover {
+    transform: rotate(90deg);
+}
+
+.foto-nueva {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.foto-nueva-circulo {
+    flex: 0 0 72px;
+    height: 72px;
+    border-radius: 36px;
+    background: var(--arena);
+    color: var(--naranja);
+    font-size: 28px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.foto-nueva-circulo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.foto-nueva-datos {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    font-weight: 700;
+}
+
+.boton-chico {
+    height: 38px;
+    padding: 0 18px;
+    font-size: 14px;
+}
+
+/* Los campos del modal son un poco más altos y con borde claro (como en el Figma) */
+.dialogo-grupo .campo label {
+    font-size: 16px;
+}
+
+.dialogo-grupo .campo input {
+    height: 51px;
+    padding: 14px 16px;
+    border-color: var(--linea);
+    border-radius: 10px;
+}
+
+.suma-amigos {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.suma-amigos-encabezado {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.suma-amigos-encabezado h3 {
+    margin: 0;
+    font-size: 20px;
+}
+
+.contador-seleccionados {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--naranja);
+}
+
+/* Entran 4 amigos; si hay más, la lista se desliza */
+.lista-amigos {
+    max-height: 272px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.lista-amigos-vacia {
+    margin: 0;
+    color: var(--gris-texto);
+}
+
+.amigo {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 0;
+    cursor: pointer;
+}
+
+.amigo[hidden] {
+    display: none;
+}
+
+.amigo .avatar {
+    font-size: 15px;
+}
+
+.amigo-nombre {
+    flex: 1;
+    min-width: 0;
+    font-size: 17px;
+    font-weight: 700;
+}
+
+/* Checkbox del kit: el input real queda invisible y se dibuja la caja de al lado */
+.casilla {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+}
+
+.casilla-caja {
+    flex: 0 0 24px;
+    height: 24px;
+    border: 2px solid var(--linea);
+    border-radius: 6px;
+    background: var(--blanco);
+    color: var(--blanco);
+    font-size: 15px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.casilla:checked + .casilla-caja {
+    background: var(--naranja);
+    border-color: var(--naranja);
+}
+
+.casilla:checked + .casilla-caja::after {
+    content: "✓";
+}
+
+.casilla:focus-visible + .casilla-caja {
+    box-shadow: 0 0 0 3px var(--naranja-suave);
+}
+
+.dialogo-grupo-nota {
+    margin: 0;
+    font-size: 14px;
+    line-height: 20px;
+    color: var(--gris-texto);
+}
+
+.dialogo-grupo .dialogo-botones {
+    gap: 12px;
+}
+
+.dialogo-grupo .dialogo-botones .boton {
+    height: 55px;
+    padding: 0 32px;
+}
+
+/* ---------- Encuesta de un plan (07 · en votación y 07e · confirmado) ---------- */
+/* La usan el chat y "Ver detalle" */
+
+.encuesta {
+    width: 560px;
+    max-width: 100%;
+    padding: 20px;
+    border: 1px solid var(--linea);
+    border-radius: 16px;
+    background: var(--blanco);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.encuesta-etiqueta {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--naranja);
+}
+
+.encuesta-encabezado {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+.encuesta-titulo {
+    margin: 0;
+    font-size: 20px;
+    line-height: 28px;
+}
+
+.encuesta .chip-estado {
+    padding: 4px 12px;
+    font-size: 13px;
+}
+
+.encuesta-subtitulo {
+    margin: 0;
+    font-size: 15px;
+    line-height: 22px;
+    color: var(--gris-texto);
+}
+
+/* "LUGAR" y "HORARIO" */
+.encuesta-seccion {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.48px;
+    color: var(--gris-texto);
+}
+
+.encuesta-opciones {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.opcion-plan {
+    position: relative;
+    padding: 12px;
+    border: 1px solid var(--linea);
+    border-radius: 12px;
+    background: var(--blanco);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    cursor: pointer;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.opcion-plan:hover {
+    border-color: var(--naranja);
+}
+
+/* Mi voto (en votación) o el lugar que ganó (confirmado): borde de 2px, por eso 1px menos de relleno */
+.opcion-plan-elegida {
+    padding: 11px;
+    border: 2px solid var(--naranja);
+    background: var(--naranja-suave);
+}
+
+/* Confirmado: los que no ganaron quedan apagados y no se pueden tocar */
+.encuesta-confirmada .opcion-plan {
+    cursor: default;
+}
+
+.encuesta-confirmada .opcion-plan:not(.opcion-plan-elegida):hover {
+    border-color: var(--linea);
+}
+
+.opcion-plan-apagada {
+    opacity: 0.55;
+}
+
+.opcion-plan-fila {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+.opcion-plan-elegir {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.opcion-plan-nombre {
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 20px;
+    letter-spacing: -0.16px;
+}
+
+.opcion-plan-votos {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--gris-texto);
+    white-space: nowrap;
+}
+
+.opcion-plan-elegida .opcion-plan-votos {
+    color: var(--naranja);
+}
+
+.opcion-plan-detalle {
+    font-size: 13px;
+    line-height: 18px;
+    color: var(--gris-texto);
+}
+
+.barra-votos {
+    height: 6px;
+    border-radius: 3px;
+    background: var(--arena);
+    overflow: hidden;
+}
+
+.barra-votos-avance {
+    display: block;
+    height: 100%;
+    border-radius: 3px;
+    background: var(--naranja);
+}
+
+.encuesta-pie {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+    line-height: 20px;
+    color: var(--gris-texto);
+}
+
+.encuesta-pie a {
+    font-weight: 700;
+    color: var(--naranja);
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.encuesta-pie a:hover {
+    text-decoration: underline;
+}
+
+/* ---------- 07b · Crear plan ---------- */
+
+.dialogo-plan {
+    width: 720px;
+}
+
+.formulario-plan {
+    gap: 28px;
+}
+
+.seccion-plan {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.seccion-plan h3 {
+    margin: 0;
+    font-size: 20px;
+}
+
+.seccion-plan-ayuda {
+    margin: 4px 0 0;
+    font-size: 14px;
+    line-height: 20px;
+    color: var(--gris-texto);
+}
+
+/* Número + buscador en una fila */
+.lugar-plan {
+    flex-direction: row;
+    align-items: center;
+    gap: 14px;
+}
+
+.lugar-plan-numero {
+    flex: 0 0 36px;
+    height: 36px;
+    border-radius: 18px;
+    background: var(--naranja-suave);
+    color: var(--naranja);
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.lugar-plan .campo-entrada {
+    flex: 1;
+    min-width: 0;
+}
+
+.dia-horario {
+    display: flex;
+    gap: 16px;
+}
+
+.horarios-sugeridos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.chip-horario {
+    padding: 7px 14px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+/* 07c · Resultados de búsqueda debajo del campo de lugar */
+.resultados-lugares {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    z-index: 5;
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 8px 0;
+    border: 1px solid var(--linea);
+    border-radius: 12px;
+    background: var(--blanco);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
+}
+
+.resultados-lugares[hidden] {
+    display: none;
+}
+
+.resultados-encabezado {
+    padding: 8px 16px 10px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.resultados-separador {
+    margin-top: 4px;
+    padding: 10px 16px 6px;
+    border-top: 1px solid var(--linea);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--gris-texto);
+}
+
+.resultados-vacio {
+    margin: 0;
+    padding: 12px 16px;
+    font-size: 14px;
+    color: var(--gris-texto);
+}
+
+.resultado-lugar {
+    width: 100%;
+    padding: 12px 16px;
+    border: none;
+    background: var(--blanco);
+    font-family: inherit;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    cursor: pointer;
+}
+
+.resultado-lugar:hover,
+.resultado-lugar:focus-visible {
+    outline: none;
+    background: var(--crema);
+}
+
+.resultado-lugar-titulo {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 10px;
+}
+
+.resultado-lugar-nombre {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--negro);
+}
+
+.resultado-lugar-detalle {
+    font-size: 14px;
+    color: var(--gris-texto);
+}
+
+.etiquetas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.etiqueta-restriccion {
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: var(--naranja-suave);
+    color: var(--naranja);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+/* Estado de error del kit adentro del modal: el ícono va dentro del campo para que el tooltip no se corte */
+.dialogo-plan .campo-error {
+    left: auto;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+/* El borde claro de los campos del modal le ganaba al rojo del error */
+.dialogo-plan .campo-con-error input,
+.dialogo-plan .campo-con-error input:hover,
+.dialogo-plan .campo-con-error input:focus {
+    padding-right: 44px;
+    border-color: var(--rojo);
+    box-shadow: 0 0 0 3px rgba(255, 49, 49, 0.1);
+}
+
+.dialogo-plan .tooltip {
+    left: auto;
+    right: -12px;
+    transform: none;
+}
+
+.dialogo-plan .tooltip::after {
+    left: auto;
+    right: 18px;
+    transform: none;
+}
+
+@media (max-width: 1200px) {
+    .pagina-chat {
+        flex-direction: column;
+        padding: 40px 32px 64px;
+    }
+
+    .conversacion {
+        width: 100%;
+    }
+}
+
+@media (max-width: 900px) {
+    .pagina-chat {
+        padding: 24px 16px 48px;
+    }
+
+    /* "+ Crear plan" baja a su propia fila para que el nombre del grupo entre */
+    .conversacion-cabecera {
+        flex-wrap: wrap;
+        padding: 16px;
+    }
+
+    .conversacion-datos {
+        flex-basis: calc(100% - 80px);
+    }
+
+    .conversacion-cabecera .boton {
+        width: 100%;
+    }
+
+    .conversacion-mensajes {
+        padding: 20px 16px;
+    }
+
+    .conversacion-escribir {
+        min-height: 0;
+        padding: 16px;
+    }
+
+    .campo-mensaje {
+        width: auto;
+        flex: 1;
+    }
+
+    .mensaje {
+        max-width: 90%;
+    }
+
+    .dialogo-grupo {
+        padding: 24px 20px;
+    }
+
+    .dialogo-grupo-encabezado h2 {
+        font-size: 28px;
+    }
+
+    .dia-horario {
+        flex-direction: column;
+    }
+
+    .encuesta {
+        padding: 16px;
+    }
+}

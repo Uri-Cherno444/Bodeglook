@@ -15,7 +15,7 @@ public class DetalleRestaurante
     public string? DireccionCalle { get; set; }
     public int DireccionNumero { get; set; }
     public int DireccionCodigoPostal { get; set; }
-    public int Telefono { get; set; }
+    public string? Telefono { get; set; }
     public DateTime HorarioApertura { get; set; }
     public DateTime HorarioCerrado { get; set; }
     public double? Puntaje { get; set; }
@@ -43,12 +43,12 @@ public class DetalleRestaurante
         return HorarioApertura.ToString("HH:mm") + " - " + HorarioCerrado.ToString("HH:mm");
     }
 
-    // 1155551234 -> "+54 11 5555-1234". 0 es que no hay dato.
+    // "1155551234" -> "+54 11 5555-1234". Si ya viene escrito ("+54 11 4777-1850") va tal cual. Vacío es que no hay dato.
     public string TextoTelefono()
     {
-        if (Telefono <= 0) return "";
-        string numero = Telefono.ToString();
-        if (numero.Length != 10) return numero;
+        string numero = (Telefono ?? "").Trim();
+        if (numero == "" || numero == "0") return "";
+        if (numero.Length != 10 || !numero.All(char.IsDigit)) return numero;
         return "+54 " + numero.Substring(0, 2) + " " + numero.Substring(2, 4) + "-" + numero.Substring(6, 4);
     }
 

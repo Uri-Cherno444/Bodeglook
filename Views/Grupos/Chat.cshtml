@@ -1,0 +1,193 @@
+@using Bodeglook.Models
+@model Grupos?
+@{
+    ViewData["Title"] = "Mis Chats";
+    ViewData["Pestaña"] = "MisChats";
+}
+
+@section Estilos {
+    <link rel="stylesheet" href="~/css/grupos.css" asp-append-version="true" />
+}
+
+@* 07 · Chat de grupo *@
+<div class="pagina-chat">
+    @await Html.PartialAsync("_Chats", (List<ResumenChat>)ViewBag.Chats)
+
+    @if (Model != null)
+    {
+        <section class="conversacion" id="conversacion" data-id-grupo="@Model.Id">
+            <div class="conversacion-cabecera">
+                <span class="foto-grupo">
+                    @if (Model.Foto != null)
+                    {
+                        <img class="foto-grupo-imagen" src="@Model.Foto" alt="" />
+                    }
+                    else
+                    {
+                        <img src="~/img/icono-imagen.svg" width="21" height="21" alt="" />
+                    }
+                </span>
+                <div class="conversacion-datos">
+                    <h1>@Model.Nombre</h1>
+                    <p>@ViewBag.Integrantes</p>
+                </div>
+                <button type="button" class="boton boton-secundario" id="botonCrearPlan">+ Crear plan</button>
+            </div>
+
+            @* Los mensajes los arma chat.js con lo que devuelve /Grupos/Mensajes *@
+            <div class="conversacion-mensajes" id="listaMensajes" aria-live="polite"></div>
+
+            <form class="conversacion-escribir" id="formularioMensaje">
+                <div class="campo campo-mensaje">
+                    <input type="text" id="campoMensaje" placeholder="Escribí un mensaje" aria-label="Escribí un mensaje" maxlength="1000" autocomplete="off" />
+                </div>
+                <button type="submit" class="boton boton-primario">Enviar</button>
+            </form>
+        </section>
+    }
+    else
+    {
+        <section class="conversacion conversacion-vacia">
+            <p>Creá un grupo desde el ícono de Chats para empezar a chatear.</p>
+        </section>
+    }
+</div>
+
+<!-- 07g · Crear grupo -->
+<dialog class="dialogo dialogo-grupo" id="dialogoCrearGrupo" aria-labelledby="dialogoCrearGrupoTitulo">
+    <form class="formulario-grupo" id="formularioGrupo">
+        <div class="dialogo-grupo-encabezado">
+            <div>
+                <h2 id="dialogoCrearGrupoTitulo">Crear grupo</h2>
+                <p>Tu círculo de siempre: chat, salidas y lugares favoritos.</p>
+            </div>
+            <button type="button" class="dialogo-grupo-cerrar" id="cerrarCrearGrupo" aria-label="Cerrar">✕</button>
+        </div>
+
+        <div class="aviso" id="aviso" hidden>
+            <span class="aviso-texto" id="avisoTexto"></span>
+            <button type="button" class="aviso-cerrar" aria-label="Cerrar aviso">
+                <img src="~/img/icono-cerrar-aviso.svg" width="24" height="24" alt="" />
+            </button>
+        </div>
+
+        <div class="foto-nueva">
+            <span class="foto-nueva-circulo" id="fotoNuevaCirculo">+</span>
+            <div class="foto-nueva-datos">
+                <span>Foto del grupo</span>
+                <button type="button" class="boton boton-blanco boton-chico" id="botonSubirFoto">Subir foto</button>
+                <input type="file" name="foto" id="campoFoto" accept=".jpg,.jpeg,.png,.webp" hidden />
+            </div>
+        </div>
+
+        <div class="campo">
+            <label for="nombreGrupo">Nombre del grupo</label>
+            <input type="text" id="nombreGrupo" name="nombre" placeholder="Ej: Grupo Colegio" maxlength="50" autocomplete="off" />
+        </div>
+
+        <div class="suma-amigos">
+            <div class="suma-amigos-encabezado">
+                <h3>Sumá amigos</h3>
+                <span class="contador-seleccionados" id="contadorSeleccionados">0 seleccionados</span>
+            </div>
+            <div class="campo">
+                <input type="search" id="buscarAmigos" placeholder="Buscar entre tus amigos" aria-label="Buscar entre tus amigos" autocomplete="off" />
+            </div>
+            @* Las filas las arma chat.js con lo que devuelve /Grupos/Amigos *@
+            <div class="lista-amigos" id="listaAmigos"></div>
+        </div>
+
+        <p class="dialogo-grupo-nota">Solo podés sumar amigos confirmados. Después podés agregar más desde el chat.</p>
+
+        <div class="dialogo-botones">
+            <button type="button" class="boton boton-blanco" id="cancelarCrearGrupo">Cancelar</button>
+            <button type="submit" class="boton boton-primario">Crear grupo</button>
+        </div>
+    </form>
+</dialog>
+
+@if (Model != null)
+{
+    LugarBuscado? lugarInicial = ViewBag.LugarInicial;
+    string[] horarios = { "20:00", "20:30", "21:00", "21:30", "22:00" };
+
+    <!-- 07b · Crear plan (07c mientras busca un lugar, 07d completo) -->
+    <dialog class="dialogo dialogo-grupo dialogo-plan" id="dialogoCrearPlan" aria-labelledby="dialogoCrearPlanTitulo"
+            data-lugar-id="@lugarInicial?.Id" data-lugar-texto="@lugarInicial?.TextoCampo()">
+        <form class="formulario-grupo formulario-plan" id="formularioPlan" novalidate>
+            <div class="dialogo-grupo-encabezado">
+                <div>
+                    <h2 id="dialogoCrearPlanTitulo">Crear plan</h2>
+                    <p>Para @Model.Nombre · @ViewBag.Integrantes</p>
+                </div>
+                <button type="button" class="dialogo-grupo-cerrar" id="cerrarCrearPlan" aria-label="Cerrar">✕</button>
+            </div>
+
+            <div class="aviso" id="avisoPlan" hidden>
+                <span class="aviso-texto" id="avisoPlanTexto"></span>
+                <button type="button" class="aviso-cerrar" aria-label="Cerrar aviso">
+                    <img src="~/img/icono-cerrar-aviso.svg" width="24" height="24" alt="" />
+                </button>
+            </div>
+
+            <div class="campo" data-campo="nombre">
+                <label for="nombrePlan">Nombre del plan</label>
+                <div class="campo-entrada">
+                    <input type="text" id="nombrePlan" placeholder="Ej: Cena de cumpleaños de Sofi" maxlength="50" autocomplete="off" />
+                </div>
+            </div>
+
+            <div class="seccion-plan">
+                <div>
+                    <h3>Lugares para votar</h3>
+                    <p class="seccion-plan-ayuda">Proponé 3 opciones. Si hay celíacos o veganos en el grupo, te mostramos primero lugares aptos para todos.</p>
+                </div>
+                @for (int i = 1; i <= 3; i++)
+                {
+                    <div class="campo lugar-plan" data-campo="lugar@(i)">
+                        <span class="lugar-plan-numero" aria-hidden="true">@i</span>
+                        <div class="campo-entrada">
+                            <input type="text" class="lugar-plan-buscar" placeholder="Buscar restaurante o bodega" aria-label="Lugar @i"
+                                   autocomplete="off" role="combobox" aria-expanded="false" aria-controls="resultadosLugar@(i)" />
+                            @* Los resultados los arma chat.js con lo que devuelve /Planes/BuscarLugares *@
+                            <div class="resultados-lugares" id="resultadosLugar@(i)" role="listbox" hidden></div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="seccion-plan">
+                <div>
+                    <h3>Día y horarios para votar</h3>
+                    <p class="seccion-plan-ayuda">Elegí el día y marcá hasta 3 horarios. El grupo vota el que le queda mejor.</p>
+                </div>
+                <div class="campo" data-campo="dia">
+                    <label for="diaPlan">Día</label>
+                    <div class="campo-entrada">
+                        <input type="date" id="diaPlan" min="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                    </div>
+                </div>
+                @* Selección múltiple: cada chip marcado es un horario para votar *@
+                <div class="campo" data-campo="horarios">
+                    <div class="campo-entrada horarios-sugeridos" role="group" aria-label="Horarios para votar">
+                        @foreach (string horario in horarios)
+                        {
+                            <button type="button" class="chip-opcion chip-horario" data-horario="@horario" aria-pressed="false">@horario</button>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <p class="dialogo-grupo-nota">El plan se publica como encuesta en el chat y cada integrante vota un lugar y un horario.</p>
+
+            <div class="dialogo-botones">
+                <button type="button" class="boton boton-blanco" id="cancelarCrearPlan">Cancelar</button>
+                <button type="submit" class="boton boton-primario">Crear plan</button>
+            </div>
+        </form>
+    </dialog>
+}
+
+@section Scripts {
+    <script src="~/js/chat.js" asp-append-version="true"></script>
+}

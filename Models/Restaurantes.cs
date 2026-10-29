@@ -8,7 +8,7 @@ public class Restaurantes
     public int? DireccionNumero { get; set; }
     public int? DireccionCodigoPostal { get; set; }
     public string? Descripcion { get; set; }
-    public int? Telefono { get; set; }
+    public string? Telefono { get; set; }
     public DateTime? HorarioApertura { get; set; }
     public DateTime? HorarioCerrado { get; set; }
     public int? RangoPrecio { get; set; }
@@ -18,4 +18,6 @@ public class Restaurantes
     public bool EsPro { get; set; }
     public decimal? Latitud { get; set; }
     public decimal? Longitud { get; set; }
+    // Web del restaurante: "Reservar en la web del restaurante" (07i). null si no tiene.
+    public string? SitioWeb { get; set; }
 }
