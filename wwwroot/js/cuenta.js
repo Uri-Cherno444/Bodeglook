@@ -8,7 +8,7 @@ function prepararFormulario(idFormulario, url, obtenerDatos) {
     const boton = formulario.querySelector("button[type=submit]");
 
     // Al escribir en un campo con error, se le saca el error
-    formulario.querySelectorAll("input").forEach(function (input) {
+    formulario.querySelectorAll(".campo input, .campo select").forEach(function (input) {
         input.addEventListener("input", function () {
             limpiarErrorCampo(input.closest(".campo"));
         });
@@ -59,7 +59,7 @@ function mostrarErrorCampo(campo, mensaje) {
     error.querySelector(".tooltip").textContent = mensaje;
     entrada.appendChild(error);
 
-    campo.querySelector("input").focus();
+    campo.querySelector("input, select").focus();
 }
 
 function limpiarErrorCampo(campo) {

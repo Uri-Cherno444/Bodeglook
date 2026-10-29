@@ -10,6 +10,10 @@ public class ResenaComunidad
     public DateTime Fecha { get; set; }
     public string? NombreCompleto { get; set; }
 
+    // Los devuelve el procedimiento ListarResenasRestaurante
+    public int IdUsuario { get; set; }
+    public string? NombreUsuario { get; set; }
+
     // Las iniciales se calculan igual que en el resto de la app
     public string ObtenerIniciales()
     {

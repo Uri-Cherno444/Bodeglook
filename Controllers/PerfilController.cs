@@ -12,7 +12,7 @@ public class PerfilController : Controller
         if (HttpContext.Session.GetString("usuario") == null) return RedirectToAction("IniciarSesion", "Cuenta");
 
         Usuarios usuario = UsuarioDeSesion();
-        ViewBag.Barrio = BD.ObtenerNombreBarrio(usuario.IdBarrio);
+        ViewBag.Barrio = BD.ObtenerPerfilUsuario(usuario.Id)?.Barrio;
         ViewBag.CantidadResenas = BD.ContarResenasDeUsuario(usuario.Id);
         // "Gustos y restricciones": las del onboarding
         ViewBag.Restricciones = BD.ObtenerRestriccionesDeUsuario(usuario.Id);

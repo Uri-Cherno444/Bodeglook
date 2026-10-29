@@ -1,4 +1,5 @@
 using Dapper;
+using System.Data;
 using Microsoft.Data.SqlClient;
 
 namespace Bodeglook.Models;
@@ -19,57 +20,52 @@ public static class BD
 
     // ---------- Usuarios ----------
 
-    // Busca por nombre de usuario o por email (el login acepta los dos)
-    public static Usuarios? ObtenerUsuarioPorUsuarioOEmail(string texto)
+    // Procedimiento InicioSesionUsuario. Compara el email y la contraseña ya hasheada.
+    // Devuelve null si no coinciden.
+    public static Usuarios? IniciarSesion(string email, string contraseña)
     {
-        string consulta = "SELECT * FROM Usuarios WHERE NombreUsuario = @texto OR Email = @texto";
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            return conexion.QueryFirstOrDefault<Usuarios>(consulta, new { texto });
+            return conexion.QueryFirstOrDefault<Usuarios>("InicioSesionUsuario",
+                new { Email = email, Contraseña = contraseña },
+                commandType: CommandType.StoredProcedure);
         }
     }
 
-    public static bool ExisteEmail(string email)
+    // Procedimiento RegistrarUsuario. La contraseña ya tiene que venir hasheada.
+    // Devuelve null si se guardó, 1 si el nombre de usuario ya existe o 2 si el email ya se usó.
+    public static int? RegistrarUsuario(Usuarios usuario, int idBarrio)
     {
-        string consulta = "SELECT COUNT(*) FROM Usuarios WHERE Email = @email";
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            return conexion.QueryFirst<int>(consulta, new { email }) > 0;
-        }
-    }
-
-    public static bool ExisteNombreUsuario(string nombreUsuario)
-    {
-        string consulta = "SELECT COUNT(*) FROM Usuarios WHERE NombreUsuario = @nombreUsuario";
-        using (SqlConnection conexion = new SqlConnection(CadenaConexion))
-        {
-            return conexion.QueryFirst<int>(consulta, new { nombreUsuario }) > 0;
-        }
-    }
-
-    // Guarda el usuario y devuelve el Id nuevo. La contraseña ya tiene que venir hasheada.
-    public static int RegistrarUsuario(Usuarios usuario)
-    {
-        string consulta = @"
-            INSERT INTO Usuarios (NombreCompleto, NombreUsuario, Email, Contraseña, FechaRegistro)
-            OUTPUT INSERTED.Id
-            VALUES (@NombreCompleto, @NombreUsuario, @Email, @Contraseña, @FechaRegistro)";
-        using (SqlConnection conexion = new SqlConnection(CadenaConexion))
-        {
-            return conexion.QueryFirst<int>(consulta, usuario);
+            return conexion.QueryFirst<int?>("RegistrarUsuario",
+                new { usuario.NombreCompleto, usuario.NombreUsuario, usuario.Email, usuario.Contraseña, idBarrio },
+                commandType: CommandType.StoredProcedure);
         }
     }
 
     // ---------- 08 · Perfil ----------
 
-    // "Palermo, CABA". null si el usuario no tiene barrio (el registro no lo pide).
-    public static string? ObtenerNombreBarrio(int? idBarrio)
+    // Procedimiento ObtenerPerfilUsuario. Trae el usuario con el nombre de su barrio (campo Barrio).
+    public static Usuarios? ObtenerPerfilUsuario(int idUsuario)
     {
-        if (idBarrio == null) return null;
-        string consulta = "SELECT Nombre FROM Barrios WHERE Id = @idBarrio";
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            return conexion.QueryFirstOrDefault<string>(consulta, new { idBarrio });
+            return conexion.QueryFirstOrDefault<Usuarios>("ObtenerPerfilUsuario",
+                new { idUsuario },
+                commandType: CommandType.StoredProcedure);
+        }
+    }
+
+    // Procedimiento ActualizarPerfilUsuario. Devuelve true si se guardó, false si el barrio no existe.
+    public static bool ActualizarPerfilUsuario(int idUsuario, string nombreCompleto, string? biografia, int idBarrio)
+    {
+        using (SqlConnection conexion = new SqlConnection(CadenaConexion))
+        {
+            int error = conexion.QueryFirst<int>("ActualizarPerfilUsuario",
+                new { idUsuario, NombreCompleto = nombreCompleto, Biografía = biografia, idBarrio },
+                commandType: CommandType.StoredProcedure);
+            return error == 0;
         }
     }
 
@@ -95,13 +91,33 @@ public static class BD
         }
     }
 
-    // Todos los barrios: son los chips de "Zonas que te interesan"
+    // Procedimiento ListarBarrios: son los chips de "Zonas que te interesan"
     public static List<Barrios> ObtenerBarrios()
     {
-        string consulta = "SELECT Id, Nombre FROM Barrios ORDER BY Id";
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            return conexion.Query<Barrios>(consulta).ToList();
+            return conexion.Query<Barrios>("ListarBarrios", commandType: CommandType.StoredProcedure).ToList();
+        }
+    }
+
+    // Procedimiento ListarCategorias: las opciones del desplegable "Categoría"
+    public static List<Categorias> ObtenerCategorias()
+    {
+        using (SqlConnection conexion = new SqlConnection(CadenaConexion))
+        {
+            return conexion.Query<Categorias>("ListarCategorias", commandType: CommandType.StoredProcedure).ToList();
+        }
+    }
+
+    // Procedimiento RegistrarRestaurante. La contraseña ya tiene que venir hasheada.
+    // Devuelve 0 si se guardó, 1 si el email ya se usó, 2 si el barrio no existe o 3 si la categoría no existe.
+    public static int RegistrarRestaurante(string nombre, string email, string contraseña, int idBarrio, int idCategoria, bool esPro)
+    {
+        using (SqlConnection conexion = new SqlConnection(CadenaConexion))
+        {
+            return conexion.QueryFirst<int>("RegistrarRestaurante",
+                new { Nombre = nombre, Email = email, Contraseña = contraseña, idBarrio, idCategoria, EsPro = esPro },
+                commandType: CommandType.StoredProcedure);
         }
     }
 
@@ -137,49 +153,61 @@ public static class BD
 
     // ---------- Grupos y chats ----------
 
-    // Integrantes de un grupo (sin la contraseña)
+    // Procedimiento ListarMiembrosGrupo (sin la contraseña). Si el grupo no existe el procedimiento
+    // solo devuelve el código de error, y acá queda una lista vacía.
     public static List<Usuarios> ObtenerIntegrantesDeGrupo(int idGrupo)
     {
-        string consulta = @"
-            SELECT u.Id, u.NombreCompleto, u.NombreUsuario
-            FROM Usuarios u
-            JOIN UsuariosGrupos ug ON ug.IdUsuario = u.Id
-            WHERE ug.IdGrupo = @idGrupo
-            ORDER BY u.NombreCompleto";
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            return conexion.Query<Usuarios>(consulta, new { idGrupo }).ToList();
+            SqlMapper.GridReader resultado = conexion.QueryMultiple("ListarMiembrosGrupo",
+                new { idGrupo },
+                commandType: CommandType.StoredProcedure);
+            List<Usuarios> integrantes = resultado.Read<Usuarios>().ToList();
+            if (resultado.IsConsumed) return new List<Usuarios>();
+            return integrantes;
         }
     }
 
     public static bool EsIntegranteDeGrupo(int idUsuario, int idGrupo)
     {
-        string consulta = "SELECT COUNT(*) FROM UsuariosGrupos WHERE IdUsuario = @idUsuario AND IdGrupo = @idGrupo";
-        using (SqlConnection conexion = new SqlConnection(CadenaConexion))
-        {
-            return conexion.QueryFirst<int>(consulta, new { idUsuario, idGrupo }) > 0;
-        }
+        return ObtenerIntegrantesDeGrupo(idGrupo).Any(integrante => integrante.Id == idUsuario);
     }
 
-    // Los grupos del usuario con la fecha del último mensaje y cuántos no leyó.
-    // No leídos = mensajes de otros posteriores a su UltimaLectura.
+    // Los grupos del usuario (procedimiento ListarGruposUsuario) con la fecha del último mensaje
+    // y cuántos mensajes no leyó (usa UsuariosGrupos.UltimaLectura).
     public static List<ResumenChat> ObtenerChatsDeUsuario(int idUsuario)
     {
-        string consulta = @"
-            SELECT g.Id AS IdGrupo, g.Nombre, g.Foto,
-                   (SELECT MAX(FechaHora) FROM Mensajes WHERE IdGrupo = g.Id) AS UltimaFecha,
-                   (SELECT COUNT(*) FROM Mensajes m
-                    WHERE m.IdGrupo = g.Id AND m.IdUsuario <> @idUsuario
-                      AND (ug.UltimaLectura IS NULL OR m.FechaHora > ug.UltimaLectura)) AS NoLeidos
-            FROM Grupos g
-            JOIN UsuariosGrupos ug ON ug.IdGrupo = g.Id
-            WHERE ug.IdUsuario = @idUsuario
-            ORDER BY COALESCE((SELECT MAX(FechaHora) FROM Mensajes WHERE IdGrupo = g.Id), g.FechaCreacion) DESC";
-        List<ResumenChat> chats;
+        List<Grupos> grupos;
+        List<ResumenChat> chats = new List<ResumenChat>();
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            chats = conexion.Query<ResumenChat>(consulta, new { idUsuario }).ToList();
+            grupos = conexion.Query<Grupos>("ListarGruposUsuario",
+                new { idUsuario },
+                commandType: CommandType.StoredProcedure).ToList();
+
+            foreach (Grupos grupo in grupos)
+            {
+                ResumenChat chat = new ResumenChat();
+                chat.IdGrupo = grupo.Id;
+                chat.Nombre = grupo.Nombre;
+                chat.Foto = grupo.Foto;
+                chat.UltimaFecha = conexion.QueryFirst<DateTime?>(
+                    "SELECT MAX(FechaHora) FROM Mensajes WHERE idGrupo = @idGrupo",
+                    new { idGrupo = grupo.Id });
+                // No leídos = mensajes de otros posteriores a su UltimaLectura
+                chat.NoLeidos = conexion.QueryFirst<int>(@"
+                    SELECT COUNT(*) FROM Mensajes m
+                    JOIN UsuariosGrupos ug ON ug.idGrupo = m.idGrupo AND ug.idUsuario = @idUsuario
+                    WHERE m.idGrupo = @idGrupo AND m.idUsuario <> @idUsuario
+                      AND (ug.UltimaLectura IS NULL OR m.FechaHora > ug.UltimaLectura)",
+                    new { idGrupo = grupo.Id, idUsuario });
+                chat.FechaOrden = chat.UltimaFecha ?? grupo.FechaCreacion;
+                chats.Add(chat);
+            }
         }
+
+        // El chat con el mensaje más nuevo va primero
+        chats = chats.OrderByDescending(chat => chat.FechaOrden).ToList();
 
         // Debajo del nombre del grupo van los integrantes: "Cami, Sofi, yo"
         foreach (ResumenChat chat in chats)
@@ -250,14 +278,15 @@ public static class BD
                 "INSERT INTO Grupos (Nombre, FechaCreacion) OUTPUT INSERTED.Id VALUES (@nombre, GETDATE())",
                 new { nombre });
 
-            conexion.Execute(
-                "INSERT INTO UsuariosGrupos (IdUsuario, IdGrupo, UltimaLectura) VALUES (@idCreador, @idGrupo, GETDATE())",
-                new { idCreador, idGrupo });
+            // Procedimiento AgregarUsuarioAGrupo: el creador y cada integrante
+            conexion.Execute("AgregarUsuarioAGrupo",
+                new { idUsuario = idCreador, idGrupo },
+                commandType: CommandType.StoredProcedure);
             foreach (int idIntegrante in idsIntegrantes)
             {
-                conexion.Execute(
-                    "INSERT INTO UsuariosGrupos (IdUsuario, IdGrupo) VALUES (@idIntegrante, @idGrupo)",
-                    new { idIntegrante, idGrupo });
+                conexion.Execute("AgregarUsuarioAGrupo",
+                    new { idUsuario = idIntegrante, idGrupo },
+                    commandType: CommandType.StoredProcedure);
             }
             return idGrupo;
         }
@@ -482,23 +511,22 @@ public static class BD
     {
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            int idPlan = conexion.QueryFirst<int>(@"
-                INSERT INTO Planes (Titulo, FechaCierreVotacion, FechaSalida, Estado, IdGrupo, IdUsuarioCreador)
-                OUTPUT INSERTED.Id
-                VALUES (@titulo, @dia, @dia, 0, @idGrupo, @idCreador)",
-                new { titulo, dia, idGrupo, idCreador });
+            // Procedimiento CrearPlan: queda En votación (Estado 0) y devuelve el Id nuevo
+            int idPlan = conexion.QueryFirst<int>("CrearPlan",
+                new { Titulo = titulo, FechaCierreVotacion = dia, FechaSalida = dia, idGrupo, idUsuarioCreador = idCreador },
+                commandType: CommandType.StoredProcedure);
 
             // PlanesHorarios va por lugar: cada horario se guarda una vez por cada lugar, con el día y la hora
             foreach (int idRestaurante in idsLugares)
             {
-                conexion.Execute(
-                    "INSERT INTO PlanesRestaurantes (IdPlan, IdRestaurante) VALUES (@idPlan, @idRestaurante)",
-                    new { idPlan, idRestaurante });
+                conexion.Execute("AgregarRestauranteAPlan",
+                    new { idPlan, idRestaurante },
+                    commandType: CommandType.StoredProcedure);
                 foreach (TimeSpan horario in horarios)
                 {
-                    conexion.Execute(
-                        "INSERT INTO PlanesHorarios (IdPlan, IdRestaurante, FechaHoraPropuesta) VALUES (@idPlan, @idRestaurante, @fechaHora)",
-                        new { idPlan, idRestaurante, fechaHora = dia.Add(horario) });
+                    conexion.Execute("AgregarHorarioAPlan",
+                        new { idPlan, idRestaurante, FechaHoraPropuesta = dia.Add(horario) },
+                        commandType: CommandType.StoredProcedure);
                 }
             }
 
@@ -599,12 +627,29 @@ public static class BD
 
     // ---------- Restaurantes ----------
 
-    // Los restaurantes con mejor promedio de reseñas. Los que no tienen reseñas van al final.
-    // EsFavorito dice si el usuario ya lo guardó (para pintar el corazón).
+    // Los restaurantes de las tarjetas "Recomendados". EsFavorito dice si el usuario ya lo guardó
+    // (para pintar el corazón; con idUsuario 0 ninguno es favorito).
+    // Sin soloApto se usa el procedimiento Mostrar4Restaurantes (los 4 primeros) y se completan
+    // categoría, barrio, puntaje y favorito con ObtenerRestaurante y ComprobarEsFavorito.
     // soloApto = true deja solo los que cumplen al menos una restricción del usuario
-    // (si el usuario no marcó ninguna, trae todos).
+    // (si el usuario no marcó ninguna, trae todos): para eso no hay procedimiento, queda la consulta.
     public static List<TarjetaRestaurante> ObtenerMejorPuntuados(int cantidad, int idUsuario, bool soloApto)
     {
+        if (!soloApto)
+        {
+            List<TarjetaRestaurante> tarjetas;
+            using (SqlConnection conexion = new SqlConnection(CadenaConexion))
+            {
+                tarjetas = conexion.Query<TarjetaRestaurante>("Mostrar4Restaurantes",
+                    commandType: CommandType.StoredProcedure).Take(cantidad).ToList();
+            }
+            foreach (TarjetaRestaurante tarjeta in tarjetas)
+            {
+                CompletarTarjeta(tarjeta, idUsuario);
+            }
+            return tarjetas;
+        }
+
         string consulta = @"
             SELECT TOP (@cantidad) r.Id, r.Nombre, r.Foto, c.Nombre AS Categoria, b.Nombre AS Barrio,
                    (SELECT AVG(CAST(Puntaje AS float)) FROM Reseñas WHERE IdRestaurante = r.Id AND Fecha <= DATEADD(hour, -24, GETDATE())) AS Puntaje,
@@ -665,7 +710,10 @@ public static class BD
         return filtro;
     }
 
-    // Una página de resultados. Primero los Pro (salen destacados) y después por mejor puntaje.
+    // Una página de resultados. Primero los Pro (salen destacados), después los más cerca del barrio
+    // del usuario (fórmula de Haversine: función DistanciaKm de la base) y después por mejor puntaje.
+    // Los que no tienen distancia (el usuario o el lugar sin coordenadas) van al final de cada grupo.
+    // El pin del mapa sale de las coordenadas del barrio del lugar.
     public static List<TarjetaRestaurante> BuscarRestaurantes(string texto, int idUsuario, bool soloApto, int desde, int cantidad)
     {
         DynamicParameters parametros = new DynamicParameters();
@@ -674,14 +722,20 @@ public static class BD
         parametros.Add("cantidad", cantidad);
 
         string consulta = @"
-            SELECT r.Id, r.Nombre, r.Foto, c.Nombre AS Categoria, b.Nombre AS Barrio, r.EsPro, r.Latitud, r.Longitud,
+            SELECT r.Id, r.Nombre, r.Foto, c.Nombre AS Categoria, b.Nombre AS Barrio, r.EsPro,
+                   b.Latitud, b.Longitud,
+                   dbo.DistanciaKm(bu.Latitud, bu.Longitud, b.Latitud, b.Longitud) AS DistanciaKm,
                    (SELECT AVG(CAST(Puntaje AS float)) FROM Reseñas WHERE IdRestaurante = r.Id AND Fecha <= DATEADD(hour, -24, GETDATE())) AS Puntaje,
                    CAST(CASE WHEN EXISTS (SELECT 1 FROM Favoritos WHERE IdUsuario = @idUsuario AND IdRestaurante = r.Id)
                         THEN 1 ELSE 0 END AS bit) AS EsFavorito
             FROM Restaurantes r
             LEFT JOIN Categorias c ON c.Id = r.IdCategoria
-            LEFT JOIN Barrios b ON b.Id = r.IdBarrio" + filtro + @"
+            LEFT JOIN Barrios b ON b.Id = r.IdBarrio
+            LEFT JOIN Usuarios u ON u.Id = @idUsuario
+            LEFT JOIN Barrios bu ON bu.Id = u.IdBarrio" + filtro + @"
             ORDER BY r.EsPro DESC,
+                     CASE WHEN bu.Latitud IS NULL OR b.Latitud IS NULL THEN 1 ELSE 0 END,
+                     dbo.DistanciaKm(bu.Latitud, bu.Longitud, b.Latitud, b.Longitud),
                      CASE WHEN (SELECT AVG(CAST(Puntaje AS float)) FROM Reseñas WHERE IdRestaurante = r.Id AND Fecha <= DATEADD(hour, -24, GETDATE())) IS NULL THEN 1 ELSE 0 END,
                      Puntaje DESC, r.Id
             OFFSET @desde ROWS FETCH NEXT @cantidad ROWS ONLY";
@@ -734,63 +788,77 @@ public static class BD
 
     public static bool ExisteRestaurante(int idRestaurante)
     {
-        string consulta = "SELECT COUNT(*) FROM Restaurantes WHERE Id = @idRestaurante";
+        return ObtenerRestaurante(idRestaurante) != null;
+    }
+
+    // Procedimiento ObtenerRestaurante. Devuelve null si el id no existe.
+    // El procedimiento llama Promedio al puntaje: acá se copia a Puntaje.
+    private static DetalleRestaurante? ObtenerRestaurante(int idRestaurante)
+    {
+        DetalleRestaurante? detalle;
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            return conexion.QueryFirst<int>(consulta, new { idRestaurante }) > 0;
+            detalle = conexion.QueryFirstOrDefault<DetalleRestaurante>("ObtenerRestaurante",
+                new { idRestaurante },
+                commandType: CommandType.StoredProcedure);
         }
+
+        if (detalle != null) detalle.Puntaje = detalle.Promedio;
+        return detalle;
+    }
+
+    // Procedimiento ComprobarEsFavorito
+    public static bool EsFavorito(int idUsuario, int idRestaurante)
+    {
+        using (SqlConnection conexion = new SqlConnection(CadenaConexion))
+        {
+            return conexion.QueryFirst<bool>("ComprobarEsFavorito",
+                new { idUsuario, idRestaurante },
+                commandType: CommandType.StoredProcedure);
+        }
+    }
+
+    // Completa una tarjeta que solo trae los datos de la tabla Restaurantes:
+    // categoría, barrio y puntaje (ObtenerRestaurante) y si es favorito (ComprobarEsFavorito)
+    private static void CompletarTarjeta(TarjetaRestaurante tarjeta, int idUsuario)
+    {
+        DetalleRestaurante? restaurante = ObtenerRestaurante(tarjeta.Id);
+        if (restaurante != null)
+        {
+            tarjeta.Categoria = restaurante.Categoria;
+            tarjeta.Barrio = restaurante.Barrio;
+            tarjeta.Puntaje = restaurante.Puntaje;
+        }
+        tarjeta.EsFavorito = idUsuario > 0 && EsFavorito(idUsuario, tarjeta.Id);
     }
 
     // Todo lo de 04 · Detalle + Reseña menos las reseñas. Devuelve null si el id no existe.
     public static DetalleRestaurante? ObtenerDetalleRestaurante(int idRestaurante, int idUsuario)
     {
-        string consulta = @"
-            SELECT r.Id, r.Nombre, r.Foto, r.Descripcion, c.Nombre AS Categoria, b.Nombre AS Barrio,
-                   r.DireccionCalle, r.DireccionNumero, r.DireccionCodigoPostal, r.Telefono,
-                   r.HorarioApertura, r.HorarioCerrado,
-                   (SELECT AVG(CAST(Puntaje AS float)) FROM Reseñas WHERE IdRestaurante = r.Id AND Fecha <= DATEADD(hour, -24, GETDATE())) AS Puntaje,
-                   (SELECT COUNT(*) FROM Reseñas WHERE IdRestaurante = r.Id AND Fecha <= DATEADD(hour, -24, GETDATE())) AS CantidadResenas,
-                   CAST(CASE WHEN EXISTS (SELECT 1 FROM Favoritos WHERE IdUsuario = @idUsuario AND IdRestaurante = r.Id)
-                        THEN 1 ELSE 0 END AS bit) AS EsFavorito
-            FROM Restaurantes r
-            LEFT JOIN Categorias c ON c.Id = r.IdCategoria
-            LEFT JOIN Barrios b ON b.Id = r.IdBarrio
-            WHERE r.Id = @idRestaurante";
-        DetalleRestaurante? detalle;
-        using (SqlConnection conexion = new SqlConnection(CadenaConexion))
-        {
-            detalle = conexion.QueryFirstOrDefault<DetalleRestaurante>(consulta, new { idRestaurante, idUsuario });
-        }
+        DetalleRestaurante? detalle = ObtenerRestaurante(idRestaurante);
+        if (detalle == null) return null;
 
-        if (detalle != null) detalle.Restricciones = ObtenerRestriccionesDeRestaurante(idRestaurante);
+        detalle.EsFavorito = EsFavorito(idUsuario, idRestaurante);
+        detalle.Restricciones = ObtenerRestriccionesDeRestaurante(idRestaurante);
         return detalle;
     }
 
-    // Los chips dietarios: "Sin TACC", "Vegetariano", etc.
+    // Procedimiento ListarRestriccionesRestaurante: los chips dietarios "Sin TACC", "Vegetariano", etc.
     public static List<string> ObtenerRestriccionesDeRestaurante(int idRestaurante)
     {
-        string consulta = @"
-            SELECT re.Nombre
-            FROM RestriccionesRestaurantes rr
-            JOIN Restricciones re ON re.Id = rr.IdRestriccion
-            WHERE rr.IdRestaurante = @idRestaurante
-            ORDER BY re.Id";
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            return conexion.Query<string>(consulta, new { idRestaurante }).ToList();
+            List<Restricciones> restricciones = conexion.Query<Restricciones>("ListarRestriccionesRestaurante",
+                new { idRestaurante },
+                commandType: CommandType.StoredProcedure).ToList();
+            return restricciones.Select(restriccion => restriccion.Nombre!).ToList();
         }
     }
 
     // Promedio y cantidad de reseñas (para actualizar la pantalla después de dejar una)
     public static DetalleRestaurante ObtenerPuntajeRestaurante(int idRestaurante)
     {
-        string consulta = @"
-            SELECT AVG(CAST(Puntaje AS float)) AS Puntaje, COUNT(*) AS CantidadResenas
-            FROM Reseñas WHERE IdRestaurante = @idRestaurante AND Fecha <= DATEADD(hour, -24, GETDATE())";
-        using (SqlConnection conexion = new SqlConnection(CadenaConexion))
-        {
-            return conexion.QueryFirst<DetalleRestaurante>(consulta, new { idRestaurante });
-        }
+        return ObtenerRestaurante(idRestaurante) ?? new DetalleRestaurante();
     }
 
     // ---------- Reseñas ----------
@@ -825,70 +893,100 @@ public static class BD
 
     // Las reseñas de un lugar de la más nueva a la más vieja, salteando las primeras "desde".
     // cantidad = null trae todas las que quedan.
+    // Procedimiento ListarResenasRestaurante (ya viene de la más nueva a la más vieja).
+    // El procedimiento no filtra ni pagina: las 24 horas y el "desde / cantidad" se aplican acá.
+    // Devuelve el nombre de usuario; el nombre completo se pide con ObtenerPerfilUsuario.
     public static List<ResenaComunidad> ObtenerResenasDeRestaurante(int idRestaurante, int desde, int? cantidad)
     {
-        string consulta = @"
-            SELECT re.Id, re.Puntaje, re.Comentario, re.Fecha, u.NombreCompleto
-            FROM Reseñas re
-            JOIN Usuarios u ON u.Id = re.IdUsuario
-            WHERE re.IdRestaurante = @idRestaurante AND re.Fecha <= DATEADD(hour, -24, GETDATE())
-            ORDER BY re.Fecha DESC, re.Id DESC
-            OFFSET @desde ROWS";
-        if (cantidad != null) consulta += " FETCH NEXT @cantidad ROWS ONLY";
-
+        List<ResenaComunidad> resenas;
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            return conexion.Query<ResenaComunidad>(consulta, new { idRestaurante, desde, cantidad }).ToList();
+            resenas = conexion.Query<ResenaComunidad>("ListarResenasRestaurante",
+                new { idRestaurante },
+                commandType: CommandType.StoredProcedure).ToList();
         }
+
+        DateTime limite = DateTime.Now.AddHours(-24);
+        resenas = resenas.Where(resena => resena.Fecha <= limite).Skip(desde).ToList();
+        if (cantidad != null) resenas = resenas.Take(cantidad.Value).ToList();
+
+        foreach (ResenaComunidad resena in resenas)
+        {
+            Usuarios? autor = ObtenerPerfilUsuario(resena.IdUsuario);
+            resena.NombreCompleto = autor?.NombreCompleto ?? resena.NombreUsuario;
+        }
+        return resenas;
     }
 
-    // Guarda la reseña y devuelve el Id nuevo
+    // Procedimiento CrearResena. La fecha de la reseña es ahora (la pone el procedimiento).
+    // Devuelve 0 si se guardó, 1 si el puntaje no es de 1 a 5 o 2 si el usuario ya reseñó ese lugar.
     public static int GuardarResena(Reseñas resena)
     {
-        string consulta = @"
-            INSERT INTO Reseñas (Puntaje, Comentario, Fecha, IdUsuario, IdRestaurante)
-            OUTPUT INSERTED.Id
-            VALUES (@Puntaje, @Comentario, @Fecha, @IdUsuario, @IdRestaurante)";
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            return conexion.QueryFirst<int>(consulta, resena);
+            return conexion.QueryFirst<int>("CrearResena",
+                new { resena.IdUsuario, resena.IdRestaurante, resena.Puntaje, resena.Comentario, resena.Foto },
+                commandType: CommandType.StoredProcedure);
         }
     }
 
     // ---------- Favoritos ----------
 
-    // Los favoritos del usuario, en el orden en que los guardó
+    // Procedimiento MostrarFavoritos: los favoritos del usuario, en el orden en que los guardó.
+    // El procedimiento devuelve tres columnas Nombre seguidas (restaurante, barrio y categoría),
+    // por eso se leen por posición. El puntaje se completa con ObtenerRestaurante.
     public static List<TarjetaRestaurante> ObtenerFavoritos(int idUsuario)
     {
-        string consulta = @"
-            SELECT r.Id, r.Nombre, r.Foto, c.Nombre AS Categoria, b.Nombre AS Barrio,
-                   (SELECT AVG(CAST(Puntaje AS float)) FROM Reseñas WHERE IdRestaurante = r.Id AND Fecha <= DATEADD(hour, -24, GETDATE())) AS Puntaje,
-                   CAST(1 AS bit) AS EsFavorito
-            FROM Favoritos f
-            JOIN Restaurantes r ON r.Id = f.IdRestaurante
-            LEFT JOIN Categorias c ON c.Id = r.IdCategoria
-            LEFT JOIN Barrios b ON b.Id = r.IdBarrio
-            WHERE f.IdUsuario = @idUsuario
-            ORDER BY f.Id";
+        List<TarjetaRestaurante> favoritos = new List<TarjetaRestaurante>();
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            return conexion.Query<TarjetaRestaurante>(consulta, new { idUsuario }).ToList();
+            using (IDataReader lector = conexion.ExecuteReader("MostrarFavoritos",
+                new { idUsuario },
+                commandType: CommandType.StoredProcedure))
+            {
+                int columnaId = lector.GetOrdinal("ID");
+                int columnaNombre = lector.GetOrdinal("Nombre");
+                int columnaFoto = lector.GetOrdinal("Foto");
+                int columnaBarrio = lector.FieldCount - 2;
+                int columnaCategoria = lector.FieldCount - 1;
+                while (lector.Read())
+                {
+                    TarjetaRestaurante favorito = new TarjetaRestaurante();
+                    favorito.Id = lector.GetInt32(columnaId);
+                    favorito.Nombre = lector.GetString(columnaNombre);
+                    favorito.Foto = lector.IsDBNull(columnaFoto) ? null : lector.GetString(columnaFoto);
+                    favorito.Barrio = lector.GetString(columnaBarrio);
+                    favorito.Categoria = lector.GetString(columnaCategoria);
+                    favorito.EsFavorito = true;
+                    favoritos.Add(favorito);
+                }
+            }
         }
+
+        foreach (TarjetaRestaurante favorito in favoritos)
+        {
+            favorito.Puntaje = ObtenerRestaurante(favorito.Id)?.Puntaje;
+        }
+        return favoritos;
     }
 
-    // Si ya era favorito lo saca, si no lo agrega. Devuelve true si quedó como favorito.
+    // Si ya era favorito lo saca (QuitarFavorito), si no lo agrega (AgregarFavorito).
+    // Devuelve true si quedó como favorito.
     public static bool AlternarFavorito(int idUsuario, int idRestaurante)
     {
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            int borrados = conexion.Execute(
-                "DELETE FROM Favoritos WHERE IdUsuario = @idUsuario AND IdRestaurante = @idRestaurante",
-                new { idUsuario, idRestaurante });
-            if (borrados > 0) return false;
+            if (EsFavorito(idUsuario, idRestaurante))
+            {
+                conexion.Execute("QuitarFavorito",
+                    new { idUsuario, idRestaurante },
+                    commandType: CommandType.StoredProcedure);
+                return false;
+            }
 
-            conexion.Execute(
-                "INSERT INTO Favoritos (IdUsuario, IdRestaurante) VALUES (@idUsuario, @idRestaurante)",
-                new { idUsuario, idRestaurante });
+            conexion.Execute("AgregarFavorito",
+                new { idUsuario, idRestaurante },
+                commandType: CommandType.StoredProcedure);
             return true;
         }
     }

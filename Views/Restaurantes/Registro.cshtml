@@ -1,0 +1,147 @@
+@using Bodeglook.Models
+@{
+    ViewData["Title"] = "Registro de restaurante";
+    ViewData["SinHeader"] = true;
+    List<Barrios> barrios = ViewBag.Barrios;
+    List<Categorias> categorias = ViewBag.Categorias;
+    string plan = ViewBag.Plan;
+}
+
+@section Estilos {
+    <link rel="stylesheet" href="~/css/cuenta.css" asp-append-version="true" />
+}
+
+@* 06 · Registro Restaurante *@
+<section class="cuenta">
+    <div class="cuenta-marca">
+        @* Vuelve a la pantalla anterior; sin historial, a la Landing *@
+        <a class="boton-volver cuenta-volver" id="botonVolver" href="/" aria-label="Volver">
+            <img src="~/img/icono-volver.svg" width="22" height="22" alt="" />
+        </a>
+        <span class="cuenta-logo">
+            <img src="~/img/logo-pin-grande.svg" width="118" height="180" alt="" />
+        </span>
+        <p class="cuenta-nombre">Bodeglook</p>
+        <p class="cuenta-lema">Llegá a los grupos que buscan dónde comer</p>
+        <p class="cuenta-descripcion">Creá tu perfil gratis, recibí reseñas reales y aparecé en las votaciones de los grupos.</p>
+    </div>
+
+    <div class="cuenta-panel">
+        <form class="cuenta-formulario cuenta-formulario-registro cuenta-formulario-restaurante" id="formRestaurante" novalidate>
+            <h1>Registrá tu restaurante</h1>
+            <p class="cuenta-subtitulo">Creá el perfil gratis y elegí tu plan.</p>
+
+            <div class="aviso" id="aviso" hidden>
+                <span class="aviso-texto" id="avisoTexto"></span>
+                <button type="button" class="aviso-cerrar" aria-label="Cerrar aviso">
+                    <img src="~/img/icono-cerrar-aviso.svg" width="24" height="24" alt="" />
+                </button>
+            </div>
+
+            <div class="campo" data-campo="nombre">
+                <label for="nombre">Nombre del restaurante</label>
+                <div class="campo-entrada">
+                    <input type="text" id="nombre" name="nombre" placeholder="Ej: Bodega Los Alamos" autocomplete="organization" />
+                </div>
+            </div>
+
+            <div class="campo" data-campo="email">
+                <label for="email">Email</label>
+                <div class="campo-entrada">
+                    <input type="email" id="email" name="email" placeholder="tu@restaurante.com" autocomplete="email" />
+                </div>
+            </div>
+
+            <div class="campo" data-campo="contrasena">
+                <label for="contrasena">Contraseña</label>
+                <div class="campo-entrada">
+                    <input type="password" id="contrasena" name="contrasena" placeholder="Tu contraseña" autocomplete="new-password" />
+                </div>
+            </div>
+
+            <div class="campo" data-campo="barrio">
+                <label for="barrio">Barrio</label>
+                <div class="campo-entrada">
+                    <select id="barrio" name="barrio">
+                        <option value="" selected>Ej: Palermo</option>
+                        @foreach (Barrios barrio in barrios)
+                        {
+                            <option value="@barrio.Id">@barrio.Nombre</option>
+                        }
+                    </select>
+                </div>
+            </div>
+
+            <div class="campo" data-campo="categoria">
+                <label for="categoria">Categoría</label>
+                <div class="campo-entrada">
+                    <select id="categoria" name="categoria">
+                        <option value="" selected>Ej: Parrilla</option>
+                        @foreach (Categorias categoria in categorias)
+                        {
+                            <option value="@categoria.Id">@categoria.Nombre</option>
+                        }
+                    </select>
+                </div>
+            </div>
+
+            <fieldset class="plan-campo">
+                <legend>Plan</legend>
+                <div class="plan-opciones">
+                    <label class="plan-opcion @(plan == "gratis" ? "plan-opcion-elegida" : "")">
+                        <input type="radio" name="plan" value="gratis" @(plan == "gratis" ? "checked" : "") />
+                        <span class="plan-opcion-nombre">Gratis</span>
+                        <span class="plan-opcion-precio">$0 · para siempre</span>
+                    </label>
+                    <label class="plan-opcion @(plan == "pro" ? "plan-opcion-elegida" : "")">
+                        <input type="radio" name="plan" value="pro" @(plan == "pro" ? "checked" : "") />
+                        <span class="plan-opcion-nombre">Pro</span>
+                        <span class="plan-opcion-precio">$14.999 por mes</span>
+                    </label>
+                </div>
+            </fieldset>
+
+            <button type="submit" class="boton boton-primario boton-grande boton-ancho">Crear cuenta</button>
+
+            <div class="cuenta-pie cuenta-pie-registro">
+                <span>¿Ya tenés cuenta?</span>
+                <a href="/Cuenta/IniciarSesion">Iniciá sesión</a>
+            </div>
+        </form>
+    </div>
+</section>
+
+@section Scripts {
+    <script src="~/js/cuenta.js" asp-append-version="true"></script>
+    <script>
+        // La tarjeta de plan elegida va con borde y fondo naranja suave
+        document.querySelectorAll(".plan-opcion input").forEach(function (radio) {
+            radio.addEventListener("change", function () {
+                document.querySelectorAll(".plan-opcion").forEach(function (opcion) {
+                    opcion.classList.toggle("plan-opcion-elegida", opcion.querySelector("input").checked);
+                });
+            });
+        });
+
+        // Volver a la pantalla anterior (si se llegó desde otra página de Bodeglook)
+        document.getElementById("botonVolver").addEventListener("click", function (evento) {
+            if (document.referrer.startsWith(window.location.origin) && history.length > 1) {
+                evento.preventDefault();
+                history.back();
+            }
+        });
+
+        prepararFormulario("formRestaurante", "/Restaurantes/RegistrarRestaurante", function () {
+            const barrio = document.getElementById("barrio").value;
+            const categoria = document.getElementById("categoria").value;
+            return {
+                nombre: document.getElementById("nombre").value,
+                email: document.getElementById("email").value,
+                contraseña: document.getElementById("contrasena").value,
+                idBarrio: barrio === "" ? null : Number(barrio),
+                idCategoria: categoria === "" ? null : Number(categoria),
+                plan: document.querySelector('input[name="plan"]:checked').value
+            };
+        });
+    </script>
+}

@@ -62,12 +62,11 @@ public class CuentaController : Controller
         if (string.IsNullOrWhiteSpace(datos.Contraseña))
             return Json(new { ok = false, campo = "contrasena", mensaje = "Completá tu contraseña." });
 
-        Usuarios? usuario = BD.ObtenerUsuarioPorUsuarioOEmail(datos.NombreUsuario.Trim());
+        // El procedimiento InicioSesionUsuario busca por email y contraseña hasheada
+        string email = datos.NombreUsuario.Trim();
+        Usuarios? usuario = BD.IniciarSesion(email, HashearContraseña(datos.Contraseña, email));
         if (usuario == null)
-            return Json(new { ok = false, campo = "aviso", mensaje = "No hay ninguna cuenta con ese usuario o email. Registrate para empezar." });
-
-        if (!VerificarContraseña(datos.Contraseña, usuario.Contraseña!))
-            return Json(new { ok = false, campo = "contrasena", mensaje = "La contraseña no es correcta." });
+            return Json(new { ok = false, campo = "aviso", mensaje = "El email o la contraseña no son correctos." });
 
         GuardarEnSesion(usuario);
         return Json(new { ok = true, destino = "/Home/Inicio" });
@@ -91,21 +90,26 @@ public class CuentaController : Controller
         string nombreUsuario = datos.NombreUsuario.Trim();
         string email = datos.Email.Trim();
 
-        if (BD.ExisteNombreUsuario(nombreUsuario))
-            return Json(new { ok = false, campo = "usuario", mensaje = "Ese usuario ya existe. Probá con otro." });
-        if (BD.ExisteEmail(email))
-            return Json(new { ok = false, campo = "email", mensaje = "Ese email ya tiene una cuenta." });
-
         Usuarios nuevo = new Usuarios();
         nuevo.NombreCompleto = datos.NombreCompleto.Trim();
         nuevo.NombreUsuario = nombreUsuario;
         nuevo.Email = email;
-        nuevo.Contraseña = HashearContraseña(datos.Contraseña);
-        nuevo.FechaRegistro = DateTime.Today;
-        nuevo.Id = BD.RegistrarUsuario(nuevo);
+        nuevo.Contraseña = HashearContraseña(datos.Contraseña, email);
+
+        // La base pide un barrio y el formulario no lo pregunta: queda el primero de la lista (provisorio)
+        int idBarrio = BD.ObtenerBarrios()[0].Id;
+        int? error = BD.RegistrarUsuario(nuevo, idBarrio);
+        if (error == 1)
+            return Json(new { ok = false, campo = "usuario", mensaje = "Ese usuario ya existe. Probá con otro." });
+        if (error == 2)
+            return Json(new { ok = false, campo = "email", mensaje = "Ese email ya tiene una cuenta." });
 
         // Con la cuenta nueva queda con sesión y sigue al onboarding
-        GuardarEnSesion(nuevo);
+        Usuarios? creado = BD.IniciarSesion(email, nuevo.Contraseña);
+        if (creado == null)
+            return Json(new { ok = false, campo = "aviso", mensaje = "No se pudo crear la cuenta. Probá de nuevo." });
+
+        GuardarEnSesion(creado);
         return Json(new { ok = true, destino = "/Cuenta/Gustos" });
     }
 
@@ -171,26 +175,9 @@ public class CuentaController : Controller
     }
 
     // ---------- Contraseñas ----------
-    // Se guarda "sal:hash" en Base64. La sal es aleatoria para cada usuario,
-    // así dos personas con la misma contraseña no tienen el mismo hash.
-    // Sal de 12 bytes (16 caracteres) + ":" + hash de 24 bytes (32 caracteres) = 49 caracteres,
-    // para que entre en Usuarios.Contraseña varchar(50).
-
-    private static string HashearContraseña(string contraseña)
+    // El hash lo calcula Contraseñas.Hashear (la misma sal por email que usa el registro de restaurantes)
+    private static string HashearContraseña(string contraseña, string email)
     {
-        byte[] sal = RandomNumberGenerator.GetBytes(12);
-        byte[] hash = Rfc2898DeriveBytes.Pbkdf2(contraseña, sal, 100000, HashAlgorithmName.SHA256, 24);
-        return Convert.ToBase64String(sal) + ":" + Convert.ToBase64String(hash);
-    }
-
-    private static bool VerificarContraseña(string contraseña, string guardada)
-    {
-        string[] partes = guardada.Split(':');
-        if (partes.Length != 2) return false;
-
-        byte[] sal = Convert.FromBase64String(partes[0]);
-        byte[] hashGuardado = Convert.FromBase64String(partes[1]);
-        byte[] hashNuevo = Rfc2898DeriveBytes.Pbkdf2(contraseña, sal, 100000, HashAlgorithmName.SHA256, hashGuardado.Length);
-        return CryptographicOperations.FixedTimeEquals(hashNuevo, hashGuardado);
+        return Contraseñas.Hashear(contraseña, email);
     }
 }

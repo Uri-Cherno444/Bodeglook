@@ -19,6 +19,8 @@ public class DetalleRestaurante
     public DateTime HorarioApertura { get; set; }
     public DateTime HorarioCerrado { get; set; }
     public double? Puntaje { get; set; }
+    // Así llama ObtenerRestaurante al promedio de las reseñas; BD lo copia a Puntaje
+    public double? Promedio { get; set; }
     public int CantidadResenas { get; set; }
     public bool EsFavorito { get; set; }
     public List<string> Restricciones { get; set; } = new List<string>();

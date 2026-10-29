@@ -12,6 +12,9 @@ public class Usuarios
     public DateTime? FechaRegistro { get; set; }
     public int? IdBarrio { get; set; }
 
+    // Nombre del barrio: solo lo completa el procedimiento ObtenerPerfilUsuario
+    public string? Barrio { get; set; }
+
     // "Camila Fernández" -> "CF". Si tiene una sola palabra: "Cami" -> "CA" (como en el Figma)
     public string ObtenerIniciales()
     {

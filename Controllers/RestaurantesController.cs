@@ -44,8 +44,7 @@ public class RestaurantesController : Controller
 
     // La llama "Publicar reseña" del modal 04b con fetch. Recibe NuevaResena.
     // Devuelve { ok, mensaje } si no se puede guardar, o { ok, publicada, ... } si se guardó.
-    // Fecha de la visita: la del plan confirmado ("Visita verificada") o, si no hay, ahora.
-    // La reseña se publica 24 horas después de esa fecha.
+    // La reseña se publica 24 horas después de dejarla.
     [HttpPost]
     public IActionResult DejarResena([FromBody] NuevaResena datos)
     {
@@ -64,39 +63,20 @@ public class RestaurantesController : Controller
         if (BD.YaReseno(usuario.Id, datos.IdRestaurante))
             return Json(new { ok = false, mensaje = "Ya dejaste una reseña de este lugar." });
 
-        Planes? visita = BD.ObtenerVisitaVerificada(usuario.Id, datos.IdRestaurante);
-        DateTime fechaVisita = visita?.FechaSalida ?? DateTime.Now;
-
         // En la tabla entra un entero: se guarda el promedio de los cuatro, redondeado
         Reseñas nueva = new Reseñas();
         nueva.Puntaje = (int)Math.Round(puntajes.Average(), MidpointRounding.AwayFromZero);
         nueva.Comentario = string.IsNullOrWhiteSpace(datos.Comentario) ? null : datos.Comentario.Trim();
-        nueva.Fecha = fechaVisita;
         nueva.IdUsuario = usuario.Id;
         nueva.IdRestaurante = datos.IdRestaurante;
-        nueva.Id = BD.GuardarResena(nueva);
 
-        bool publicada = fechaVisita <= DateTime.Now.AddHours(-24);
-        if (!publicada) return Json(new { ok = true, publicada = false });
+        // El procedimiento CrearResena guarda la reseña con la fecha de ahora, así que
+        // se publica 24 horas después y no se muestra enseguida
+        int error = BD.GuardarResena(nueva);
+        if (error == 1) return Json(new { ok = false, mensaje = "Elegí un puntaje del 1 al 5." });
+        if (error == 2) return Json(new { ok = false, mensaje = "Ya dejaste una reseña de este lugar." });
 
-        // Ya pasaron 24 horas de la visita: se muestra enseguida. El nombre sale de la sesión.
-        ResenaComunidad tarjeta = new ResenaComunidad();
-        tarjeta.Id = nueva.Id;
-        tarjeta.Puntaje = nueva.Puntaje.Value;
-        tarjeta.Comentario = nueva.Comentario;
-        tarjeta.Fecha = fechaVisita;
-        tarjeta.NombreCompleto = usuario.NombreCompleto;
-
-        DetalleRestaurante puntaje = BD.ObtenerPuntajeRestaurante(datos.IdRestaurante);
-        return Json(new
-        {
-            ok = true,
-            publicada = true,
-            resena = ResenaParaJson(tarjeta),
-            puntaje = puntaje.TextoPuntaje(),
-            cantidad = puntaje.CantidadResenas,
-            textoCantidad = puntaje.TextoCantidadResenas()
-        });
+        return Json(new { ok = true, publicada = false });
     }
 
     // 05 · Descubrir Restaurantes (privada). q viene del buscador del header o de un link.
@@ -144,7 +124,8 @@ public class RestaurantesController : Controller
                 esFavorito = lugar.EsFavorito,
                 esPro = lugar.EsPro,
                 latitud = lugar.Latitud,
-                longitud = lugar.Longitud
+                longitud = lugar.Longitud,
+                distanciaKm = lugar.DistanciaKm == null ? (double?)null : Math.Round(lugar.DistanciaKm.Value, 1)
             });
         }
 
@@ -157,11 +138,51 @@ public class RestaurantesController : Controller
         });
     }
 
-    // Registro de restaurante (pública) todavía no está hecho. Llegan desde la Landing y desde Iniciar sesión.
-    public IActionResult Registro()
+    // 06 · Registro Restaurante (pública). Llegan desde la Landing y desde Iniciar sesión.
+    // plan = "pro" viene de "Pasarme a Pro" de la Landing y deja elegida la tarjeta Pro; con cualquier otro valor queda Gratis.
+    public IActionResult Registro(string? plan)
     {
-        ViewData["Title"] = "Registro de restaurante";
-        return View("NoDesarrollado");
+        ViewBag.Barrios = BD.ObtenerBarrios();
+        ViewBag.Categorias = BD.ObtenerCategorias();
+        ViewBag.Plan = plan == "pro" ? "pro" : "gratis";
+        return View();
+    }
+
+    // La llama "Crear cuenta" de 06 con fetch. Recibe NuevoRestaurante y devuelve { ok, campo, mensaje }
+    // (campo = "nombre", "email", "contrasena", "barrio", "categoria" o "aviso") o { ok, destino }.
+    // Si elige Pro solo se guarda el plan: todavía no hay cobro ni pantalla de pago.
+    [HttpPost]
+    public IActionResult RegistrarRestaurante([FromBody] NuevoRestaurante datos)
+    {
+        string nombre = (datos.Nombre ?? "").Trim();
+        string email = (datos.Email ?? "").Trim();
+        string contraseña = datos.Contraseña ?? "";
+
+        if (nombre == "")
+            return Json(new { ok = false, campo = "nombre", mensaje = "Completá el nombre del restaurante." });
+        if (nombre.Length > 100)
+            return Json(new { ok = false, campo = "nombre", mensaje = "El nombre puede tener hasta 100 caracteres." });
+        if (email == "" || !email.Contains('@') || email.Length > 100)
+            return Json(new { ok = false, campo = "email", mensaje = "Ingresá un email válido." });
+        if (contraseña == "")
+            return Json(new { ok = false, campo = "contrasena", mensaje = "Elegí una contraseña." });
+        if (contraseña.Length < 8)
+            return Json(new { ok = false, campo = "contrasena", mensaje = "La contraseña tiene que tener al menos 8 caracteres." });
+        if (datos.IdBarrio == null)
+            return Json(new { ok = false, campo = "barrio", mensaje = "Elegí un barrio." });
+        if (datos.IdCategoria == null)
+            return Json(new { ok = false, campo = "categoria", mensaje = "Elegí una categoría." });
+        if (datos.Plan != "gratis" && datos.Plan != "pro")
+            return Json(new { ok = false, campo = "aviso", mensaje = "Elegí un plan." });
+
+        int error = BD.RegistrarRestaurante(nombre, email, Contraseñas.Hashear(contraseña, email),
+            datos.IdBarrio.Value, datos.IdCategoria.Value, datos.Plan == "pro");
+        if (error == 1) return Json(new { ok = false, campo = "email", mensaje = "Ese email ya tiene una cuenta." });
+        if (error == 2) return Json(new { ok = false, campo = "barrio", mensaje = "Elegí un barrio de la lista." });
+        if (error == 3) return Json(new { ok = false, campo = "categoria", mensaje = "Elegí una categoría de la lista." });
+
+        // No hay pantalla para el restaurante: vuelve a Iniciar sesión con un aviso
+        return Json(new { ok = true, destino = "/Cuenta/IniciarSesion?restaurante=1" });
     }
 
     // Lo que necesita el JavaScript para armar una tarjeta de reseña

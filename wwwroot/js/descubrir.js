@@ -89,7 +89,7 @@ function mostrarResultados(resultados) {
         nombre.href = "/Restaurantes/Detalle/" + lugar.id;
 
         tarjeta.querySelector(".resultado-categoria").textContent = textoCategoria(lugar);
-        tarjeta.querySelector(".resultado-barrio").textContent = lugar.barrio;
+        tarjeta.querySelector(".resultado-barrio").textContent = textoBarrio(lugar);
         pintarCorazon(tarjeta.querySelector(".boton-favorito"), lugar.esFavorito);
 
         // Pasar por arriba de una tarjeta marca su pin en el mapa
@@ -99,6 +99,13 @@ function mostrarResultados(resultados) {
 
         listaResultados.appendChild(tarjeta);
     });
+}
+
+// "Palermo · a 2,3 km" (en el mismo barrio del usuario: "Palermo · En tu barrio")
+function textoBarrio(lugar) {
+    if (lugar.distanciaKm === null) return lugar.barrio;
+    if (lugar.distanciaKm === 0) return lugar.barrio + " · En tu barrio";
+    return lugar.barrio + " · a " + String(lugar.distanciaKm).replace(".", ",") + " km";
 }
 
 // "Vinoteca · ★ 4.7" (sin reseñas, solo la categoría)

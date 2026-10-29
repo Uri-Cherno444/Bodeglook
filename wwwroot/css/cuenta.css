@@ -129,6 +129,126 @@
     font-size: 14px;
 }
 
+/* 06 · Registro Restaurante: el título se corta en dos líneas ("Registrá tu / restaurante") */
+.cuenta-formulario-restaurante {
+    width: 300px;
+}
+
+.cuenta-formulario-restaurante h1 {
+    white-space: normal;
+}
+
+/* Desplegables de Barrio y Categoría: se ven como los campos de texto del kit */
+.campo select {
+    width: 100%;
+    height: 44px;
+    padding: 8px 40px 8px 16px;
+    border: 1px solid var(--gris-medio);
+    border-radius: 7px;
+    background: var(--blanco) url("/img/icono-chevron.svg") no-repeat right 14px center;
+    font-family: inherit;
+    font-size: 16px;
+    letter-spacing: -0.16px;
+    color: var(--negro);
+    appearance: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Sin elegir, el texto del ejemplo va en gris como el placeholder de los campos */
+.campo select:has(option[value=""]:checked) {
+    color: var(--gris-texto);
+}
+
+.campo select:hover {
+    border-color: var(--gris-texto);
+}
+
+.campo select:focus {
+    outline: none;
+    border-color: var(--naranja);
+    box-shadow: 0 0 0 3px var(--naranja-suave);
+}
+
+.campo-con-error select,
+.campo-con-error select:hover,
+.campo-con-error select:focus {
+    border-color: var(--rojo);
+    box-shadow: 0 0 0 3px rgba(255, 49, 49, 0.1);
+}
+
+/* El ícono de error no tapa la flecha del desplegable en celular */
+.campo-con-error select {
+    padding-right: 44px;
+}
+
+/* Plan: dos tarjetas seleccionables. La elegida va con borde y fondo naranja suave. */
+.plan-campo {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.plan-campo legend {
+    padding: 0;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.plan-opciones {
+    display: flex;
+    gap: 12px;
+}
+
+.plan-opcion {
+    position: relative;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 14px 14px 12px;
+    border: 1px solid var(--gris-medio);
+    border-radius: 7px;
+    background: var(--blanco);
+    cursor: pointer;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.plan-opcion:hover {
+    border-color: var(--gris-texto);
+}
+
+.plan-opcion-elegida,
+.plan-opcion-elegida:hover {
+    border-color: var(--naranja);
+    background: var(--naranja-suave);
+}
+
+/* El radio queda escondido pero se puede usar con el teclado */
+.plan-opcion input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.plan-opcion:has(input:focus-visible) {
+    box-shadow: 0 0 0 3px var(--naranja-suave);
+}
+
+.plan-opcion-nombre {
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.plan-opcion-precio {
+    font-size: 12px;
+    color: var(--gris-texto);
+}
+
 /* Botón para volver a la Landing, arriba a la izquierda del panel negro */
 .cuenta-volver {
     position: absolute;
