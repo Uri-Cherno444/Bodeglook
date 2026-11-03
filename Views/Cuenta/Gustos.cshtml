@@ -4,14 +4,16 @@
     List<Restricciones> restricciones = ViewBag.Restricciones;
     List<Barrios> barrios = ViewBag.Barrios;
     List<int> marcadas = ViewBag.Marcadas;
+    List<int> zonasMarcadas = ViewBag.ZonasMarcadas;
+    List<string> companiasMarcadas = ViewBag.CompaniasMarcadas;
+    string? frecuenciaMarcada = ViewBag.FrecuenciaMarcada;
 }
 
 @section Estilos {
     <link rel="stylesheet" href="~/css/onboarding.css" asp-append-version="true" />
 }
 
-@* 02c · Onboarding · Gustos (paso 1 de 2).
-   Solo se guardan las restricciones: zonas, frecuencia y con quién sale no tienen dónde guardarse en la base. *@
+@* 02c · Onboarding · Gustos (paso 1 de 2). Se guarda todo: restricciones, zonas, frecuencia y con quién sale. *@
 <section class="onboarding">
     <div class="onboarding-contenedor">
         @* El paso anterior es Crear cuenta, pero la cuenta ya está creada: vuelve a Inicio, igual que "Omitir por ahora" *@
@@ -50,30 +52,31 @@
 
             <div class="onboarding-seccion">
                 <h2 id="tituloZonas">Zonas que te interesan</h2>
-                <div class="onboarding-chips" data-tipo="varias" role="group" aria-labelledby="tituloZonas">
+                <div class="onboarding-chips" id="chipsZonas" data-tipo="varias" role="group" aria-labelledby="tituloZonas">
                     @foreach (Barrios barrio in barrios)
                     {
-                        <button type="button" class="chip chip-opcion" data-id="@barrio.Id" aria-pressed="false">@barrio.Nombre</button>
+                        <button type="button" class="chip chip-opcion" data-id="@barrio.Id" aria-pressed="@(zonasMarcadas.Contains(barrio.Id) ? "true" : "false")">@barrio.Nombre</button>
                     }
                 </div>
             </div>
 
             <div class="onboarding-seccion">
                 <h2 id="tituloFrecuencia">¿Con qué frecuencia salís a comer?</h2>
-                <div class="onboarding-chips" data-tipo="una" role="group" aria-labelledby="tituloFrecuencia">
-                    <button type="button" class="chip chip-opcion" aria-pressed="false">Varias veces por semana</button>
-                    <button type="button" class="chip chip-opcion" aria-pressed="false">Una vez por semana</button>
-                    <button type="button" class="chip chip-opcion" aria-pressed="false">Cada tanto</button>
+                <div class="onboarding-chips" id="chipsFrecuencia" data-tipo="una" role="group" aria-labelledby="tituloFrecuencia">
+                    @foreach (string frecuencia in Gustos.Frecuencias)
+                    {
+                        <button type="button" class="chip chip-opcion" data-valor="@frecuencia" aria-pressed="@(frecuencia == frecuenciaMarcada ? "true" : "false")">@frecuencia</button>
+                    }
                 </div>
             </div>
 
             <div class="onboarding-seccion">
                 <h2 id="tituloCompania">¿Con quién salís?</h2>
-                <div class="onboarding-chips" data-tipo="varias" role="group" aria-labelledby="tituloCompania">
-                    <button type="button" class="chip chip-opcion" aria-pressed="false">Amigos</button>
-                    <button type="button" class="chip chip-opcion" aria-pressed="false">Pareja</button>
-                    <button type="button" class="chip chip-opcion" aria-pressed="false">Familia</button>
-                    <button type="button" class="chip chip-opcion" aria-pressed="false">Compañeros de trabajo</button>
+                <div class="onboarding-chips" id="chipsCompania" data-tipo="varias" role="group" aria-labelledby="tituloCompania">
+                    @foreach (string compania in Gustos.Companias)
+                    {
+                        <button type="button" class="chip chip-opcion" data-valor="@compania" aria-pressed="@(companiasMarcadas.Contains(compania) ? "true" : "false")">@compania</button>
+                    }
                 </div>
             </div>
 

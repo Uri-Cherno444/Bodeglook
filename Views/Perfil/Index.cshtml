@@ -9,9 +9,20 @@
     List<TarjetaPlan> planes = ViewBag.Planes;
     // "Mis Planes" muestra 6 (tres filas); "Ver todos" muestra el resto
     int planesIniciales = 6;
+
+    // 08c · Editar perfil: las opciones y lo que el usuario ya eligió
+    List<Barrios> barrios = ViewBag.Barrios;
+    List<Restricciones> todasRestricciones = ViewBag.TodasRestricciones;
+    List<int> restriccionesMarcadas = restricciones.Select(r => r.Id).ToList();
+    List<int> zonasMarcadas = ViewBag.ZonasMarcadas;
+    List<string> companiasMarcadas = ViewBag.CompaniasMarcadas;
+    // "Solo lo apto" solo tiene sentido si hay restricciones marcadas
+    bool soloApto = Model.SoloApto == true && restriccionesMarcadas.Count > 0;
 }
 
 @section Estilos {
+    @* cuenta.css trae el estilo del desplegable de los campos (Ubicación) *@
+    <link rel="stylesheet" href="~/css/cuenta.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/perfil.css" asp-append-version="true" />
 }
 
@@ -23,7 +34,7 @@
 
     <!-- Tarjeta de perfil -->
     <section class="tarjeta-perfil">
-        <span class="perfil-foto">
+        <span class="perfil-foto" id="perfilFoto">
             @if (Model.FotoPerfil != null)
             {
                 <img class="perfil-foto-imagen" src="@Model.FotoPerfil" alt="" />
@@ -33,10 +44,10 @@
                 <img src="~/img/icono-imagen-grande.svg" width="40" height="40" alt="" />
             }
         </span>
-        <h1 class="perfil-nombre">@Model.NombreCompleto</h1>
-        <p class="perfil-usuario">@@@Model.NombreUsuario@(barrio != null ? " · " + barrio : "")</p>
+        <h1 class="perfil-nombre" id="perfilNombre">@Model.NombreCompleto</h1>
+        <p class="perfil-usuario" id="perfilUsuario">@@@Model.NombreUsuario@(barrio != null ? " · " + barrio : "")</p>
 
-        <a class="boton boton-secundario boton-ancho" href="/Perfil/Editar">Editar perfil</a>
+        <button type="button" class="boton boton-secundario boton-ancho" id="botonEditarPerfil">Editar perfil</button>
 
         <div class="perfil-numeros">
             <div class="perfil-dato">
@@ -56,19 +67,13 @@
 
         <div class="perfil-seccion">
             <h2>Gustos y restricciones</h2>
-            @if (restricciones.Count > 0)
-            {
-                <div class="perfil-chips">
-                    @foreach (Restricciones restriccion in restricciones)
-                    {
-                        <span class="chip chip-naranja chip-perfil">@restriccion.Nombre</span>
-                    }
-                </div>
-            }
-            else
-            {
-                <p class="perfil-vacio">Todavía no elegiste restricciones.</p>
-            }
+            <div class="perfil-chips" id="perfilChips" hidden="@(restricciones.Count == 0)">
+                @foreach (Restricciones restriccion in restricciones)
+                {
+                    <span class="chip chip-naranja chip-perfil">@restriccion.Nombre</span>
+                }
+            </div>
+            <p class="perfil-vacio" id="perfilChipsVacio" hidden="@(restricciones.Count > 0)">Todavía no elegiste restricciones.</p>
         </div>
 
         <div class="perfil-seccion">
@@ -144,7 +149,198 @@
     </div>
 </div>
 
+@* 08c · Editar perfil (modal). <dialog> ya se cierra con Escape. Cancelar, la X y Escape cierran sin guardar. *@
+<dialog class="modal-perfil" id="modalEditarPerfil" aria-labelledby="modalPerfilTitulo">
+    <form id="formularioPerfil" novalidate>
+        <div class="modal-perfil-encabezado">
+            <div>
+                <h2 id="modalPerfilTitulo">Editar perfil</h2>
+                <p class="modal-perfil-subtitulo">Tus datos y tus gustos nos ayudan a recomendarte lugares.</p>
+            </div>
+            <button type="button" class="boton-cerrar-modal" id="cerrarModalPerfil" aria-label="Cerrar">✕</button>
+        </div>
+
+        @* Errores generales (la foto, la conexión): el aviso amarillo del kit *@
+        <div class="aviso" id="aviso" hidden>
+            <span class="aviso-texto" id="avisoTexto"></span>
+            <button type="button" class="aviso-cerrar" aria-label="Cerrar aviso">
+                <img src="~/img/icono-cerrar-aviso.svg" width="24" height="24" alt="" />
+            </button>
+        </div>
+
+        <div class="modal-perfil-cuerpo">
+            <div class="modal-perfil-datos">
+                <div class="modal-perfil-foto-fila">
+                    <span class="modal-perfil-foto" id="modalPerfilFoto">
+                        @if (Model.FotoPerfil != null)
+                        {
+                            <img class="perfil-foto-imagen" src="@Model.FotoPerfil" alt="" />
+                        }
+                        else
+                        {
+                            @Model.ObtenerIniciales()
+                        }
+                    </span>
+                    <button type="button" class="boton boton-secundario" id="botonCambiarFoto">Cambiar foto</button>
+                    <input type="file" id="archivoFoto" accept="image/jpeg,image/png,image/webp" hidden />
+                </div>
+
+                <div class="campo" data-campo="nombre">
+                    <label for="campoNombre">Nombre y apellido</label>
+                    <div class="campo-entrada">
+                        <input type="text" id="campoNombre" name="nombreCompleto" value="@Model.NombreCompleto" maxlength="100" autocomplete="name" />
+                    </div>
+                </div>
+
+                <div class="campo" data-campo="usuario">
+                    <label for="campoUsuario">Usuario</label>
+                    <div class="campo-entrada">
+                        <input type="text" id="campoUsuario" name="nombreUsuario" value="@Model.NombreUsuario" maxlength="50" autocomplete="username" />
+                    </div>
+                </div>
+
+                <div class="campo" data-campo="ubicacion">
+                    <label for="campoUbicacion">Ubicación</label>
+                    <div class="campo-entrada">
+                        <select id="campoUbicacion" name="idBarrio">
+                            @foreach (Barrios opcion in barrios)
+                            {
+                                <option value="@opcion.Id" selected="@(opcion.Id == Model.IdBarrio)">@opcion.Nombre</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+
+                <p class="modal-perfil-nota">El email y la contraseña no se cambian desde acá.</p>
+            </div>
+
+            <div class="modal-perfil-gustos">
+                <div class="modal-perfil-grupo">
+                    <div>
+                        <h3>Restricciones dietarias</h3>
+                        <p class="modal-perfil-ayuda">Podés marcar varias.</p>
+                    </div>
+                    <div class="modal-perfil-opciones" id="opcionesRestricciones">
+                        @foreach (Restricciones restriccion in todasRestricciones)
+                        {
+                            <label class="casilla">
+                                <span class="casilla-texto">@restriccion.Nombre</span>
+                                <input type="checkbox" class="casilla-entrada" name="restricciones" value="@restriccion.Id" checked="@restriccionesMarcadas.Contains(restriccion.Id)" />
+                                <span class="casilla-caja" aria-hidden="true"></span>
+                            </label>
+                        }
+                        <label class="casilla">
+                            <span class="casilla-texto">Ninguna</span>
+                            <input type="checkbox" class="casilla-entrada" id="restriccionNinguna" checked="@(restriccionesMarcadas.Count == 0)" />
+                            <span class="casilla-caja" aria-hidden="true"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="modal-perfil-grupo">
+                    <h3>Zonas que te interesan</h3>
+                    <div class="modal-perfil-opciones">
+                        @foreach (Barrios zona in barrios)
+                        {
+                            <label class="casilla">
+                                <span class="casilla-texto">@zona.Nombre</span>
+                                <input type="checkbox" class="casilla-entrada" name="zonas" value="@zona.Id" checked="@zonasMarcadas.Contains(zona.Id)" />
+                                <span class="casilla-caja" aria-hidden="true"></span>
+                            </label>
+                        }
+                    </div>
+                </div>
+
+                <div class="modal-perfil-grupo">
+                    <h3>¿Con qué frecuencia salís a comer?</h3>
+                    <div class="modal-perfil-opciones">
+                        @foreach (string frecuencia in Gustos.Frecuencias)
+                        {
+                            <label class="casilla">
+                                <span class="casilla-texto">@frecuencia</span>
+                                <input type="radio" class="radio" name="frecuencia" value="@frecuencia" checked="@(frecuencia == Model.Frecuencia)" />
+                                <span class="radio-circulo" aria-hidden="true"></span>
+                            </label>
+                        }
+                    </div>
+                </div>
+
+                <div class="modal-perfil-grupo">
+                    <h3>¿Con quién salís?</h3>
+                    <div class="modal-perfil-opciones">
+                        @foreach (string compania in Gustos.Companias)
+                        {
+                            <label class="casilla">
+                                <span class="casilla-texto">@compania</span>
+                                <input type="checkbox" class="casilla-entrada" name="companias" value="@compania" checked="@companiasMarcadas.Contains(compania)" />
+                                <span class="casilla-caja" aria-hidden="true"></span>
+                            </label>
+                        }
+                    </div>
+                </div>
+
+                <div class="modal-perfil-grupo">
+                    <h3>¿Qué querés ver?</h3>
+                    <div class="modal-perfil-ver">
+                        <label class="modal-perfil-opcion">
+                            <span class="casilla">
+                                <span class="casilla-texto">Solo lo apto para mí</span>
+                                <input type="radio" class="radio" name="soloApto" value="true" id="verSoloApto" checked="@soloApto" disabled="@(restriccionesMarcadas.Count == 0)" />
+                                <span class="radio-circulo" aria-hidden="true"></span>
+                            </span>
+                            <span class="modal-perfil-opcion-texto">Inicio, Descubrir y los planes se filtran por tus restricciones.</span>
+                        </label>
+                        <label class="modal-perfil-opcion">
+                            <span class="casilla">
+                                <span class="casilla-texto">Ver todo</span>
+                                <input type="radio" class="radio" name="soloApto" value="false" id="verTodo" checked="@(!soloApto)" />
+                                <span class="radio-circulo" aria-hidden="true"></span>
+                            </span>
+                            <span class="modal-perfil-opcion-texto">Te mostramos todo y marcamos qué es apto para vos.</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-perfil-acciones">
+            <button type="button" class="boton boton-secundario" id="cancelarPerfil">Cancelar</button>
+            <button type="submit" class="boton boton-primario">Guardar cambios</button>
+        </div>
+    </form>
+</dialog>
+
+@* Modal de cambiar foto del kit: se recorta en círculo y se acerca con el zoom *@
+<dialog class="dialogo dialogo-foto" id="dialogoFoto" aria-labelledby="dialogoFotoTitulo">
+    <div class="dialogo-encabezado">
+        <h2 class="dialogo-titulo" id="dialogoFotoTitulo">Cambiar foto de perfil</h2>
+        <button type="button" class="boton-icono" id="cerrarDialogoFoto" aria-label="Cerrar">
+            <img src="~/img/icono-cerrar.svg" width="24" height="24" alt="" />
+        </button>
+    </div>
+    <canvas class="dialogo-foto-lienzo" id="lienzoFoto" width="299" height="299" aria-label="Arrastrá la foto para encuadrarla"></canvas>
+    <div class="dialogo-foto-zoom">
+        <img src="~/img/icono-imagen-chica.svg" width="14" height="14" alt="" />
+        <input type="range" id="zoomFoto" min="1" max="3" step="0.01" value="1" aria-label="Zoom" />
+        <img src="~/img/icono-imagen-grande.svg" width="24" height="24" alt="" />
+    </div>
+    <div class="dialogo-botones">
+        <button type="button" class="boton boton-negro" id="cancelarDialogoFoto">Cancelar</button>
+        <button type="button" class="boton boton-primario" id="guardarDialogoFoto">Guardar imagen</button>
+    </div>
+</dialog>
+
+@* 08d · Cambios guardados: el snackbar de éxito del kit, abajo al centro. Se va solo a los 4 segundos. *@
+<div class="aviso aviso-exito aviso-flotante" id="avisoExito" role="status" hidden>
+    <span class="aviso-texto">Guardamos tus cambios</span>
+    <button type="button" class="aviso-cerrar" id="cerrarAvisoExito" aria-label="Cerrar aviso">
+        <img src="~/img/icono-cerrar-exito.svg" width="24" height="24" alt="" />
+    </button>
+</div>
+
 @section Scripts {
+    <script src="~/js/cuenta.js" asp-append-version="true"></script>
+    <script src="~/js/perfil.js" asp-append-version="true"></script>
     <script>
         // "Ver todos" muestra los planes que quedaron ocultos
         document.getElementById("verTodosPlanes").addEventListener("click", function () {

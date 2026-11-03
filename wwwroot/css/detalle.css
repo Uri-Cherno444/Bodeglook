@@ -188,26 +188,6 @@
     color: var(--gris-texto);
 }
 
-/* La X: círculo naranja suave */
-.boton-cerrar-modal {
-    flex-shrink: 0;
-    width: 40px;
-    height: 40px;
-    border: none;
-    border-radius: 20px;
-    background: var(--naranja-suave);
-    color: var(--naranja);
-    font-family: inherit;
-    font-size: 16px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: transform 0.2s ease;
-}
-
-.boton-cerrar-modal:hover {
-    transform: rotate(90deg);
-}
-
 .chip-verificada {
     padding: 8px 14px;
     background: var(--verde-suave);

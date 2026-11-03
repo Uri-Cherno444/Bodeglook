@@ -28,12 +28,27 @@ function prepararGustos() {
 
     const boton = document.getElementById("botonSeguir");
     boton.addEventListener("click", function () {
-        // Solo se mandan las restricciones: lo demás no tiene dónde guardarse en la base
+        // Se manda todo lo marcado. "Ninguna" no tiene data-id, por eso no cuenta como restricción.
         const restricciones = [];
         document.querySelectorAll("#chipsRestricciones .chip-opcion[data-id][aria-pressed=true]").forEach(function (chip) {
             restricciones.push(Number(chip.dataset.id));
         });
-        enviar(boton, "/Cuenta/GuardarGustos", restricciones);
+        const zonas = [];
+        document.querySelectorAll("#chipsZonas .chip-opcion[aria-pressed=true]").forEach(function (chip) {
+            zonas.push(Number(chip.dataset.id));
+        });
+        const frecuencia = document.querySelector("#chipsFrecuencia .chip-opcion[aria-pressed=true]");
+        const companias = [];
+        document.querySelectorAll("#chipsCompania .chip-opcion[aria-pressed=true]").forEach(function (chip) {
+            companias.push(chip.dataset.valor);
+        });
+
+        enviar(boton, "/Cuenta/GuardarGustos", {
+            restricciones: restricciones,
+            zonas: zonas,
+            frecuencia: frecuencia ? frecuencia.dataset.valor : null,
+            companias: companias
+        });
     });
 }
 

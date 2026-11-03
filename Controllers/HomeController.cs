@@ -16,7 +16,8 @@ public class HomeController : Controller
     }
 
     // 03 · Inicio (privada)
-    public IActionResult Inicio()
+    // restriccion: el chip elegido (/Home/Inicio?restriccion=2). Sin él se muestra "Todos".
+    public IActionResult Inicio(int? restriccion)
     {
         if (HttpContext.Session.GetString("usuario") == null) return RedirectToAction("IniciarSesion", "Cuenta");
 
@@ -24,11 +25,26 @@ public class HomeController : Controller
 
         // En el banner va solo el primer nombre ("Hola, Camila")
         ViewBag.PrimerNombre = usuario.ObtenerPrimerNombre();
-        // "Solo lo apto para mí" se elige en el paso 2 del onboarding y queda en la sesión
-        // (la base no tiene columna para guardarlo)
-        bool soloApto = HttpContext.Session.GetString("soloApto") == "1";
-        ViewBag.Recomendados = BD.ObtenerMejorPuntuados(4, usuario.Id, soloApto);
-        ViewBag.Favoritos = BD.ObtenerFavoritos(usuario.Id);
+        ViewBag.PlanesEnVotacion = BD.ContarPlanesEnVotacion(usuario.Id);
+        ViewBag.Amigos = BD.ContarAmigos(usuario.Id);
+
+        // Los chips salen de la tabla Restricciones. Un id que no existe se toma como "Todos".
+        List<Restricciones> restricciones = BD.ObtenerRestricciones();
+        if (!restricciones.Any(r => r.Id == restriccion)) restriccion = null;
+        ViewBag.Restricciones = restricciones;
+        ViewBag.RestriccionElegida = restriccion;
+
+        // "Solo lo apto para mí": se elige en el onboarding o en Editar perfil y queda en Usuarios.SoloApto
+        bool soloApto = BD.ObtenerSoloApto(usuario.Id);
+        ViewBag.Recomendados = BD.ObtenerMejorPuntuados(4, usuario.Id, soloApto, restriccion);
+
+        List<TarjetaRestaurante> favoritos = BD.ObtenerFavoritos(usuario.Id);
+        if (restriccion != null)
+        {
+            List<int> conRestriccion = BD.ObtenerRestaurantesConRestriccion(restriccion.Value);
+            favoritos = favoritos.Where(f => conRestriccion.Contains(f.Id)).ToList();
+        }
+        ViewBag.Favoritos = favoritos;
         return View();
     }
 

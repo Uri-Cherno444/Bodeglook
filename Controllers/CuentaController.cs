@@ -29,6 +29,9 @@ public class CuentaController : Controller
         ViewBag.Barrios = BD.ObtenerBarrios();
         // Si vuelve con "Atrás" desde el paso 2, quedan marcadas las que ya eligió
         ViewBag.Marcadas = BD.ObtenerRestriccionesDeUsuario(usuario.Id).Select(r => r.Id).ToList();
+        ViewBag.ZonasMarcadas = BD.ObtenerZonasDeUsuario(usuario.Id);
+        ViewBag.CompaniasMarcadas = BD.ObtenerCompaniasDeUsuario(usuario.Id);
+        ViewBag.FrecuenciaMarcada = BD.ObtenerDatosEdicion(usuario.Id)?.Frecuencia;
         return View();
     }
 
@@ -43,7 +46,7 @@ public class CuentaController : Controller
 
         ViewBag.TextoRestricciones = UnirConY(nombres);
         // Marcada la que eligió antes; si todavía no eligió, "Solo lo apto para mí" (como en el Figma)
-        ViewBag.SoloApto = HttpContext.Session.GetString("soloApto") != "0";
+        ViewBag.SoloApto = BD.ObtenerDatosEdicion(usuario.Id)?.SoloApto != false;
         return View();
     }
 
@@ -113,37 +116,36 @@ public class CuentaController : Controller
         return Json(new { ok = true, destino = "/Cuenta/Gustos" });
     }
 
-    // "Seguir" del paso 1. Recibe los Id de las restricciones marcadas: [1, 2]. "Ninguna" manda [].
-    // Zonas, frecuencia y con quién sale no se guardan: la base no tiene dónde.
-    // Si no marcó restricciones se saltea el paso 2.
+    // "Seguir" del paso 1. Recibe { restricciones: [1, 2], zonas: [3], frecuencia: "Cada tanto", companias: ["Amigos"] }.
+    // "Ninguna" manda restricciones: []. Si no marcó restricciones se saltea el paso 2.
     [HttpPost]
-    public IActionResult GuardarGustos([FromBody] List<int> restricciones)
+    public IActionResult GuardarGustos([FromBody] DatosGustos datos)
     {
         if (HttpContext.Session.GetString("usuario") == null) return Unauthorized();
 
-        // Solo se guardan Id que existen en la tabla Restricciones
-        List<int> existentes = BD.ObtenerRestricciones().Select(r => r.Id).ToList();
-        List<int> validas = restricciones.Where(id => existentes.Contains(id)).Distinct().ToList();
+        // Solo se guardan Id y opciones que existen
+        DatosGustos gustos = Models.Gustos.Limpiar(datos);
 
         Usuarios usuario = UsuarioDeSesion();
-        BD.GuardarRestriccionesDeUsuario(usuario.Id, validas);
+        BD.GuardarGustos(usuario.Id, gustos);
 
-        if (validas.Count == 0)
+        if (gustos.Restricciones.Count == 0)
         {
-            HttpContext.Session.Remove("soloApto");
+            // Sin restricciones no hay nada que filtrar
+            BD.GuardarSoloApto(usuario.Id, false);
             return Json(new { ok = true, destino = "/Home/Inicio" });
         }
         return Json(new { ok = true, destino = "/Cuenta/FiltroDietario" });
     }
 
     // "Entrar a Bodeglook" del paso 2. Recibe true (Solo lo apto para mí) o false (Ver todo).
-    // Se guarda en la sesión porque la base no tiene columna para esto.
     [HttpPost]
     public IActionResult GuardarFiltro([FromBody] bool soloApto)
     {
         if (HttpContext.Session.GetString("usuario") == null) return Unauthorized();
 
-        HttpContext.Session.SetString("soloApto", soloApto ? "1" : "0");
+        Usuarios usuario = UsuarioDeSesion();
+        BD.GuardarSoloApto(usuario.Id, soloApto);
         return Json(new { ok = true, destino = "/Home/Inicio" });
     }
 

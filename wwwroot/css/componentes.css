@@ -394,6 +394,26 @@
     animation: aparecer 0.3s ease;
 }
 
+/* Variante verde del Snackbar (Property 1=Success): "Guardamos tus cambios" */
+.aviso-exito {
+    border-color: #76ca66;
+    background: rgba(118, 202, 102, 0.1);
+    color: #76ca66;
+}
+
+/* Flotando abajo al centro de la pantalla (08d · Perfil · Cambios guardados) */
+.aviso-flotante {
+    position: fixed;
+    left: 50%;
+    bottom: 72px;
+    transform: translateX(-50%);
+    width: 440px;
+    max-width: calc(100% - 32px);
+    z-index: 1000;
+    background-color: var(--blanco);
+    background-image: linear-gradient(rgba(118, 202, 102, 0.1), rgba(118, 202, 102, 0.1));
+}
+
 .aviso-cerrar {
     flex-shrink: 0;
     display: flex;
@@ -457,6 +477,26 @@
 
 .dialogo-botones .boton {
     width: 110px;
+}
+
+/* La X de los modales grandes: círculo naranja suave (la usan Dejar una reseña y Editar perfil) */
+.boton-cerrar-modal {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 20px;
+    background: var(--naranja-suave);
+    color: var(--naranja);
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.boton-cerrar-modal:hover {
+    transform: rotate(90deg);
 }
 
 .boton-icono {
@@ -1230,6 +1270,48 @@
 }
 
 .radio:focus-visible + .radio-circulo {
+    box-shadow: 0 0 0 3px var(--naranja-suave);
+}
+
+/* ---------- Casilla (Checkbox del UI Kit) ---------- */
+/* Igual que el radio: el input real queda invisible y se dibuja la caja de al lado.
+   La etiqueta va a la izquierda de la caja, como en el Figma. También sirve de fila para un radio. */
+
+.casilla {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+}
+
+.casilla-texto {
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 20px;
+    letter-spacing: -0.16px;
+}
+
+.casilla-entrada {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+}
+
+.casilla-caja {
+    flex: 0 0 30px;
+    height: 30px;
+    border: 1px solid var(--gris-medio);
+    border-radius: 4px;
+    background: var(--blanco);
+}
+
+.casilla-entrada:checked + .casilla-caja {
+    border-color: var(--naranja);
+    background: var(--naranja) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M20 6L9 17L4 12' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat center;
+}
+
+.casilla-entrada:focus-visible + .casilla-caja {
     box-shadow: 0 0 0 3px var(--naranja-suave);
 }
 

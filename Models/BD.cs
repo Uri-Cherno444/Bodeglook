@@ -136,18 +136,133 @@ public static class BD
         }
     }
 
-    // Borra las restricciones que tenía el usuario y guarda las nuevas
-    public static void GuardarRestriccionesDeUsuario(int idUsuario, List<int> idsRestricciones)
+    // ---------- 08c · Editar perfil y gustos ----------
+
+    // Lo que carga el modal Editar perfil: nombre, usuario, foto, barrio, frecuencia y "solo lo apto"
+    public static Usuarios? ObtenerDatosEdicion(int idUsuario)
+    {
+        string consulta = @"
+            SELECT Id, NombreCompleto, NombreUsuario, FotoPerfil, IdBarrio, Frecuencia, SoloApto
+            FROM Usuarios
+            WHERE Id = @idUsuario";
+        using (SqlConnection conexion = new SqlConnection(CadenaConexion))
+        {
+            return conexion.QueryFirstOrDefault<Usuarios>(consulta, new { idUsuario });
+        }
+    }
+
+    // Los Id de los barrios que le interesan al usuario
+    public static List<int> ObtenerZonasDeUsuario(int idUsuario)
+    {
+        string consulta = "SELECT IdBarrio FROM ZonasUsuarios WHERE IdUsuario = @idUsuario ORDER BY IdBarrio";
+        using (SqlConnection conexion = new SqlConnection(CadenaConexion))
+        {
+            return conexion.Query<int>(consulta, new { idUsuario }).ToList();
+        }
+    }
+
+    // Con quién sale: "Amigos", "Pareja", etc.
+    public static List<string> ObtenerCompaniasDeUsuario(int idUsuario)
+    {
+        string consulta = "SELECT Compania FROM CompaniasUsuarios WHERE IdUsuario = @idUsuario ORDER BY Id";
+        using (SqlConnection conexion = new SqlConnection(CadenaConexion))
+        {
+            return conexion.Query<string>(consulta, new { idUsuario }).ToList();
+        }
+    }
+
+    // "Solo lo apto para mí". Si todavía no eligió (null) se muestra todo.
+    public static bool ObtenerSoloApto(int idUsuario)
+    {
+        string consulta = "SELECT SoloApto FROM Usuarios WHERE Id = @idUsuario";
+        using (SqlConnection conexion = new SqlConnection(CadenaConexion))
+        {
+            return conexion.QueryFirstOrDefault<bool?>(consulta, new { idUsuario }) == true;
+        }
+    }
+
+    // Paso 2 del onboarding (02d): guarda "Solo lo apto para mí" (true) o "Ver todo" (false)
+    public static void GuardarSoloApto(int idUsuario, bool soloApto)
+    {
+        string consulta = "UPDATE Usuarios SET SoloApto = @soloApto WHERE Id = @idUsuario";
+        using (SqlConnection conexion = new SqlConnection(CadenaConexion))
+        {
+            conexion.Execute(consulta, new { idUsuario, soloApto });
+        }
+    }
+
+    // true si otro usuario (no el idUsuario) ya tiene ese nombre de usuario
+    public static bool ExisteNombreUsuario(string nombreUsuario, int idUsuario)
+    {
+        string consulta = "SELECT COUNT(*) FROM Usuarios WHERE NombreUsuario = @nombreUsuario AND Id <> @idUsuario";
+        using (SqlConnection conexion = new SqlConnection(CadenaConexion))
+        {
+            return conexion.QueryFirst<int>(consulta, new { nombreUsuario, idUsuario }) > 0;
+        }
+    }
+
+    // Paso 1 del onboarding (02c): frecuencia, zonas, con quién sale y restricciones.
+    // No toca "solo lo apto" (eso es el paso 2).
+    public static void GuardarGustos(int idUsuario, DatosGustos gustos)
     {
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            conexion.Execute("DELETE FROM RestriccionesUsuarios WHERE IdUsuario = @idUsuario", new { idUsuario });
-            foreach (int idRestriccion in idsRestricciones)
+            conexion.Open();
+            using (SqlTransaction transaccion = conexion.BeginTransaction())
             {
-                conexion.Execute(
-                    "INSERT INTO RestriccionesUsuarios (IdUsuario, IdRestricciones) VALUES (@idUsuario, @idRestriccion)",
-                    new { idUsuario, idRestriccion });
+                GuardarGustosEnTransaccion(conexion, transaccion, idUsuario, gustos);
+                transaccion.Commit();
             }
+        }
+    }
+
+    // Guarda el modal Editar perfil entero o nada: datos, foto (solo si cambió), gustos y "solo lo apto".
+    public static void GuardarPerfil(int idUsuario, string nombreCompleto, string nombreUsuario, int idBarrio,
+                                     string? fotoNueva, DatosGustos gustos, bool soloApto)
+    {
+        using (SqlConnection conexion = new SqlConnection(CadenaConexion))
+        {
+            conexion.Open();
+            using (SqlTransaction transaccion = conexion.BeginTransaction())
+            {
+                string consulta = @"
+                    UPDATE Usuarios
+                    SET NombreCompleto = @nombreCompleto, NombreUsuario = @nombreUsuario, IdBarrio = @idBarrio,
+                        FotoPerfil = ISNULL(@fotoNueva, FotoPerfil), SoloApto = @soloApto
+                    WHERE Id = @idUsuario";
+                conexion.Execute(consulta,
+                    new { idUsuario, nombreCompleto, nombreUsuario, idBarrio, fotoNueva, soloApto }, transaccion);
+                GuardarGustosEnTransaccion(conexion, transaccion, idUsuario, gustos);
+                transaccion.Commit();
+            }
+        }
+    }
+
+    // Borra lo que tenía el usuario y guarda lo nuevo (las 4 listas de gustos)
+    private static void GuardarGustosEnTransaccion(SqlConnection conexion, SqlTransaction transaccion, int idUsuario, DatosGustos gustos)
+    {
+        conexion.Execute("UPDATE Usuarios SET Frecuencia = @frecuencia WHERE Id = @idUsuario",
+            new { idUsuario, frecuencia = gustos.Frecuencia }, transaccion);
+
+        conexion.Execute("DELETE FROM RestriccionesUsuarios WHERE IdUsuario = @idUsuario", new { idUsuario }, transaccion);
+        foreach (int idRestriccion in gustos.Restricciones)
+        {
+            conexion.Execute("INSERT INTO RestriccionesUsuarios (IdUsuario, IdRestricciones) VALUES (@idUsuario, @idRestriccion)",
+                new { idUsuario, idRestriccion }, transaccion);
+        }
+
+        conexion.Execute("DELETE FROM ZonasUsuarios WHERE IdUsuario = @idUsuario", new { idUsuario }, transaccion);
+        foreach (int idBarrio in gustos.Zonas)
+        {
+            conexion.Execute("INSERT INTO ZonasUsuarios (IdUsuario, IdBarrio) VALUES (@idUsuario, @idBarrio)",
+                new { idUsuario, idBarrio }, transaccion);
+        }
+
+        conexion.Execute("DELETE FROM CompaniasUsuarios WHERE IdUsuario = @idUsuario", new { idUsuario }, transaccion);
+        foreach (string compania in gustos.Companias)
+        {
+            conexion.Execute("INSERT INTO CompaniasUsuarios (IdUsuario, Compania) VALUES (@idUsuario, @compania)",
+                new { idUsuario, compania }, transaccion);
         }
     }
 
@@ -347,6 +462,35 @@ public static class BD
             }
         }
         return planes;
+    }
+
+    // El contador "planes en votación" del banner de Inicio: los de todos los grupos del usuario
+    public static int ContarPlanesEnVotacion(int idUsuario)
+    {
+        string consulta = @"
+            SELECT COUNT(*)
+            FROM Planes p
+            JOIN UsuariosGrupos ug ON ug.IdGrupo = p.IdGrupo AND ug.IdUsuario = @idUsuario
+            WHERE p.Estado = 0";
+        using (SqlConnection conexion = new SqlConnection(CadenaConexion))
+        {
+            return conexion.QueryFirst<int>(consulta, new { idUsuario });
+        }
+    }
+
+    // El contador "amigos" del banner de Inicio. Las amistades no tienen tabla en la base,
+    // así que cuenta las personas distintas que comparten algún grupo con el usuario.
+    public static int ContarAmigos(int idUsuario)
+    {
+        string consulta = @"
+            SELECT COUNT(DISTINCT otros.IdUsuario)
+            FROM UsuariosGrupos mios
+            JOIN UsuariosGrupos otros ON otros.IdGrupo = mios.IdGrupo AND otros.IdUsuario <> mios.IdUsuario
+            WHERE mios.IdUsuario = @idUsuario";
+        using (SqlConnection conexion = new SqlConnection(CadenaConexion))
+        {
+            return conexion.QueryFirst<int>(consulta, new { idUsuario });
+        }
     }
 
     public static Planes? ObtenerPlan(int idPlan)
@@ -633,9 +777,10 @@ public static class BD
     // categoría, barrio, puntaje y favorito con ObtenerRestaurante y ComprobarEsFavorito.
     // soloApto = true deja solo los que cumplen al menos una restricción del usuario
     // (si el usuario no marcó ninguna, trae todos): para eso no hay procedimiento, queda la consulta.
-    public static List<TarjetaRestaurante> ObtenerMejorPuntuados(int cantidad, int idUsuario, bool soloApto)
+    // idRestriccion (el chip elegido en Inicio) deja solo los lugares que ofrecen esa opción.
+    public static List<TarjetaRestaurante> ObtenerMejorPuntuados(int cantidad, int idUsuario, bool soloApto, int? idRestriccion = null)
     {
-        if (!soloApto)
+        if (!soloApto && idRestriccion == null)
         {
             List<TarjetaRestaurante> tarjetas;
             using (SqlConnection conexion = new SqlConnection(CadenaConexion))
@@ -658,16 +803,19 @@ public static class BD
             FROM Restaurantes r
             LEFT JOIN Categorias c ON c.Id = r.IdCategoria
             LEFT JOIN Barrios b ON b.Id = r.IdBarrio
-            WHERE @soloApto = 0
+            WHERE (@soloApto = 0
                OR NOT EXISTS (SELECT 1 FROM RestriccionesUsuarios WHERE IdUsuario = @idUsuario)
                OR EXISTS (SELECT 1 FROM RestriccionesRestaurantes rr
                           JOIN RestriccionesUsuarios ru ON ru.IdRestricciones = rr.IdRestriccion
-                          WHERE rr.IdRestaurante = r.Id AND ru.IdUsuario = @idUsuario)
+                          WHERE rr.IdRestaurante = r.Id AND ru.IdUsuario = @idUsuario))
+              AND (@idRestriccion IS NULL
+               OR EXISTS (SELECT 1 FROM RestriccionesRestaurantes
+                          WHERE IdRestaurante = r.Id AND IdRestriccion = @idRestriccion))
             ORDER BY CASE WHEN (SELECT AVG(CAST(Puntaje AS float)) FROM Reseñas WHERE IdRestaurante = r.Id AND Fecha <= DATEADD(hour, -24, GETDATE())) IS NULL THEN 1 ELSE 0 END,
                      Puntaje DESC, r.Id";
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            return conexion.Query<TarjetaRestaurante>(consulta, new { cantidad, idUsuario, soloApto }).ToList();
+            return conexion.Query<TarjetaRestaurante>(consulta, new { cantidad, idUsuario, soloApto, idRestriccion }).ToList();
         }
     }
 
@@ -935,6 +1083,16 @@ public static class BD
     // Procedimiento MostrarFavoritos: los favoritos del usuario, en el orden en que los guardó.
     // El procedimiento devuelve tres columnas Nombre seguidas (restaurante, barrio y categoría),
     // por eso se leen por posición. El puntaje se completa con ObtenerRestaurante.
+    // Los lugares que ofrecen una restricción: con esto el chip de Inicio filtra "Tus favoritos"
+    public static List<int> ObtenerRestaurantesConRestriccion(int idRestriccion)
+    {
+        string consulta = "SELECT IdRestaurante FROM RestriccionesRestaurantes WHERE IdRestriccion = @idRestriccion";
+        using (SqlConnection conexion = new SqlConnection(CadenaConexion))
+        {
+            return conexion.Query<int>(consulta, new { idRestriccion }).ToList();
+        }
+    }
+
     public static List<TarjetaRestaurante> ObtenerFavoritos(int idUsuario)
     {
         List<TarjetaRestaurante> favoritos = new List<TarjetaRestaurante>();

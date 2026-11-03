@@ -4,6 +4,8 @@
     ViewData["Pestaña"] = "Inicio";
     List<TarjetaRestaurante> recomendados = ViewBag.Recomendados;
     List<TarjetaRestaurante> favoritos = ViewBag.Favoritos;
+    List<Restricciones> restricciones = ViewBag.Restricciones;
+    int? restriccionElegida = ViewBag.RestriccionElegida;
 }
 
 @section Estilos {
@@ -23,31 +25,31 @@
             </div>
         </div>
 
-        @* DATOS DE PRUEBA: los contadores son fijos. Su lógica es del próximo sprint. *@
         <div class="banner-resumen">
             <div class="dato">
                 <img src="~/img/icono-calendario.svg" width="24" height="24" alt="" />
-                <span class="dato-numero">2</span>
-                <span class="dato-texto">planes en votación</span>
+                <span class="dato-numero">@ViewBag.PlanesEnVotacion</span>
+                <span class="dato-texto">@(ViewBag.PlanesEnVotacion == 1 ? "plan en votación" : "planes en votación")</span>
             </div>
+            @* Las amistades no tienen tabla en la base: cuenta a quienes comparten algún grupo con el usuario *@
             <div class="dato">
                 <img src="~/img/icono-usuarios-chico.svg" width="24" height="24" alt="" />
-                <span class="dato-numero">3</span>
-                <span class="dato-texto">amigos nuevos</span>
+                <span class="dato-numero">@ViewBag.Amigos</span>
+                <span class="dato-texto">@(ViewBag.Amigos == 1 ? "amigo" : "amigos")</span>
             </div>
         </div>
     </section>
 
-    @* DATOS DE PRUEBA: los chips son fijos y todavía no filtran. Su lógica es del próximo sprint. *@
-    <div class="filtros-rapidos">
-        <span class="chip chip-filtro chip-activo">Todos</span>
-        <span class="chip chip-filtro chip-crema">Vinotecas</span>
-        <span class="chip chip-filtro chip-crema">Parrillas</span>
-        <span class="chip chip-filtro chip-crema">Italiana</span>
-        <span class="chip chip-filtro chip-crema">Japonesa</span>
-        <span class="chip chip-filtro chip-crema">Sin TACC</span>
-        <span class="chip chip-filtro chip-crema">Vegetariano</span>
-    </div>
+    @* Cada chip es una restricción de la base: muestra los lugares que ofrecen esa opción *@
+    <nav class="filtros-rapidos" aria-label="Filtrar por restricción">
+        <a class="chip chip-filtro @(restriccionElegida == null ? "chip-activo" : "chip-crema")"
+           href="/Home/Inicio" aria-current="@(restriccionElegida == null ? "true" : null)">Todos</a>
+        @foreach (Restricciones opcion in restricciones)
+        {
+            <a class="chip chip-filtro @(restriccionElegida == opcion.Id ? "chip-activo" : "chip-crema")"
+               href="/Home/Inicio?restriccion=@opcion.Id" aria-current="@(restriccionElegida == opcion.Id ? "true" : null)">@opcion.Nombre</a>
+        }
+    </nav>
 
     <!-- Recomendado para vos: por ahora, los 4 mejor puntuados -->
     <section class="seccion-lugares">
@@ -61,6 +63,10 @@
                 @await Html.PartialAsync("_TarjetaLugar", lugar)
             }
         </div>
+        @if (recomendados.Count == 0)
+        {
+            <p class="sin-favoritos">No hay lugares con esta opción.</p>
+        }
     </section>
 
     <!-- Tus favoritos: los de la tabla Favoritos del usuario de la sesión -->
@@ -76,7 +82,14 @@
             }
         </div>
         <p class="sin-favoritos" id="sinFavoritos" hidden="@(favoritos.Count > 0)">
-            Todavía no guardaste favoritos. <a href="/Restaurantes/Descubrir">Ir a Descubrir</a>
+            @if (restriccionElegida == null)
+            {
+                <text>Todavía no guardaste favoritos. <a href="/Restaurantes/Descubrir">Ir a Descubrir</a></text>
+            }
+            else
+            {
+                <text>No tenés favoritos con esta opción.</text>
+            }
         </p>
     </section>
 </div>

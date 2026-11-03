@@ -15,6 +15,11 @@ public class Usuarios
     // Nombre del barrio: solo lo completa el procedimiento ObtenerPerfilUsuario
     public string? Barrio { get; set; }
 
+    // Gustos del onboarding: con qué frecuencia sale y si quiere ver solo lo apto para sus restricciones
+    // (null = todavía no eligió). Solo los completa BD.ObtenerDatosEdicion.
+    public string? Frecuencia { get; set; }
+    public bool? SoloApto { get; set; }
+
     // "Camila Fernández" -> "CF". Si tiene una sola palabra: "Cami" -> "CA" (como en el Figma)
     public string ObtenerIniciales()
     {

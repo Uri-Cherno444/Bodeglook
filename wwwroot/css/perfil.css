@@ -202,3 +202,235 @@ a.chip-perfil:hover {
         grid-template-columns: 1fr;
     }
 }
+
+/* ---------- 08c · Editar perfil (modal) ---------- */
+/* Mismo estilo que Agregar amigo y Dejar una reseña: fondo oscuro, tarjeta blanca, título con la X y botones abajo */
+
+.modal-perfil {
+    width: min(1000px, calc(100% - 32px));
+    max-height: calc(100% - 32px);
+    padding: 36px 40px;
+    border: 1px solid var(--linea);
+    border-radius: 24px;
+    background: var(--blanco);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+    color: var(--negro);
+    font-family: inherit;
+}
+
+.modal-perfil::backdrop {
+    background: rgba(0, 0, 0, 0.45);
+}
+
+.modal-perfil[open] {
+    animation: aparecer 0.25s ease;
+}
+
+.modal-perfil form {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+}
+
+.modal-perfil-encabezado {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.modal-perfil-encabezado h2 {
+    margin: 0;
+    font-size: 36px;
+}
+
+.modal-perfil-subtitulo {
+    margin: 6px 0 0;
+    font-size: 16px;
+    color: var(--gris-texto);
+}
+
+.modal-perfil-cuerpo {
+    display: flex;
+    align-items: flex-start;
+    gap: 48px;
+}
+
+.modal-perfil-datos {
+    flex: 0 0 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+.modal-perfil-gustos {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+.modal-perfil-foto-fila {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.modal-perfil-foto {
+    position: relative;
+    flex-shrink: 0;
+    width: 80px;
+    height: 80px;
+    border: 3px solid var(--naranja);
+    border-radius: 40px;
+    background: var(--arena);
+    color: var(--naranja);
+    font-size: 24px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+/* En el Figma las etiquetas de los campos del modal son de 16px */
+.modal-perfil .campo label {
+    font-size: 16px;
+    line-height: 24px;
+}
+
+.modal-perfil-nota,
+.modal-perfil-ayuda {
+    margin: 0;
+    font-size: 13px;
+    line-height: 18px;
+    color: var(--gris-texto);
+}
+
+.modal-perfil-grupo {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.modal-perfil-grupo h3 {
+    margin: 0;
+    font-size: 18px;
+    line-height: 26px;
+}
+
+.modal-perfil-opciones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 20px;
+}
+
+/* ¿Qué querés ver?: dos tarjetas con radio. La elegida va con borde y fondo naranja suave. */
+.modal-perfil-ver {
+    display: flex;
+    gap: 16px;
+}
+
+.modal-perfil-opcion {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 14px 16px;
+    border: 1px solid var(--linea);
+    border-radius: 12px;
+    background: var(--blanco);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.modal-perfil-opcion:has(input:checked) {
+    padding: 13px 15px;
+    border: 2px solid var(--naranja);
+    background: var(--naranja-suave);
+}
+
+/* Sin restricciones no hay nada que filtrar: "Solo lo apto para mí" no se puede elegir */
+.modal-perfil-opcion:has(input:disabled) {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.modal-perfil-opcion-texto {
+    font-size: 13px;
+    line-height: 18px;
+    color: var(--gris-texto);
+}
+
+.modal-perfil-acciones {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
+}
+
+@media (max-width: 900px) {
+    .modal-perfil {
+        padding: 24px 20px;
+    }
+
+    .modal-perfil-cuerpo {
+        flex-direction: column;
+    }
+
+    .modal-perfil-datos {
+        flex-basis: auto;
+        width: 100%;
+    }
+
+    .modal-perfil-ver {
+        flex-direction: column;
+    }
+}
+
+/* Cambiar foto de perfil (modal del kit): usa .dialogo, acá solo el ancho, el recorte y el zoom */
+.dialogo-foto {
+    width: 343px;
+}
+
+.dialogo-foto-lienzo {
+    display: block;
+    width: 299px;
+    max-width: 100%;
+    aspect-ratio: 1;
+    margin: 18px auto 0;
+    border-radius: 4px;
+    cursor: grab;
+    touch-action: none;
+}
+
+.dialogo-foto-lienzo:active {
+    cursor: grabbing;
+}
+
+.dialogo-foto-zoom {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 16px 14px 22px;
+}
+
+.dialogo-foto-zoom input {
+    flex: 1;
+    accent-color: var(--naranja);
+}
+
+.dialogo-foto .dialogo-botones {
+    justify-content: center;
+}
+
+.dialogo-foto .dialogo-botones .boton {
+    width: auto;
+}
+
+/* Que el atributo hidden gane sobre el display del contenedor (para actualizar los chips sin recargar) */
+.perfil-chips[hidden] {
+    display: none;
+}

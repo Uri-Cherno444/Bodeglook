@@ -100,8 +100,8 @@ public class RestaurantesController : Controller
         texto = (texto ?? "").Trim();
         if (texto.Length > 100) texto = texto.Substring(0, 100);
 
-        // "Solo lo apto para mí" del onboarding (queda en la sesión)
-        bool soloApto = HttpContext.Session.GetString("soloApto") == "1";
+        // "Solo lo apto para mí" del onboarding o de Editar perfil (Usuarios.SoloApto)
+        bool soloApto = BD.ObtenerSoloApto(usuario.Id);
 
         int total = BD.ContarRestaurantes(texto, usuario.Id, soloApto);
         int totalPaginas = Math.Max(1, (int)Math.Ceiling(total / (double)ResultadosPorPagina));
