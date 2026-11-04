@@ -23,9 +23,9 @@
     {
         <a class="fila-chat @(chat.IdGrupo == grupoAbierto ? "fila-chat-abierta" : "")" href="/Grupos/Chat/@chat.IdGrupo" data-id-grupo="@chat.IdGrupo">
             <span class="foto-grupo">
-                @if (chat.Foto != null)
+                @if (Fotos.Avatar(chat.Foto) != null)
                 {
-                    <img class="foto-grupo-imagen" src="@chat.Foto" alt="" />
+                    <img class="foto-grupo-imagen" src="@chat.Foto" width="64" height="64" alt="" />
                 }
                 else
                 {

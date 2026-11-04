@@ -109,6 +109,72 @@ public static class BD
         }
     }
 
+    // Los barrios con el centro (Latitud y Longitud), para ubicar los lugares nuevos y armar los límites de la importación
+    public static List<Barrios> ObtenerBarriosConCoordenadas()
+    {
+        string consulta = "SELECT Id, Nombre, Latitud, Longitud FROM Barrios ORDER BY Id";
+        using (SqlConnection conexion = new SqlConnection(CadenaConexion))
+        {
+            return conexion.Query<Barrios>(consulta).ToList();
+        }
+    }
+
+    // ---------- Lugares de Geoapify ----------
+
+    // Guarda un lugar traído de Geoapify. Si ya existe (mismo IdGeoapify) lo actualiza en vez de duplicarlo.
+    // Al actualizar no se pisan los datos que se pudieron completar a mano (teléfono, web, foto, descripción, plan Pro).
+    // Las columnas que no aceptan NULL y que Geoapify no trae van vacías: '' y 0, y los horarios iguales (= "sin dato").
+    // Devuelve true si el lugar era nuevo y false si se actualizó.
+    public static bool GuardarLugarGeoapify(LugarGeoapify lugar, int idBarrio, int idCategoria)
+    {
+        string nombre = lugar.Nombre!.Trim();
+        if (nombre.Length > 100) nombre = nombre.Substring(0, 100);
+        string calle = (lugar.Calle ?? "").Trim();
+        if (calle.Length > 50) calle = calle.Substring(0, 50);
+
+        var datos = new
+        {
+            IdGeoapify = lugar.IdGeoapify,
+            Nombre = nombre,
+            Calle = calle,
+            Numero = lugar.NumeroEntero(),
+            CodigoPostal = lugar.CodigoPostalEntero(),
+            Latitud = lugar.Latitud,
+            Longitud = lugar.Longitud,
+            idBarrio,
+            idCategoria
+        };
+
+        string actualizar = @"
+            UPDATE Restaurantes
+            SET Nombre = @Nombre, DireccionCalle = @Calle, DireccionNumero = @Numero, DireccionCodigoPostal = @CodigoPostal,
+                Latitud = @Latitud, Longitud = @Longitud, idBarrio = @idBarrio, idCategoria = @idCategoria
+            WHERE IdGeoapify = @IdGeoapify";
+        string insertar = @"
+            INSERT INTO Restaurantes (Nombre, DireccionCalle, DireccionNumero, DireccionCodigoPostal, Descripcion, Telefono,
+                                      HorarioApertura, HorarioCerrado, RangoPrecio, Foto, idBarrio, idCategoria, EsPro,
+                                      SitioWeb, IdGeoapify, Latitud, Longitud, Origen)
+            VALUES (@Nombre, @Calle, @Numero, @CodigoPostal, '', '',
+                    '19000101', '19000101', 0, NULL, @idBarrio, @idCategoria, 0,
+                    NULL, @IdGeoapify, @Latitud, @Longitud, 'Geoapify')";
+        using (SqlConnection conexion = new SqlConnection(CadenaConexion))
+        {
+            if (conexion.Execute(actualizar, datos) > 0) return false;
+            conexion.Execute(insertar, datos);
+            return true;
+        }
+    }
+
+    // De dónde salió el lugar: "Manual" o "Geoapify" (decide si se muestran los créditos). null si no existe.
+    public static string? ObtenerOrigenRestaurante(int idRestaurante)
+    {
+        string consulta = "SELECT Origen FROM Restaurantes WHERE Id = @idRestaurante";
+        using (SqlConnection conexion = new SqlConnection(CadenaConexion))
+        {
+            return conexion.QueryFirstOrDefault<string>(consulta, new { idRestaurante });
+        }
+    }
+
     // Procedimiento RegistrarRestaurante. La contraseña ya tiene que venir hasheada.
     // Devuelve 0 si se guardó, 1 si el email ya se usó, 2 si el barrio no existe o 3 si la categoría no existe.
     public static int RegistrarRestaurante(string nombre, string email, string contraseña, int idBarrio, int idCategoria, bool esPro)
@@ -352,7 +418,7 @@ public static class BD
     public static List<MensajeChat> ObtenerMensajes(int idGrupo, int desdeId)
     {
         string consulta = @"
-            SELECT m.Id, m.Contenido, m.FechaHora, m.IdUsuario, u.NombreCompleto, m.IdPlan
+            SELECT m.Id, m.Contenido, m.FechaHora, m.IdUsuario, u.NombreCompleto, u.FotoPerfil, m.IdPlan
             FROM Mensajes m
             JOIN Usuarios u ON u.Id = m.IdUsuario
             WHERE m.IdGrupo = @idGrupo AND m.Id > @desdeId
@@ -523,7 +589,7 @@ public static class BD
             WHERE p.Id = @idPlan";
         // Los lugares en el orden en que se propusieron
         string consultaOpciones = @"
-            SELECT r.Id AS IdRestaurante, r.Nombre, c.Nombre AS Categoria, b.Nombre AS Barrio, r.SitioWeb,
+            SELECT r.Id AS IdRestaurante, r.Nombre, r.Foto, c.Nombre AS Categoria, b.Nombre AS Barrio, r.SitioWeb,
                    (SELECT COUNT(*) FROM Votos WHERE IdPlan = pr.IdPlan AND IdRestaurante = r.Id) AS Votos
             FROM PlanesRestaurantes pr
             JOIN Restaurantes r ON r.Id = pr.IdRestaurante
@@ -593,7 +659,7 @@ public static class BD
     public static List<LugarBuscado> BuscarLugaresParaGrupo(int idGrupo, string texto)
     {
         string consulta = @"
-            SELECT TOP 6 r.Id, r.Nombre, c.Nombre AS Categoria, b.Nombre AS Barrio,
+            SELECT TOP 6 r.Id, r.Nombre, r.Foto, c.Nombre AS Categoria, b.Nombre AS Barrio,
                    CAST(CASE WHEN NOT EXISTS (
                             SELECT 1 FROM RestriccionesUsuarios ru
                             JOIN UsuariosGrupos ug ON ug.IdUsuario = ru.IdUsuario
@@ -623,7 +689,7 @@ public static class BD
     public static LugarBuscado? ObtenerLugar(int idRestaurante)
     {
         string consulta = @"
-            SELECT r.Id, r.Nombre, c.Nombre AS Categoria, b.Nombre AS Barrio
+            SELECT r.Id, r.Nombre, r.Foto, c.Nombre AS Categoria, b.Nombre AS Barrio
             FROM Restaurantes r
             LEFT JOIN Categorias c ON c.Id = r.IdCategoria
             LEFT JOIN Barrios b ON b.Id = r.IdBarrio
@@ -870,9 +936,9 @@ public static class BD
         parametros.Add("cantidad", cantidad);
 
         string consulta = @"
-            SELECT r.Id, r.Nombre, r.Foto, c.Nombre AS Categoria, b.Nombre AS Barrio, r.EsPro,
-                   b.Latitud, b.Longitud,
-                   dbo.DistanciaKm(bu.Latitud, bu.Longitud, b.Latitud, b.Longitud) AS DistanciaKm,
+            SELECT r.Id, r.Nombre, r.Foto, c.Nombre AS Categoria, b.Nombre AS Barrio, r.EsPro, r.Origen,
+                   ISNULL(r.Latitud, b.Latitud) AS Latitud, ISNULL(r.Longitud, b.Longitud) AS Longitud,
+                   dbo.DistanciaKm(bu.Latitud, bu.Longitud, ISNULL(r.Latitud, b.Latitud), ISNULL(r.Longitud, b.Longitud)) AS DistanciaKm,
                    (SELECT AVG(CAST(Puntaje AS float)) FROM Reseñas WHERE IdRestaurante = r.Id AND Fecha <= DATEADD(hour, -24, GETDATE())) AS Puntaje,
                    CAST(CASE WHEN EXISTS (SELECT 1 FROM Favoritos WHERE IdUsuario = @idUsuario AND IdRestaurante = r.Id)
                         THEN 1 ELSE 0 END AS bit) AS EsFavorito
@@ -882,8 +948,8 @@ public static class BD
             LEFT JOIN Usuarios u ON u.Id = @idUsuario
             LEFT JOIN Barrios bu ON bu.Id = u.IdBarrio" + filtro + @"
             ORDER BY r.EsPro DESC,
-                     CASE WHEN bu.Latitud IS NULL OR b.Latitud IS NULL THEN 1 ELSE 0 END,
-                     dbo.DistanciaKm(bu.Latitud, bu.Longitud, b.Latitud, b.Longitud),
+                     CASE WHEN bu.Latitud IS NULL OR ISNULL(r.Latitud, b.Latitud) IS NULL THEN 1 ELSE 0 END,
+                     dbo.DistanciaKm(bu.Latitud, bu.Longitud, ISNULL(r.Latitud, b.Latitud), ISNULL(r.Longitud, b.Longitud)),
                      CASE WHEN (SELECT AVG(CAST(Puntaje AS float)) FROM Reseñas WHERE IdRestaurante = r.Id AND Fecha <= DATEADD(hour, -24, GETDATE())) IS NULL THEN 1 ELSE 0 END,
                      Puntaje DESC, r.Id
             OFFSET @desde ROWS FETCH NEXT @cantidad ROWS ONLY";
@@ -1062,6 +1128,7 @@ public static class BD
         {
             Usuarios? autor = ObtenerPerfilUsuario(resena.IdUsuario);
             resena.NombreCompleto = autor?.NombreCompleto ?? resena.NombreUsuario;
+            resena.FotoPerfil = autor?.FotoPerfil;
         }
         return resenas;
     }

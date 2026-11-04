@@ -5,6 +5,13 @@ public class OpcionPlan
 {
     public int IdRestaurante { get; set; }
     public string? Nombre { get; set; }
+    // Siempre tiene una ruta: la portada del restaurante o la imagen por defecto (ver Fotos)
+    private string? _foto;
+    public string? Foto
+    {
+        get { return Fotos.Portada(IdRestaurante, _foto); }
+        set { _foto = value; }
+    }
     public string? Categoria { get; set; }
     public string? Barrio { get; set; }
     public int Votos { get; set; }

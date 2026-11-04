@@ -9,6 +9,8 @@ public class ResenaComunidad
     public string? Comentario { get; set; }
     public DateTime Fecha { get; set; }
     public string? NombreCompleto { get; set; }
+    // La foto de perfil de quien la escribió (null: se muestran las iniciales)
+    public string? FotoPerfil { get; set; }
 
     // Los devuelve el procedimiento ListarResenasRestaurante
     public int IdUsuario { get; set; }

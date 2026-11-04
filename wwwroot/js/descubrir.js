@@ -73,6 +73,8 @@ function mostrarResultados(resultados) {
     const plantilla = document.getElementById("plantillaResultado");
     listaResultados.innerHTML = "";
     sinResultados.hidden = resultados.length > 0;
+    // Los créditos de Geoapify y OpenStreetMap se muestran si algún resultado viene de ahí
+    document.getElementById("creditosResultados").hidden = !resultados.some(function (lugar) { return lugar.origen === "Geoapify"; });
 
     resultados.forEach(function (lugar) {
         const tarjeta = plantilla.content.firstElementChild.cloneNode(true);
@@ -110,7 +112,7 @@ function textoBarrio(lugar) {
 
 // "Vinoteca · ★ 4.7" (sin reseñas, solo la categoría)
 function textoCategoria(lugar) {
-    if (lugar.puntaje === null) return lugar.categoria;
+    if (lugar.puntaje === null) return lugar.categoria + " · Sin reseñas todavía";
     return lugar.categoria + " · ★ " + lugar.puntaje;
 }
 

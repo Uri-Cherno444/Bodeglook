@@ -261,6 +261,14 @@
 
 /* ---------- Mapa (Leaflet) ---------- */
 
+/* El mapa y los créditos de Geoapify / OpenStreetMap de abajo */
+.mapa-y-creditos {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
 .mapa {
     flex: 1;
     min-width: 0;

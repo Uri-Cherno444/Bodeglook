@@ -5,7 +5,7 @@
    el corazón es un botón aparte, por encima, para que no abra el Detalle. *@
 <article class="tarjeta-lugar" data-id-restaurante="@Model.Id">
     <div class="tarjeta-lugar-foto">
-        <img src="@Model.Foto" alt="" />
+        <img src="@Model.Foto" width="400" height="230" loading="lazy" alt="" />
         <button type="button"
                 class="tarjeta-lugar-favorito boton-favorito @(Model.EsFavorito ? "es-favorito" : "")"
                 aria-pressed="@(Model.EsFavorito ? "true" : "false")"
@@ -20,6 +20,10 @@
         @if (Model.Puntaje != null)
         {
             <span class="puntaje">★ @Model.Puntaje.Value.ToString("0.0", CultureInfo.InvariantCulture)</span>
+        }
+        else
+        {
+            <span class="ubicacion">Sin reseñas todavía</span>
         }
     </div>
     <div class="tarjeta-lugar-detalle">

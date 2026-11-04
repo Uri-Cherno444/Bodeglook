@@ -24,6 +24,8 @@
     {
         Bodeglook.Models.Usuarios usuarioLogueado = System.Text.Json.JsonSerializer.Deserialize<Bodeglook.Models.Usuarios>(usuarioJson)!;
         string iniciales = usuarioLogueado.ObtenerIniciales();
+        // null si no tiene foto: ahí el círculo muestra las iniciales
+        string? fotoPerfil = Fotos.Avatar(usuarioLogueado.FotoPerfil);
 
         <header class="encabezado">
             <div class="encabezado-izquierda">
@@ -46,10 +48,28 @@
                 <img src="~/img/icono-notificacion.svg" width="24" height="24" alt="Notificaciones" />
                 <!-- 11 · Menú del avatar -->
                 <div class="menu-usuario">
-                    <button type="button" class="avatar avatar-chico avatar-boton" id="botonAvatar" aria-haspopup="true" aria-expanded="false" aria-controls="menuUsuario">@iniciales</button>
+                    <button type="button" class="avatar avatar-chico avatar-boton" id="botonAvatar" aria-haspopup="true" aria-expanded="false" aria-controls="menuUsuario">
+                        @if (fotoPerfil != null)
+                        {
+                            <img class="foto-grupo-imagen" src="@fotoPerfil" width="40" height="40" alt="@iniciales" />
+                        }
+                        else
+                        {
+                            @iniciales
+                        }
+                    </button>
                     <div class="menu-usuario-lista" id="menuUsuario" hidden>
                         <div class="menu-usuario-datos">
-                            <span class="avatar avatar-chico avatar-menu">@iniciales</span>
+                            <span class="avatar avatar-chico avatar-menu">
+                                @if (fotoPerfil != null)
+                                {
+                                    <img class="foto-grupo-imagen" src="@fotoPerfil" width="40" height="40" alt="" />
+                                }
+                                else
+                                {
+                                    @iniciales
+                                }
+                            </span>
                             <div>
                                 <p class="menu-usuario-nombre">@usuarioLogueado.NombreCompleto</p>
                                 <p class="menu-usuario-arroba">@@@usuarioLogueado.NombreUsuario</p>

@@ -102,6 +102,7 @@ public class PlanesController : Controller
             {
                 id = l.Id,
                 nombre = l.Nombre,
+                foto = l.Foto,
                 detalle = l.Categoria == null ? l.BarrioCorto() : l.Categoria + " · " + l.BarrioCorto(),
                 textoCampo = l.TextoCampo(),
                 apto = l.AptoParaTodos,

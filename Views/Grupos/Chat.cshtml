@@ -18,9 +18,9 @@
         <section class="conversacion" id="conversacion" data-id-grupo="@Model.Id">
             <div class="conversacion-cabecera">
                 <span class="foto-grupo">
-                    @if (Model.Foto != null)
+                    @if (Fotos.Avatar(Model.Foto) != null)
                     {
-                        <img class="foto-grupo-imagen" src="@Model.Foto" alt="" />
+                        <img class="foto-grupo-imagen" src="@Model.Foto" width="64" height="64" alt="" />
                     }
                     else
                     {

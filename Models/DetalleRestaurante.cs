@@ -8,7 +8,18 @@ public class DetalleRestaurante
 {
     public int Id { get; set; }
     public string? Nombre { get; set; }
-    public string? Foto { get; set; }
+    // Siempre tiene una ruta: la portada del restaurante o la imagen por defecto (ver Fotos)
+    private string? _foto;
+    public string? Foto
+    {
+        get { return Fotos.Portada(Id, _foto); }
+        set { _foto = value; }
+    }
+    // Las fotos de la pestaña "Fotos": la portada y el resto de la carpeta del restaurante
+    public List<string> Galeria()
+    {
+        return Fotos.Galeria(Id, _foto);
+    }
     public string? Descripcion { get; set; }
     public string? Categoria { get; set; }
     public string? Barrio { get; set; }
@@ -35,6 +46,7 @@ public class DetalleRestaurante
     // "(1 reseña)" o "(128 reseñas)"
     public string TextoCantidadResenas()
     {
+        if (CantidadResenas == 0) return "Sin reseñas todavía";
         return CantidadResenas == 1 ? "(1 reseña)" : "(" + CantidadResenas + " reseñas)";
     }
 

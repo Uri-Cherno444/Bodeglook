@@ -827,6 +827,8 @@
     font-size: 16px;
     font-weight: 700;
     flex-shrink: 0;
+    /* Con foto de perfil, la imagen queda recortada en el círculo */
+    overflow: hidden;
 }
 
 /* ---------- Logo ---------- */
@@ -1721,4 +1723,21 @@ main > section:nth-child(n+5) { animation-delay: 0.3s; }
         animation-delay: 0s !important;
         transition-duration: 0.01ms !important;
     }
+}
+
+/* ---------- Créditos de Geoapify y OpenStreetMap ---------- */
+
+.creditos {
+    margin: 8px 0 0;
+    font-size: 12px;
+    line-height: 16px;
+    color: var(--gris-texto);
+}
+
+.creditos a {
+    color: inherit;
+}
+
+.creditos a:hover {
+    color: var(--naranja);
 }

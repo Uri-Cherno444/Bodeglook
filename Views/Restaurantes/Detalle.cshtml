@@ -5,6 +5,7 @@
     ViewData["Pestaña"] = "Descubrir";
     List<ResenaComunidad> resenas = ViewBag.Resenas;
     bool yaReseno = ViewBag.YaReseno;
+    List<string> galeria = Model.Galeria();
     Planes? visita = ViewBag.Visita;
 
     // "Sáb 24/10" para el chip de "Visita verificada"
@@ -27,10 +28,7 @@
 <div class="detalle" data-id-restaurante="@Model.Id">
     <!-- Banner con foto, volver, puntaje y corazón -->
     <section class="detalle-banner">
-        @if (Model.Foto != null)
-        {
-            <img class="detalle-banner-foto" src="@Model.Foto" alt="" />
-        }
+        <img class="detalle-banner-foto" src="@Model.Foto" width="1440" height="380" alt="" />
         <a class="boton-volver detalle-volver" id="botonVolver" href="/Home/Inicio" aria-label="Volver">
             <img src="~/img/icono-volver.svg" width="22" height="22" alt="" />
         </a>
@@ -96,11 +94,18 @@
                 <p class="detalle-descripcion" data-pestanas="informacion">@Model.Descripcion</p>
             }
 
-            <!-- Fotos: por ahora, la foto del lugar en grande -->
+            <!-- Fotos: galería en grilla. Al tocar una se ve en grande (visor de abajo) -->
             <div class="detalle-fotos" data-pestanas="fotos" hidden>
-                @if (Model.Foto != null)
+                @if (galeria.Count > 0)
                 {
-                    <img src="@Model.Foto" alt="@Model.Nombre" />
+                    <div class="galeria" id="galeria">
+                        @for (int i = 0; i < galeria.Count; i++)
+                        {
+                            <button type="button" class="galeria-foto" data-indice="@i" aria-label="Ver foto @(i + 1) de @galeria.Count">
+                                <img src="@galeria[i]" width="320" height="240" loading="lazy" alt="@Model.Nombre" />
+                            </button>
+                        }
+                    </div>
                 }
                 else
                 {
@@ -132,7 +137,16 @@
                     {
                         <div class="tarjeta-resena">
                             <div class="resena-autor">
-                                <span class="avatar">@resena.ObtenerIniciales()</span>
+                                <span class="avatar">
+                                    @if (Fotos.Avatar(resena.FotoPerfil) != null)
+                                    {
+                                        <img class="foto-grupo-imagen" src="@resena.FotoPerfil" width="44" height="44" loading="lazy" alt="" />
+                                    }
+                                    else
+                                    {
+                                        @resena.ObtenerIniciales()
+                                    }
+                                </span>
                                 <div class="resena-datos">
                                     <span class="resena-nombre">@resena.NombreCompleto</span>
                                     <span class="resena-fecha">@resena.TextoHace()</span>
@@ -191,9 +205,28 @@
             <div class="detalle-mapa">
                 <img src="~/img/icono-imagen-grande.svg" width="40" height="40" alt="" />
             </div>
+            @if ((string?)ViewBag.Origen == "Geoapify")
+            {
+                @await Html.PartialAsync("_Creditos")
+            }
         </aside>
     </div>
 </div>
+
+<!-- Visor de fotos: foto en grande con flechas para pasar y la X para cerrar. Lo arma detalle.js. -->
+<dialog class="dialogo visor" id="visorFotos" aria-label="Foto en grande">
+    <button type="button" class="boton-volver visor-cerrar" id="visorCerrar" aria-label="Cerrar">
+        <img src="~/img/icono-cerrar.svg" width="24" height="24" alt="" />
+    </button>
+    <button type="button" class="boton-volver visor-flecha visor-anterior" id="visorAnterior" aria-label="Foto anterior">
+        <img src="~/img/icono-paginacion-anterior.svg" width="6" height="10" alt="" />
+    </button>
+    <img class="visor-foto" id="visorFoto" src="" alt="" />
+    <button type="button" class="boton-volver visor-flecha visor-siguiente" id="visorSiguiente" aria-label="Foto siguiente">
+        <img src="~/img/icono-paginacion-siguiente.svg" width="6" height="10" alt="" />
+    </button>
+    <p class="visor-contador" id="visorContador" aria-live="polite"></p>
+</dialog>
 
 <!-- 04b · Dejar una reseña (modal). <dialog> ya se cierra con Escape. -->
 <dialog class="modal-resena" id="modalResena" aria-labelledby="modalResenaTitulo">

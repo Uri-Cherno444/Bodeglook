@@ -65,7 +65,7 @@ function dibujarMensaje(mensaje) {
     if (mensaje.idPlan) {
         fila.className = "mensaje mensaje-encuesta" + (mensaje.esMio ? " mensaje-mio" : "");
         fila.innerHTML = (mensaje.esMio ? "" : '<span class="avatar avatar-mensaje"></span>') + '<div class="encuesta"></div>';
-        if (!mensaje.esMio) fila.querySelector(".avatar").textContent = mensaje.iniciales;
+        if (!mensaje.esMio) ponerAvatar(fila.querySelector(".avatar"), mensaje);
         fila.querySelector(".encuesta").dataset.idPlan = mensaje.idPlan;
         listaMensajes.appendChild(fila);
         return;
@@ -82,7 +82,7 @@ function dibujarMensaje(mensaje) {
             '  <span class="mensaje-autor"></span>' +
             '  <div class="mensaje-texto"><p></p><span class="mensaje-hora"></span></div>' +
             '</div>';
-        fila.querySelector(".avatar").textContent = mensaje.iniciales;
+        ponerAvatar(fila.querySelector(".avatar"), mensaje);
         fila.querySelector(".mensaje-autor").textContent = mensaje.nombre;
     }
 
@@ -90,6 +90,21 @@ function dibujarMensaje(mensaje) {
     fila.querySelector(".mensaje-texto p").textContent = mensaje.contenido;
     fila.querySelector(".mensaje-hora").textContent = mensaje.hora;
     listaMensajes.appendChild(fila);
+}
+
+// La foto de perfil de quien escribió; si no tiene, sus iniciales en el círculo
+function ponerAvatar(avatar, mensaje) {
+    if (!mensaje.foto) {
+        avatar.textContent = mensaje.iniciales;
+        return;
+    }
+    const foto = document.createElement("img");
+    foto.className = "foto-grupo-imagen";
+    foto.src = mensaje.foto;
+    foto.width = 36;
+    foto.height = 36;
+    foto.alt = "";
+    avatar.appendChild(foto);
 }
 
 // ---------- Encuestas de los planes (07 y 07e) ----------
@@ -145,7 +160,7 @@ function dibujarEncuesta(tarjeta, encuesta) {
     lugares.setAttribute("aria-label", "Lugar");
     encuesta.opciones.forEach(function (opcion) {
         lugares.appendChild(crearOpcionEncuesta(encuesta, "lugar", opcion.idRestaurante, opcion.nombre, opcion.detalle,
-            opcion.votos, opcion.porcentaje, opcion.idRestaurante === lugarResaltado));
+            opcion.votos, opcion.porcentaje, opcion.idRestaurante === lugarResaltado, opcion.foto));
     });
 
     const horarios = tarjeta.querySelector(".encuesta-horarios");
@@ -164,7 +179,7 @@ function dibujarEncuesta(tarjeta, encuesta) {
 }
 
 // Una opción con el radio del kit, cantidad de votos y barra. tipo: "lugar" u "horario" (el horario no lleva detalle).
-function crearOpcionEncuesta(encuesta, tipo, id, nombre, detalle, votos, porcentaje, resaltada) {
+function crearOpcionEncuesta(encuesta, tipo, id, nombre, detalle, votos, porcentaje, resaltada, foto) {
     const abierto = encuesta.estado === "votacion";
     const fila = document.createElement("label");
     fila.className = "opcion-plan";
@@ -172,7 +187,7 @@ function crearOpcionEncuesta(encuesta, tipo, id, nombre, detalle, votos, porcent
     if (!abierto && !resaltada) fila.classList.add("opcion-plan-apagada");
     fila.innerHTML =
         '<span class="opcion-plan-fila">' +
-        '  <span class="opcion-plan-elegir"><span class="opcion-plan-nombre"></span>' +
+        '  <span class="opcion-plan-elegir">' + (foto ? '<img class="lugar-miniatura" width="40" height="40" loading="lazy" alt="" />' : '') + '<span class="opcion-plan-nombre"></span>' +
         '    <input type="radio" class="radio" /><span class="radio-circulo" aria-hidden="true"></span></span>' +
         '  <span class="opcion-plan-votos"></span>' +
         '</span>' +
@@ -180,6 +195,7 @@ function crearOpcionEncuesta(encuesta, tipo, id, nombre, detalle, votos, porcent
         '<span class="barra-votos"><span class="barra-votos-avance"></span></span>';
 
     fila.querySelector(".opcion-plan-nombre").textContent = nombre;
+    if (foto) fila.querySelector(".lugar-miniatura").src = foto;
     const radio = fila.querySelector(".radio");
     radio.name = "plan-" + encuesta.id + "-" + tipo;
     radio.value = id;
@@ -552,8 +568,12 @@ if (dialogoPlan) {
         boton.className = "resultado-lugar";
         boton.setAttribute("role", "option");
         boton.innerHTML =
-            '<span class="resultado-lugar-titulo"><span class="resultado-lugar-nombre"></span><span class="resultado-lugar-detalle"></span></span>' +
-            '<span class="etiquetas"></span>';
+            '<img class="lugar-miniatura" width="48" height="48" alt="" />' +
+            '<span class="resultado-lugar-textos">' +
+            '  <span class="resultado-lugar-titulo"><span class="resultado-lugar-nombre"></span><span class="resultado-lugar-detalle"></span></span>' +
+            '  <span class="etiquetas"></span>' +
+            '</span>';
+        boton.querySelector(".lugar-miniatura").src = lugar.foto;
         boton.querySelector(".resultado-lugar-nombre").textContent = lugar.nombre;
         boton.querySelector(".resultado-lugar-detalle").textContent = lugar.detalle;
         lugar.restricciones.forEach(function (nombre) {

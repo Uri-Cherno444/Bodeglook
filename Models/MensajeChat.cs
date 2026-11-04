@@ -10,6 +10,8 @@ public class MensajeChat
     public DateTime FechaHora { get; set; }
     public int IdUsuario { get; set; }
     public string? NombreCompleto { get; set; }
+    // La foto de perfil de quien lo escribió (null: se muestran las iniciales)
+    public string? FotoPerfil { get; set; }
     // Si no es null, el mensaje es la encuesta de ese plan
     public int? IdPlan { get; set; }
 

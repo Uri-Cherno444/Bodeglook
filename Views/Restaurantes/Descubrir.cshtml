@@ -55,9 +55,17 @@
             <p class="sin-resultados" id="sinResultados" hidden>No encontramos lugares con esa búsqueda.</p>
 
             <nav class="paginacion" id="paginacion" aria-label="Páginas de resultados"></nav>
+
+            @* Solo se ve cuando algún resultado viene de Geoapify (lo prende descubrir.js) *@
+            <div id="creditosResultados" hidden>
+                @await Html.PartialAsync("_Creditos")
+            </div>
         </section>
 
-        <div class="mapa" id="mapa" role="region" aria-label="Mapa de resultados"></div>
+        <div class="mapa-y-creditos">
+            <div class="mapa" id="mapa" role="region" aria-label="Mapa de resultados"></div>
+            @await Html.PartialAsync("_Creditos")
+        </div>
     </div>
 </div>
 
@@ -65,7 +73,7 @@
    el corazón es un botón aparte, por encima (igual que en las tarjetas de Inicio). *@
 <template id="plantillaResultado">
     <article class="resultado">
-        <img class="resultado-foto" src="" alt="" />
+        <img class="resultado-foto" src="" width="96" height="96" loading="lazy" alt="" />
         <div class="resultado-textos">
             <span class="chip chip-naranja chip-recomendado">Recomendado</span>
             <a class="resultado-nombre" href=""></a>
@@ -87,7 +95,7 @@
 <template id="plantillaTarjetaMapa">
     <a class="mapa-tarjeta" href="">
         <span class="mapa-tarjeta-foto">
-            <img class="mapa-tarjeta-imagen" src="" alt="" />
+            <img class="mapa-tarjeta-imagen" src="" width="64" height="64" alt="" />
             <img class="mapa-tarjeta-sin-foto" src="~/img/icono-imagen-chica.svg" width="16" height="16" alt="" />
         </span>
         <span class="mapa-tarjeta-textos">

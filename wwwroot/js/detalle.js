@@ -44,6 +44,59 @@ pestanas.forEach(function (pestana) {
     });
 });
 
+// ---------- Visor de fotos ----------
+// Al tocar una foto de la galería se ve en grande. Flechas (o teclado) para pasar y la X para cerrar.
+
+const visor = document.getElementById("visorFotos");
+const visorFoto = document.getElementById("visorFoto");
+const visorContador = document.getElementById("visorContador");
+const fotosGaleria = Array.from(document.querySelectorAll(".galeria-foto img")).map(function (imagen) {
+    return imagen.getAttribute("src");
+});
+let fotoActual = 0;
+
+function mostrarFotoDelVisor(indice) {
+    // Da la vuelta: después de la última va la primera
+    fotoActual = (indice + fotosGaleria.length) % fotosGaleria.length;
+    visorFoto.src = fotosGaleria[fotoActual];
+    visorContador.textContent = (fotoActual + 1) + " de " + fotosGaleria.length;
+}
+
+document.querySelectorAll(".galeria-foto").forEach(function (boton) {
+    boton.addEventListener("click", function () {
+        mostrarFotoDelVisor(Number(boton.dataset.indice));
+        visor.showModal();
+    });
+});
+
+// Con una sola foto no hay a dónde pasar
+if (fotosGaleria.length === 1) {
+    document.getElementById("visorAnterior").hidden = true;
+    document.getElementById("visorSiguiente").hidden = true;
+}
+
+document.getElementById("visorAnterior").addEventListener("click", function () {
+    mostrarFotoDelVisor(fotoActual - 1);
+});
+
+document.getElementById("visorSiguiente").addEventListener("click", function () {
+    mostrarFotoDelVisor(fotoActual + 1);
+});
+
+document.getElementById("visorCerrar").addEventListener("click", function () {
+    visor.close();
+});
+
+// Clic en el fondo oscuro (fuera de la foto) también cierra
+visor.addEventListener("click", function (evento) {
+    if (evento.target === visor) visor.close();
+});
+
+visor.addEventListener("keydown", function (evento) {
+    if (evento.key === "ArrowLeft") mostrarFotoDelVisor(fotoActual - 1);
+    if (evento.key === "ArrowRight") mostrarFotoDelVisor(fotoActual + 1);
+});
+
 // ---------- Reseñas de la comunidad ----------
 
 const listaResenas = document.getElementById("listaResenas");
@@ -62,7 +115,20 @@ function crearTarjetaResena(resena) {
         '  <div class="estrellas"></div>' +
         '</div>';
 
-    tarjeta.querySelector(".avatar").textContent = resena.iniciales;
+    // Con foto de perfil va la foto; si no, las iniciales
+    const avatar = tarjeta.querySelector(".avatar");
+    if (resena.foto) {
+        const foto = document.createElement("img");
+        foto.className = "foto-grupo-imagen";
+        foto.src = resena.foto;
+        foto.width = 44;
+        foto.height = 44;
+        foto.loading = "lazy";
+        foto.alt = "";
+        avatar.appendChild(foto);
+    } else {
+        avatar.textContent = resena.iniciales;
+    }
     tarjeta.querySelector(".resena-nombre").textContent = resena.nombre;
     tarjeta.querySelector(".resena-fecha").textContent = resena.hace;
 

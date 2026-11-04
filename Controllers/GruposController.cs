@@ -161,6 +161,7 @@ public class GruposController : Controller
             esMio = mensaje.IdUsuario == idUsuario,
             nombre = autor.ObtenerPrimerNombre(),
             iniciales = autor.ObtenerIniciales(),
+            foto = Fotos.Avatar(mensaje.FotoPerfil),
             idPlan = mensaje.IdPlan
         };
     }
@@ -189,6 +190,7 @@ public class GruposController : Controller
             {
                 idRestaurante = o.IdRestaurante,
                 nombre = o.Nombre,
+                foto = o.Foto,
                 detalle = o.TextoDetalle(),
                 votos = o.Votos,
                 porcentaje = encuesta.Porcentaje(o.Votos)

@@ -26,6 +26,7 @@ public class RestaurantesController : Controller
         ViewBag.Resenas = BD.ObtenerResenasDeRestaurante(id, 0, ResenasIniciales);
         ViewBag.YaReseno = BD.YaReseno(usuario.Id, id);
         ViewBag.Visita = BD.ObtenerVisitaVerificada(usuario.Id, id);
+        ViewBag.Origen = BD.ObtenerOrigenRestaurante(id);
         return View(detalle);
     }
 
@@ -92,7 +93,7 @@ public class RestaurantesController : Controller
 
     // La llama descubrir.js con fetch al buscar y al cambiar de página.
     // Devuelve { pagina, totalPaginas, resultados, recientes }. Cada búsqueda nueva (pagina 1 con texto) se guarda.
-    public IActionResult Resultados(string? texto, int pagina)
+    public async Task<IActionResult> Resultados(string? texto, int pagina)
     {
         if (HttpContext.Session.GetString("usuario") == null) return Unauthorized();
 
@@ -103,7 +104,13 @@ public class RestaurantesController : Controller
         // "Solo lo apto para mí" del onboarding o de Editar perfil (Usuarios.SoloApto)
         bool soloApto = BD.ObtenerSoloApto(usuario.Id);
 
+        // Se busca primero en nuestra base. Solo si no hay nada se pregunta a Geoapify, se guarda lo que encuentre y se vuelve a buscar.
+        // Si Geoapify no responde o se pasó el límite, queda "sin resultados" como siempre: sin errores técnicos.
         int total = BD.ContarRestaurantes(texto, usuario.Id, soloApto);
+        if (total == 0 && texto != "" && pagina <= 1)
+        {
+            if (await Geoapify.BuscarYGuardar(texto) > 0) total = BD.ContarRestaurantes(texto, usuario.Id, soloApto);
+        }
         int totalPaginas = Math.Max(1, (int)Math.Ceiling(total / (double)ResultadosPorPagina));
         if (pagina < 1) pagina = 1;
         if (pagina > totalPaginas) pagina = totalPaginas;
@@ -123,6 +130,7 @@ public class RestaurantesController : Controller
                 puntaje = lugar.Puntaje == null ? null : lugar.Puntaje.Value.ToString("0.0", CultureInfo.InvariantCulture),
                 esFavorito = lugar.EsFavorito,
                 esPro = lugar.EsPro,
+                origen = lugar.Origen,
                 latitud = lugar.Latitud,
                 longitud = lugar.Longitud,
                 distanciaKm = lugar.DistanciaKm == null ? (double?)null : Math.Round(lugar.DistanciaKm.Value, 1)
@@ -195,6 +203,7 @@ public class RestaurantesController : Controller
             comentario = resena.Comentario,
             nombre = resena.NombreCompleto,
             iniciales = resena.ObtenerIniciales(),
+            foto = Fotos.Avatar(resena.FotoPerfil),
             hace = resena.TextoHace()
         };
     }

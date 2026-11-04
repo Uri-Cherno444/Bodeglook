@@ -16,8 +16,12 @@ public class Restaurantes
     public int? IdBarrio { get; set; }
     public int? IdCategoria { get; set; }
     public bool EsPro { get; set; }
+    // Ubicación del lugar. Los cargados a mano pueden no tenerla (ahí se usa el centro del barrio).
     public decimal? Latitud { get; set; }
     public decimal? Longitud { get; set; }
+    // place_id de Geoapify (null si se cargó a mano) y de dónde salió el lugar: "Manual" o "Geoapify"
+    public string? IdGeoapify { get; set; }
+    public string? Origen { get; set; }
     // Web del restaurante: "Reservar en la web del restaurante" (07i). null si no tiene.
     public string? SitioWeb { get; set; }
 }

@@ -6,7 +6,13 @@ public class TarjetaRestaurante
 {
     public int Id { get; set; }
     public string? Nombre { get; set; }
-    public string? Foto { get; set; }
+    // Siempre tiene una ruta: la portada del restaurante o la imagen por defecto (ver Fotos)
+    private string? _foto;
+    public string? Foto
+    {
+        get { return Fotos.Portada(Id, _foto); }
+        set { _foto = value; }
+    }
     public string? Categoria { get; set; }
     public string? Barrio { get; set; }
     public double? Puntaje { get; set; }
@@ -14,6 +20,8 @@ public class TarjetaRestaurante
 
     // Para 05 · Descubrir: chip "Recomendado" y pin en el mapa
     public bool EsPro { get; set; }
+    // "Manual" o "Geoapify": los de Geoapify llevan los créditos de OpenStreetMap
+    public string? Origen { get; set; }
     public decimal? Latitud { get; set; }
     public decimal? Longitud { get; set; }
 
