@@ -139,6 +139,76 @@
     color: var(--naranja);
 }
 
+.resultados-orden[hidden] {
+    display: none;
+}
+
+.resultados-filtros {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+/* Desplegables "Barrio" y "Ordenar": el Dropdown del UI Kit, igual que el campo Ubicación de Editar perfil */
+.desplegable {
+    height: 44px;
+    padding: 8px 40px 8px 16px;
+    border: 1px solid var(--gris-medio);
+    border-radius: 7px;
+    background: var(--blanco) url("/img/icono-chevron.svg") no-repeat right 14px center;
+    font-family: inherit;
+    font-size: 16px;
+    letter-spacing: -0.16px;
+    color: var(--negro);
+    appearance: none;
+    cursor: pointer;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.desplegable[hidden] {
+    display: none;
+}
+
+.desplegable:hover {
+    border-color: var(--gris-texto);
+}
+
+.desplegable:focus {
+    outline: none;
+    border-color: var(--naranja);
+    box-shadow: 0 0 0 3px var(--naranja-suave);
+}
+
+.selector-barrio {
+    width: 220px;
+}
+
+.selector-orden {
+    width: 200px;
+}
+
+/* "Hay 3 en Belgrano": cambia el desplegable de barrio, no lleva a otra página */
+.sin-resultados-link {
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    font-weight: 700;
+    color: var(--naranja);
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.sin-resultados-link:focus-visible {
+    outline: 2px solid var(--naranja);
+    outline-offset: 2px;
+}
+
+/* "Distancias aproximadas desde tu barrio…" (el aviso es un <p>: sin margen) */
+.aviso-ubicacion {
+    margin: 0;
+}
+
 .lista-resultados {
     display: flex;
     flex-direction: column;
@@ -386,6 +456,23 @@
 
     .barra-busqueda .boton {
         padding: 0 18px;
+    }
+
+    /* El título arriba y el desplegable de barrio con el orden abajo, a todo el ancho */
+    .resultados-encabezado {
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .resultados-filtros {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .desplegable {
+        flex: 1;
+        width: auto;
+        min-width: 0;
     }
 
     .resultado-foto {

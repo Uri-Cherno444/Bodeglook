@@ -119,6 +119,21 @@ public static class BD
         }
     }
 
+    // El barrio del perfil del usuario, con su centro. En Descubrir se usa para medir las distancias
+    // cuando el navegador no da la ubicación. null si el usuario no tiene barrio.
+    public static Barrios? ObtenerBarrioDeUsuario(int idUsuario)
+    {
+        string consulta = @"
+            SELECT b.Id, b.Nombre, b.Latitud, b.Longitud
+            FROM Usuarios u
+            JOIN Barrios b ON b.Id = u.IdBarrio
+            WHERE u.Id = @idUsuario";
+        using (SqlConnection conexion = new SqlConnection(CadenaConexion))
+        {
+            return conexion.QueryFirstOrDefault<Barrios>(consulta, new { idUsuario });
+        }
+    }
+
     // ---------- Lugares de Geoapify ----------
 
     // Guarda un lugar traído de Geoapify. Si ya existe (mismo IdGeoapify) lo actualiza en vez de duplicarlo.
@@ -894,16 +909,19 @@ public static class BD
     // Si termina en "s" también se prueba sin la "s" ("Parrillas" encuentra "Parrilla").
     // COLLATE ..._CI_AI hace que no importen mayúsculas ni tildes ("nunez" encuentra "Núñez").
     // soloApto: igual que en Inicio, solo los que cumplen al menos una restricción del usuario.
-    private static string ArmarFiltroBusqueda(string texto, int idUsuario, bool soloApto, DynamicParameters parametros)
+    // idBarrio: el desplegable "Barrio". null = todos los barrios.
+    private static string ArmarFiltroBusqueda(string texto, int idUsuario, bool soloApto, int? idBarrio, DynamicParameters parametros)
     {
         string filtro = @"
             WHERE (@soloApto = 0
                OR NOT EXISTS (SELECT 1 FROM RestriccionesUsuarios WHERE IdUsuario = @idUsuario)
                OR EXISTS (SELECT 1 FROM RestriccionesRestaurantes rr
                           JOIN RestriccionesUsuarios ru ON ru.IdRestricciones = rr.IdRestriccion
-                          WHERE rr.IdRestaurante = r.Id AND ru.IdUsuario = @idUsuario))";
+                          WHERE rr.IdRestaurante = r.Id AND ru.IdUsuario = @idUsuario))
+              AND (@idBarrio IS NULL OR r.IdBarrio = @idBarrio)";
         parametros.Add("idUsuario", idUsuario);
         parametros.Add("soloApto", soloApto);
+        parametros.Add("idBarrio", idBarrio);
 
         int numero = 0;
         foreach (string palabra in texto.Split(' ', StringSplitOptions.RemoveEmptyEntries))
@@ -924,34 +942,70 @@ public static class BD
         return filtro;
     }
 
-    // Una página de resultados. Primero los Pro (salen destacados), después los más cerca del barrio
-    // del usuario (fórmula de Haversine: función DistanciaKm de la base) y después por mejor puntaje.
-    // Los que no tienen distancia (el usuario o el lugar sin coordenadas) van al final de cada grupo.
-    // El pin del mapa sale de las coordenadas del barrio del lugar.
-    public static List<TarjetaRestaurante> BuscarRestaurantes(string texto, int idUsuario, bool soloApto, int desde, int cantidad)
+    // El Pro que sale destacado ("Recomendado") arriba de todo en la página 1 cuando no hay barrio elegido:
+    // el más cercano al usuario entre los que coinciden con la búsqueda. null si no hay ningún Pro.
+    public static int? ObtenerProDestacado(string texto, int idUsuario, bool soloApto, double? latitud, double? longitud)
     {
         DynamicParameters parametros = new DynamicParameters();
-        string filtro = ArmarFiltroBusqueda(texto, idUsuario, soloApto, parametros);
+        string filtro = ArmarFiltroBusqueda(texto, idUsuario, soloApto, null, parametros);
+        parametros.Add("latitudUsuario", latitud);
+        parametros.Add("longitudUsuario", longitud);
+
+        string consulta = @"
+            SELECT TOP 1 r.Id
+            FROM Restaurantes r
+            LEFT JOIN Categorias c ON c.Id = r.IdCategoria
+            LEFT JOIN Barrios b ON b.Id = r.IdBarrio" + filtro + @"
+              AND r.EsPro = 1
+            ORDER BY CASE WHEN dbo.DistanciaKm(@latitudUsuario, @longitudUsuario, ISNULL(r.Latitud, b.Latitud), ISNULL(r.Longitud, b.Longitud)) IS NULL THEN 1 ELSE 0 END,
+                     dbo.DistanciaKm(@latitudUsuario, @longitudUsuario, ISNULL(r.Latitud, b.Latitud), ISNULL(r.Longitud, b.Longitud)),
+                     r.Id";
+        using (SqlConnection conexion = new SqlConnection(CadenaConexion))
+        {
+            return conexion.QueryFirstOrDefault<int?>(consulta, parametros);
+        }
+    }
+
+    // Una página de resultados.
+    // idDestacado: el Pro de ObtenerProDestacado. Va primero (o sea, arriba de la página 1) y no se repite más abajo.
+    // orden: "cerca" (del más cerca al más lejos) o "puntaje" (mejor puntuados primero; los empates, por distancia).
+    // latitud y longitud: desde dónde se mide (la ubicación del navegador o el centro del barrio del perfil).
+    // Llegan como parámetros y no se guardan. Si son null, no hay distancia.
+    // Los que no tienen distancia (sin ubicación o el lugar sin coordenadas) o sin reseñas van al final.
+    // CROSS APPLY calcula la distancia y el puntaje una sola vez para usarlos en el SELECT y en el ORDER BY.
+    // El pin del mapa sale de las coordenadas del lugar o, si no tiene, de las de su barrio.
+    public static List<TarjetaRestaurante> BuscarRestaurantes(string texto, int idUsuario, bool soloApto, int? idBarrio,
+        double? latitud, double? longitud, string orden, int? idDestacado, int desde, int cantidad)
+    {
+        DynamicParameters parametros = new DynamicParameters();
+        string filtro = ArmarFiltroBusqueda(texto, idUsuario, soloApto, idBarrio, parametros);
+        parametros.Add("latitudUsuario", latitud);
+        parametros.Add("longitudUsuario", longitud);
+        parametros.Add("orden", orden);
+        parametros.Add("idDestacado", idDestacado);
         parametros.Add("desde", desde);
         parametros.Add("cantidad", cantidad);
 
         string consulta = @"
             SELECT r.Id, r.Nombre, r.Foto, c.Nombre AS Categoria, b.Nombre AS Barrio, r.EsPro, r.Origen,
                    ISNULL(r.Latitud, b.Latitud) AS Latitud, ISNULL(r.Longitud, b.Longitud) AS Longitud,
-                   dbo.DistanciaKm(bu.Latitud, bu.Longitud, ISNULL(r.Latitud, b.Latitud), ISNULL(r.Longitud, b.Longitud)) AS DistanciaKm,
-                   (SELECT AVG(CAST(Puntaje AS float)) FROM Reseñas WHERE IdRestaurante = r.Id AND Fecha <= DATEADD(hour, -24, GETDATE())) AS Puntaje,
+                   calculo.DistanciaKm, calculo.Puntaje,
                    CAST(CASE WHEN EXISTS (SELECT 1 FROM Favoritos WHERE IdUsuario = @idUsuario AND IdRestaurante = r.Id)
                         THEN 1 ELSE 0 END AS bit) AS EsFavorito
             FROM Restaurantes r
             LEFT JOIN Categorias c ON c.Id = r.IdCategoria
             LEFT JOIN Barrios b ON b.Id = r.IdBarrio
-            LEFT JOIN Usuarios u ON u.Id = @idUsuario
-            LEFT JOIN Barrios bu ON bu.Id = u.IdBarrio" + filtro + @"
-            ORDER BY r.EsPro DESC,
-                     CASE WHEN bu.Latitud IS NULL OR ISNULL(r.Latitud, b.Latitud) IS NULL THEN 1 ELSE 0 END,
-                     dbo.DistanciaKm(bu.Latitud, bu.Longitud, ISNULL(r.Latitud, b.Latitud), ISNULL(r.Longitud, b.Longitud)),
-                     CASE WHEN (SELECT AVG(CAST(Puntaje AS float)) FROM Reseñas WHERE IdRestaurante = r.Id AND Fecha <= DATEADD(hour, -24, GETDATE())) IS NULL THEN 1 ELSE 0 END,
-                     Puntaje DESC, r.Id
+            CROSS APPLY (SELECT
+                dbo.DistanciaKm(@latitudUsuario, @longitudUsuario, ISNULL(r.Latitud, b.Latitud), ISNULL(r.Longitud, b.Longitud)) AS DistanciaKm,
+                (SELECT AVG(CAST(Puntaje AS float)) FROM Reseñas WHERE IdRestaurante = r.Id AND Fecha <= DATEADD(hour, -24, GETDATE())) AS Puntaje
+            ) calculo" + filtro + @"
+            ORDER BY CASE WHEN r.Id = @idDestacado THEN 0 ELSE 1 END,
+                     CASE WHEN @orden = 'puntaje' AND calculo.Puntaje IS NULL THEN 1 ELSE 0 END,
+                     CASE WHEN @orden = 'puntaje' THEN calculo.Puntaje END DESC,
+                     CASE WHEN calculo.DistanciaKm IS NULL THEN 1 ELSE 0 END,
+                     calculo.DistanciaKm,
+                     CASE WHEN calculo.Puntaje IS NULL THEN 1 ELSE 0 END,
+                     calculo.Puntaje DESC, r.Id
             OFFSET @desde ROWS FETCH NEXT @cantidad ROWS ONLY";
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
@@ -960,10 +1014,10 @@ public static class BD
     }
 
     // Cuántos resultados hay en total (para la paginación)
-    public static int ContarRestaurantes(string texto, int idUsuario, bool soloApto)
+    public static int ContarRestaurantes(string texto, int idUsuario, bool soloApto, int? idBarrio)
     {
         DynamicParameters parametros = new DynamicParameters();
-        string filtro = ArmarFiltroBusqueda(texto, idUsuario, soloApto, parametros);
+        string filtro = ArmarFiltroBusqueda(texto, idUsuario, soloApto, idBarrio, parametros);
 
         string consulta = @"
             SELECT COUNT(*)
@@ -973,6 +1027,28 @@ public static class BD
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
             return conexion.QueryFirst<int>(consulta, parametros);
+        }
+    }
+
+    // Cuando la búsqueda no da nada en el barrio elegido: el otro barrio donde el texto tiene más resultados
+    // (para "No encontramos sushi en Palermo. Hay 3 en Belgrano"). null si no aparece en ningún otro.
+    public static BarrioConResultados? ObtenerBarrioConMasResultados(string texto, int idUsuario, bool soloApto, int idBarrioElegido)
+    {
+        DynamicParameters parametros = new DynamicParameters();
+        string filtro = ArmarFiltroBusqueda(texto, idUsuario, soloApto, null, parametros);
+        parametros.Add("idBarrioElegido", idBarrioElegido);
+
+        string consulta = @"
+            SELECT TOP 1 b.Id, b.Nombre, COUNT(*) AS Cantidad
+            FROM Restaurantes r
+            LEFT JOIN Categorias c ON c.Id = r.IdCategoria
+            JOIN Barrios b ON b.Id = r.IdBarrio" + filtro + @"
+              AND r.IdBarrio <> @idBarrioElegido
+            GROUP BY b.Id, b.Nombre
+            ORDER BY COUNT(*) DESC, b.Nombre";
+        using (SqlConnection conexion = new SqlConnection(CadenaConexion))
+        {
+            return conexion.QueryFirstOrDefault<BarrioConResultados>(consulta, parametros);
         }
     }
 

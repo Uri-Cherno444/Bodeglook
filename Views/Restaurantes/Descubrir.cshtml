@@ -2,6 +2,7 @@
     ViewData["Title"] = "Descubrir";
     ViewData["Pestaña"] = "Descubrir";
     List<string> recientes = ViewBag.Recientes;
+    List<Barrios> barrios = ViewBag.Barrios;
 }
 
 @section Estilos {
@@ -43,15 +44,35 @@
         <section class="resultados">
             <div class="resultados-encabezado">
                 <h2>Lugares cerca tuyo</h2>
-                @* Por ahora el único orden: el Figma no muestra las otras opciones del desplegable *@
-                <span class="resultados-orden">
-                    Mejor puntuados
-                    <img src="~/img/icono-chevron.svg" width="16" height="16" alt="" />
-                </span>
+                <div class="resultados-filtros">
+                    @* Desplegables del UI Kit (08 · Dropdown) *@
+                    <select class="desplegable selector-barrio" id="selectorBarrio" aria-label="Barrio">
+                        <option value="">Todos los barrios</option>
+                        @foreach (Barrios barrio in barrios)
+                        {
+                            <option value="@barrio.Id">@barrio.Nombre</option>
+                        }
+                    </select>
+                    @* Con un barrio elegido se ve este selector (arranca en "Más cerca") en lugar del texto de abajo *@
+                    <select class="desplegable selector-orden" id="selectorOrden" aria-label="Ordenar" hidden>
+                        <option value="cerca">Más cerca</option>
+                        <option value="puntaje">Mejor puntuados</option>
+                    </select>
+                    @* Sin barrio: como antes, el único orden (el Figma no muestra las otras opciones del desplegable) *@
+                    <span class="resultados-orden" id="resultadosOrden">
+                        Mejor puntuados
+                        <img src="~/img/icono-chevron.svg" width="16" height="16" alt="" />
+                    </span>
+                </div>
             </div>
+
+            @* Snackbar del kit. Solo se ve si el navegador no dio la ubicación (lo prende descubrir.js con el barrio del perfil). *@
+            <p class="aviso aviso-ubicacion" id="avisoUbicacion" role="status" hidden></p>
 
             @* Las tarjetas las arma descubrir.js con lo que devuelve /Restaurantes/Resultados *@
             <div class="lista-resultados" id="listaResultados" aria-live="polite"></div>
+            @* Si no hay nada en el barrio elegido pero sí en otro, descubrir.js cambia el texto por
+               "No encontramos sushi en Palermo. Hay 3 en Belgrano" (con el link a ese barrio) *@
             <p class="sin-resultados" id="sinResultados" hidden>No encontramos lugares con esa búsqueda.</p>
 
             <nav class="paginacion" id="paginacion" aria-label="Páginas de resultados"></nav>

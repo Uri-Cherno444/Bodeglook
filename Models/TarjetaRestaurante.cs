@@ -25,6 +25,7 @@ public class TarjetaRestaurante
     public decimal? Latitud { get; set; }
     public decimal? Longitud { get; set; }
 
-    // Distancia en km desde el barrio del usuario (fórmula de Haversine). null si falta alguna coordenada.
+    // Distancia en km desde el usuario: su ubicación del navegador o, si no la dio, el centro del barrio de su perfil
+    // (fórmula de Haversine). null si falta alguna coordenada.
     public double? DistanciaKm { get; set; }
 }

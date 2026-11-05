@@ -8,9 +8,22 @@ const sinResultados = document.getElementById("sinResultados");
 const paginacion = document.getElementById("paginacion");
 const busquedasRecientes = document.getElementById("busquedasRecientes");
 const chipsRecientes = document.getElementById("chipsRecientes");
+const selectorBarrio = document.getElementById("selectorBarrio");
+const selectorOrden = document.getElementById("selectorOrden");
+const resultadosOrden = document.getElementById("resultadosOrden");
+const avisoUbicacion = document.getElementById("avisoUbicacion");
+
+// "No encontramos lugares con esa búsqueda." (el texto de siempre está en la vista)
+const textoSinResultados = sinResultados.textContent;
 
 // Lo que se buscó por última vez (las páginas siguientes usan el mismo texto)
 let textoActual = textoBusqueda.value.trim();
+let paginaActual = 1;
+
+// La ubicación del navegador. Solo vive en esta página: se manda en cada búsqueda y no se guarda.
+// Si es null, el servidor mide desde el barrio del perfil.
+let latitud = null;
+let longitud = null;
 
 // ---------- Mapa ----------
 
@@ -43,11 +56,41 @@ chipsRecientes.addEventListener("click", function (evento) {
     buscar(1);
 });
 
+// El barrio que estaba elegido antes del cambio ("" = Todos los barrios)
+let barrioAnterior = selectorBarrio.value;
+
+// Elegir un barrio muestra solo los lugares de ese barrio, desde la página 1
+selectorBarrio.addEventListener("change", function () {
+    cambiarBarrio(selectorBarrio.value);
+});
+
+// Cambiar el orden vuelve a la página 1
+selectorOrden.addEventListener("change", function () {
+    buscar(1);
+});
+
+// Con barrio se ve el selector "Más cerca" / "Mejor puntuados"; sin barrio, el texto "Mejor puntuados" de antes.
+// Al pasar de "Todos los barrios" a un barrio, el orden arranca en "Más cerca"; entre barrios se mantiene.
+function cambiarBarrio(idBarrio) {
+    selectorBarrio.value = idBarrio;
+    if (barrioAnterior === "") selectorOrden.value = "cerca";
+    barrioAnterior = idBarrio;
+
+    selectorOrden.hidden = idBarrio === "";
+    resultadosOrden.hidden = idBarrio !== "";
+    buscar(1);
+}
+
 async function buscar(pagina) {
     listaResultados.setAttribute("aria-busy", "true");
 
+    // Texto, página, barrio y orden (el orden solo con barrio). La ubicación solo si el navegador la dio.
+    let direccion = "/Restaurantes/Resultados?texto=" + encodeURIComponent(textoActual) + "&pagina=" + pagina;
+    if (selectorBarrio.value !== "") direccion += "&idBarrio=" + selectorBarrio.value + "&orden=" + selectorOrden.value;
+    if (latitud !== null && longitud !== null) direccion += "&latitud=" + latitud + "&longitud=" + longitud;
+
     try {
-        const respuesta = await fetch("/Restaurantes/Resultados?texto=" + encodeURIComponent(textoActual) + "&pagina=" + pagina);
+        const respuesta = await fetch(direccion);
 
         // Si se venció la sesión, al login
         if (respuesta.status === 401) {
@@ -56,7 +99,10 @@ async function buscar(pagina) {
         }
 
         const datos = await respuesta.json();
+        paginaActual = datos.pagina;
+        mostrarAvisoUbicacion(datos.desdeBarrio);
         mostrarResultados(datos.resultados);
+        mostrarSinResultados(datos);
         mostrarPaginacion(datos.pagina, datos.totalPaginas);
         mostrarRecientes(datos.recientes);
         mostrarPins(datos.resultados);
@@ -72,14 +118,14 @@ async function buscar(pagina) {
 function mostrarResultados(resultados) {
     const plantilla = document.getElementById("plantillaResultado");
     listaResultados.innerHTML = "";
-    sinResultados.hidden = resultados.length > 0;
     // Los créditos de Geoapify y OpenStreetMap se muestran si algún resultado viene de ahí
     document.getElementById("creditosResultados").hidden = !resultados.some(function (lugar) { return lugar.origen === "Geoapify"; });
 
     resultados.forEach(function (lugar) {
         const tarjeta = plantilla.content.firstElementChild.cloneNode(true);
         tarjeta.dataset.idRestaurante = lugar.id;
-        if (lugar.esPro) tarjeta.classList.add("resultado-pro");
+        // Solo el Pro destacado (uno, arriba de la página 1) lleva el chip "Recomendado"
+        if (lugar.destacado) tarjeta.classList.add("resultado-pro");
         else tarjeta.querySelector(".chip-recomendado").remove();
 
         const foto = tarjeta.querySelector(".resultado-foto");
@@ -103,11 +149,85 @@ function mostrarResultados(resultados) {
     });
 }
 
-// "Palermo · a 2,3 km" (en el mismo barrio del usuario: "Palermo · En tu barrio")
+// Sin resultados: el texto de siempre o, si el texto está en otro barrio,
+// "No encontramos sushi en Palermo. Hay 3 en Belgrano" con el link que cambia el desplegable a ese barrio
+function mostrarSinResultados(datos) {
+    sinResultados.hidden = datos.resultados.length > 0;
+    if (!datos.otroBarrio) {
+        sinResultados.textContent = textoSinResultados;
+        return;
+    }
+
+    sinResultados.textContent = "No encontramos " + textoActual + " en " + datos.barrioElegido + ". ";
+    const link = document.createElement("button");
+    link.type = "button";
+    link.className = "sin-resultados-link";
+    link.textContent = "Hay " + datos.otroBarrio.cantidad + " en " + datos.otroBarrio.nombre;
+    link.addEventListener("click", function () {
+        cambiarBarrio(String(datos.otroBarrio.id));
+    });
+    sinResultados.appendChild(link);
+}
+
+// "Palermo · A unas 8 cuadras" (sin distancia, solo el barrio)
 function textoBarrio(lugar) {
     if (lugar.distanciaKm === null) return lugar.barrio;
-    if (lugar.distanciaKm === 0) return lugar.barrio + " · En tu barrio";
-    return lugar.barrio + " · a " + String(lugar.distanciaKm).replace(".", ",") + " km";
+    return lugar.barrio + " · " + textoDistancia(lugar.distanciaKm);
+}
+
+// 1 cuadra = 100 m. Menos de 50 m -> "A menos de 1 cuadra"; de 50 a 149 m -> "A 1 cuadra";
+// desde 150 m y hasta 20 cuadras -> "A unas N cuadras"; más -> en km con un decimal.
+// 0,8 km -> "A unas 8 cuadras"; 3,1 km -> "A 3,1 km"
+function textoDistancia(km) {
+    if (km < 0.05) return "A menos de 1 cuadra";
+    if (km < 0.15) return "A 1 cuadra";
+    const cuadras = Math.round(km * 10);
+    if (cuadras <= 20) return "A unas " + cuadras + " cuadras";
+    return "A " + (Math.round(km * 10) / 10).toFixed(1).replace(".", ",") + " km";
+}
+
+// ---------- Ubicación ----------
+
+// Si el servidor midió desde el barrio del perfil, se avisa arriba de la lista
+function mostrarAvisoUbicacion(desdeBarrio) {
+    if (desdeBarrio) {
+        avisoUbicacion.textContent = "Distancias aproximadas desde tu barrio (" + desdeBarrio + "). Activá la ubicación para verlas desde donde estás.";
+        avisoUbicacion.hidden = false;
+    } else {
+        avisoUbicacion.hidden = true;
+    }
+}
+
+// Al entrar se pide la ubicación y después se hace la primera búsqueda.
+// Si la bloquea, falla o el navegador no la tiene (o la página no es HTTPS), se busca sin ubicación.
+// Si no contesta el permiso en 5 segundos, se busca igual; si la da más tarde, se vuelve a buscar con ella.
+function pedirUbicacionYBuscar() {
+    if (!navigator.geolocation) {
+        buscar(1);
+        return;
+    }
+
+    let yaBusco = false;
+    const espera = setTimeout(function () {
+        yaBusco = true;
+        buscar(1);
+    }, 5000);
+
+    navigator.geolocation.getCurrentPosition(
+        function (posicion) {
+            clearTimeout(espera);
+            latitud = posicion.coords.latitude;
+            longitud = posicion.coords.longitude;
+            buscar(yaBusco ? paginaActual : 1);
+            yaBusco = true;
+        },
+        function () {
+            clearTimeout(espera);
+            if (!yaBusco) buscar(1);
+            yaBusco = true;
+        },
+        { timeout: 10000, maximumAge: 300000 }
+    );
 }
 
 // "Vinoteca · ★ 4.7" (sin reseñas, solo la categoría)
@@ -274,5 +394,9 @@ function pintarCorazon(boton, esFavorito) {
     boton.setAttribute("aria-label", esFavorito ? "Sacar de favoritos" : "Agregar a favoritos");
 }
 
-// Al entrar se busca lo que vino en la ruta (o todo, si vino vacío)
-buscar(1);
+// Si el navegador recuerda un barrio elegido (al volver atrás), se ve el selector de orden que corresponde
+selectorOrden.hidden = selectorBarrio.value === "";
+resultadosOrden.hidden = selectorBarrio.value !== "";
+
+// Al entrar se busca lo que vino en la ruta (o todo, si vino vacío), con la ubicación si la da
+pedirUbicacionYBuscar();

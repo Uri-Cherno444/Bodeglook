@@ -88,12 +88,21 @@ public class RestaurantesController : Controller
 
         ViewBag.Texto = (q ?? "").Trim();
         ViewBag.Recientes = BD.ObtenerBusquedasRecientes(UsuarioDeSesion().Id, BusquedasRecientes);
+        // Las opciones del desplegable "Barrio"
+        ViewBag.Barrios = BD.ObtenerBarrios();
         return View();
     }
 
-    // La llama descubrir.js con fetch al buscar y al cambiar de página.
-    // Devuelve { pagina, totalPaginas, resultados, recientes }. Cada búsqueda nueva (pagina 1 con texto) se guarda.
-    public async Task<IActionResult> Resultados(string? texto, int pagina)
+    // La llama descubrir.js con fetch al buscar, al cambiar de página, de barrio o de orden.
+    // idBarrio: el desplegable "Barrio" (sin él, todos los barrios).
+    // orden: solo con barrio elegido, "cerca" (Más cerca, el de siempre) o "puntaje" (Mejor puntuados).
+    //   Sin barrio, 1 Pro destacado arriba de la página 1 (el más cercano) y el resto por distancia.
+    // latitud y longitud: la ubicación del navegador. Solo se usan para medir las distancias: no se guardan.
+    // Si no vienen, se mide desde el centro del barrio del perfil y se devuelve su nombre en desdeBarrio (para el aviso).
+    // Devuelve { pagina, totalPaginas, resultados, recientes, desdeBarrio, barrioElegido, otroBarrio }.
+    // otroBarrio solo viene si no hubo nada en el barrio elegido pero el texto está en otro.
+    // Cada búsqueda nueva (pagina 1 con texto) se guarda.
+    public async Task<IActionResult> Resultados(string? texto, int pagina, int? idBarrio, string? orden, double? latitud, double? longitud)
     {
         if (HttpContext.Session.GetString("usuario") == null) return Unauthorized();
 
@@ -101,15 +110,39 @@ public class RestaurantesController : Controller
         texto = (texto ?? "").Trim();
         if (texto.Length > 100) texto = texto.Substring(0, 100);
 
+        // Un barrio que no existe se toma como "Todos los barrios"
+        Barrios? barrioElegido = idBarrio == null ? null : BD.ObtenerBarrios().FirstOrDefault(b => b.Id == idBarrio);
+        if (barrioElegido == null) idBarrio = null;
+
+        // "Mejor puntuados" solo con barrio; si no, "cerca"
+        string ordenFinal = idBarrio != null && orden == "puntaje" ? "puntaje" : "cerca";
+
+        // Si el navegador no mandó una ubicación válida, se mide desde el barrio del perfil
+        string? desdeBarrio = null;
+        if (!EsUbicacionValida(latitud, longitud))
+        {
+            latitud = null;
+            longitud = null;
+            Barrios? barrioUsuario = BD.ObtenerBarrioDeUsuario(usuario.Id);
+            if (barrioUsuario != null && barrioUsuario.Latitud != null && barrioUsuario.Longitud != null)
+            {
+                latitud = (double)barrioUsuario.Latitud.Value;
+                longitud = (double)barrioUsuario.Longitud.Value;
+                desdeBarrio = barrioUsuario.Nombre;
+            }
+        }
+
         // "Solo lo apto para mí" del onboarding o de Editar perfil (Usuarios.SoloApto)
         bool soloApto = BD.ObtenerSoloApto(usuario.Id);
 
         // Se busca primero en nuestra base. Solo si no hay nada se pregunta a Geoapify, se guarda lo que encuentre y se vuelve a buscar.
+        // Con un barrio elegido, a Geoapify se le pregunta solo si el texto tampoco está en otros barrios (así no se gastan créditos de más).
         // Si Geoapify no responde o se pasó el límite, queda "sin resultados" como siempre: sin errores técnicos.
-        int total = BD.ContarRestaurantes(texto, usuario.Id, soloApto);
-        if (total == 0 && texto != "" && pagina <= 1)
+        int total = BD.ContarRestaurantes(texto, usuario.Id, soloApto, idBarrio);
+        if (total == 0 && texto != "" && pagina <= 1
+            && (idBarrio == null || BD.ContarRestaurantes(texto, usuario.Id, soloApto, null) == 0))
         {
-            if (await Geoapify.BuscarYGuardar(texto) > 0) total = BD.ContarRestaurantes(texto, usuario.Id, soloApto);
+            if (await Geoapify.BuscarYGuardar(texto) > 0) total = BD.ContarRestaurantes(texto, usuario.Id, soloApto, idBarrio);
         }
         int totalPaginas = Math.Max(1, (int)Math.Ceiling(total / (double)ResultadosPorPagina));
         if (pagina < 1) pagina = 1;
@@ -118,7 +151,16 @@ public class RestaurantesController : Controller
         if (pagina == 1 && texto != "") BD.GuardarBusqueda(usuario.Id, texto);
 
         List<object> resultados = new List<object>();
-        foreach (TarjetaRestaurante lugar in BD.BuscarRestaurantes(texto, usuario.Id, soloApto, (pagina - 1) * ResultadosPorPagina, ResultadosPorPagina))
+        // Sin barrio: como máximo 1 Pro destacado ("Recomendado"), el más cercano
+        int? idDestacado = idBarrio == null ? BD.ObtenerProDestacado(texto, usuario.Id, soloApto, latitud, longitud) : null;
+
+        // Nada en el barrio elegido: ¿en qué otro barrio sí está ese texto?
+        BarrioConResultados? otroBarrio = null;
+        if (total == 0 && idBarrio != null && texto != "")
+            otroBarrio = BD.ObtenerBarrioConMasResultados(texto, usuario.Id, soloApto, idBarrio.Value);
+
+        foreach (TarjetaRestaurante lugar in BD.BuscarRestaurantes(texto, usuario.Id, soloApto, idBarrio, latitud, longitud,
+            ordenFinal, idDestacado, (pagina - 1) * ResultadosPorPagina, ResultadosPorPagina))
         {
             resultados.Add(new
             {
@@ -129,11 +171,13 @@ public class RestaurantesController : Controller
                 barrio = lugar.Barrio,
                 puntaje = lugar.Puntaje == null ? null : lugar.Puntaje.Value.ToString("0.0", CultureInfo.InvariantCulture),
                 esFavorito = lugar.EsFavorito,
-                esPro = lugar.EsPro,
+                // Solo el Pro destacado lleva el chip "Recomendado"
+                destacado = lugar.Id == idDestacado,
                 origen = lugar.Origen,
                 latitud = lugar.Latitud,
                 longitud = lugar.Longitud,
-                distanciaKm = lugar.DistanciaKm == null ? (double?)null : Math.Round(lugar.DistanciaKm.Value, 1)
+                // Con 3 decimales (metros): descubrir.js lo pasa a cuadras o km
+                distanciaKm = lugar.DistanciaKm == null ? (double?)null : Math.Round(lugar.DistanciaKm.Value, 3)
             });
         }
 
@@ -142,8 +186,19 @@ public class RestaurantesController : Controller
             pagina,
             totalPaginas,
             resultados,
-            recientes = BD.ObtenerBusquedasRecientes(usuario.Id, BusquedasRecientes)
+            recientes = BD.ObtenerBusquedasRecientes(usuario.Id, BusquedasRecientes),
+            desdeBarrio,
+            barrioElegido = barrioElegido?.Nombre,
+            otroBarrio = otroBarrio == null ? null : new { id = otroBarrio.Id, nombre = otroBarrio.Nombre, cantidad = otroBarrio.Cantidad }
         });
+    }
+
+    // Una latitud entre -90 y 90 y una longitud entre -180 y 180 (y que sean números de verdad)
+    private static bool EsUbicacionValida(double? latitud, double? longitud)
+    {
+        if (latitud == null || longitud == null) return false;
+        if (!double.IsFinite(latitud.Value) || !double.IsFinite(longitud.Value)) return false;
+        return latitud >= -90 && latitud <= 90 && longitud >= -180 && longitud <= 180;
     }
 
     // 06 · Registro Restaurante (pública). Llegan desde la Landing y desde Iniciar sesión.
