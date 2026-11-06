@@ -162,6 +162,13 @@
                             {
                                 <p class="resena-texto">@resena.Comentario</p>
                             }
+                            @* La foto que adjuntó: miniatura debajo del texto, al tocarla se ve en grande *@
+                            @if (Fotos.Avatar(resena.Foto) != null)
+                            {
+                                <button type="button" class="resena-foto" aria-label="Ver la foto de la reseña">
+                                    <img src="@resena.Foto" width="96" height="96" loading="lazy" alt="" />
+                                </button>
+                            }
                         </div>
                     }
                 </div>
@@ -275,6 +282,22 @@
 
         <div class="campo">
             <textarea id="comentarioResena" aria-label="Tu reseña" placeholder="Contá tu experiencia con sinceridad..."></textarea>
+        </div>
+
+        @* Fotos (opcional): campo Drag&drop del UI Kit. Se arrastra o se toca para elegir del dispositivo. *@
+        <div class="campo-fotos" id="campoFotos">
+            <p class="campo-fotos-titulo">Agregá fotos (opcional)</p>
+            <div class="campo-entrada">
+                <label class="subir-foto" id="zonaFoto">
+                    <span class="subir-foto-asa" aria-hidden="true"><span></span><span></span><span></span></span>
+                    <span class="subir-foto-texto">Arrastrá una foto o tocá para elegirla</span>
+                    <input type="file" id="archivoFoto" accept="image/jpeg,image/png,image/webp" />
+                </label>
+            </div>
+            <div class="foto-miniatura" id="miniaturaFoto" hidden>
+                <img id="miniaturaImagen" src="" width="96" height="96" alt="Foto elegida" />
+                <button type="button" class="foto-miniatura-quitar" id="quitarFoto" aria-label="Sacar la foto">✕</button>
+            </div>
         </div>
 
         <fieldset class="como-fue">

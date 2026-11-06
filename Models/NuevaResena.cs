@@ -12,4 +12,6 @@ public class NuevaResena
     public int Precio { get; set; }
     public string? Comentario { get; set; }
     public bool EsCanje { get; set; }
+    // La foto es opcional (una sola): jpg, png o webp de hasta 5 MB
+    public IFormFile? Foto { get; set; }
 }

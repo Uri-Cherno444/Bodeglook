@@ -216,17 +216,36 @@ if (listaMensajes) {
         if (!radio.classList.contains("radio")) return;
         const esHorario = radio.dataset.tipo === "horario";
         const datos = esHorario
-            ? { idPlan: Number(radio.dataset.idPlan), idHorario: Number(radio.value) }
+            ? { idPlan: Number(radio.dataset.idPlan), idHorarioVotado: Number(radio.value) }
             : { idPlan: Number(radio.dataset.idPlan), idRestaurante: Number(radio.value) };
+        const tarjeta = radio.closest(".encuesta");
         enFila(async function () {
-            revisarRespuesta(await fetch(esHorario ? "/Planes/VotarHorario" : "/Planes/Votar", {
+            const respuesta = revisarRespuesta(await fetch(esHorario ? "/Planes/VotarHorario" : "/Planes/Votar", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(datos)
             }));
+            const resultado = await respuesta.json();
+            // Si el voto no se guardó, la tarjeta se vuelve a dibujar como está en la base (el radio vuelve atrás)
+            if (!resultado.ok) tarjeta.dataset.datos = "";
             await traerMensajesNuevos();
+            if (!resultado.ok) mostrarErrorEncuesta(tarjeta, radio.dataset.tipo, resultado.mensaje);
         });
     });
+}
+
+// Estado de error del kit (ícono de atención + texto rojo) debajo de LUGAR o de HORARIO.
+// Se saca solo cuando la encuesta se vuelve a dibujar (alguien vota).
+function mostrarErrorEncuesta(tarjeta, tipo, mensaje) {
+    const opciones = tarjeta.querySelector(tipo === "horario" ? ".encuesta-horarios" : ".encuesta-lugares");
+    if (!opciones) return;
+
+    const error = document.createElement("p");
+    error.className = "encuesta-error";
+    error.setAttribute("role", "alert");
+    error.innerHTML = '<img src="/img/icono-error.svg" width="24" height="24" alt="" /><span></span>';
+    error.querySelector("span").textContent = mensaje;
+    opciones.after(error);
 }
 
 // Reemplaza la lista "Chats" por la que arma el servidor (_Chats.cshtml)

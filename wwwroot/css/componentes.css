@@ -810,6 +810,30 @@
     color: var(--gris-texto);
 }
 
+/* Foto de la reseña: miniatura debajo del texto, se toca para verla en grande */
+.resena-foto {
+    width: 96px;
+    height: 96px;
+    padding: 0;
+    border: 1px solid var(--linea);
+    border-radius: 10px;
+    background: var(--arena);
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.resena-foto img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.resena-foto:focus-visible {
+    outline: 2px solid var(--naranja);
+    outline-offset: 2px;
+}
+
 .estrellas {
     display: flex;
     gap: 4px;

@@ -10,6 +10,9 @@ public class RestaurantesController : Controller
     // Reseñas que se muestran al entrar; "Ver las N" carga el resto
     private const int ResenasIniciales = 3;
 
+    // La foto de una reseña pesa hasta 5 MB
+    private const long TamanoMaximoFoto = 5 * 1024 * 1024;
+
     // 05 · Descubrir: 5 resultados por página y las últimas 3 búsquedas
     private const int ResultadosPorPagina = 5;
     private const int BusquedasRecientes = 3;
@@ -43,11 +46,12 @@ public class RestaurantesController : Controller
         return Json(resenas);
     }
 
-    // La llama "Publicar reseña" del modal 04b con fetch. Recibe NuevaResena.
-    // Devuelve { ok, mensaje } si no se puede guardar, o { ok, publicada, ... } si se guardó.
+    // La llama "Publicar reseña" del modal 04b con fetch. Recibe NuevaResena como formulario (por la foto).
+    // Devuelve { ok, mensaje } si no se puede guardar (campo = "foto" si el error es de la foto),
+    // o { ok, publicada, ... } si se guardó.
     // La reseña se publica 24 horas después de dejarla.
     [HttpPost]
-    public IActionResult DejarResena([FromBody] NuevaResena datos)
+    public IActionResult DejarResena([FromForm] NuevaResena datos)
     {
         if (HttpContext.Session.GetString("usuario") == null) return Unauthorized();
         if (!BD.ExisteRestaurante(datos.IdRestaurante)) return Json(new { ok = false, mensaje = "Ese lugar no existe." });
@@ -64,6 +68,18 @@ public class RestaurantesController : Controller
         if (BD.YaReseno(usuario.Id, datos.IdRestaurante))
             return Json(new { ok = false, mensaje = "Ya dejaste una reseña de este lugar." });
 
+        // La foto (opcional): se revisa el tamaño y el tipo real del archivo, no solo el nombre
+        string extension = "";
+        if (datos.Foto != null)
+        {
+            if (datos.Foto.Length == 0 || datos.Foto.Length > TamanoMaximoFoto)
+                return Json(new { ok = false, campo = "foto", mensaje = "La foto no puede pesar más de 5 MB." });
+
+            extension = ExtensionDeImagen(datos.Foto);
+            if (extension == "")
+                return Json(new { ok = false, campo = "foto", mensaje = "La foto tiene que ser JPG, PNG o WEBP." });
+        }
+
         // En la tabla entra un entero: se guarda el promedio de los cuatro, redondeado
         Reseñas nueva = new Reseñas();
         nueva.Puntaje = (int)Math.Round(puntajes.Average(), MidpointRounding.AwayFromZero);
@@ -71,9 +87,36 @@ public class RestaurantesController : Controller
         nueva.IdUsuario = usuario.Id;
         nueva.IdRestaurante = datos.IdRestaurante;
 
+        // La foto se guarda en wwwroot/img/resenas con un nombre generado (nunca el que trae el archivo)
+        string rutaArchivo = "";
+        if (datos.Foto != null)
+        {
+            string nombreArchivo = Guid.NewGuid().ToString("N") + extension;
+            string carpeta = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "img", "resenas");
+            Directory.CreateDirectory(carpeta);
+            rutaArchivo = Path.Combine(carpeta, nombreArchivo);
+            using (FileStream destino = new FileStream(rutaArchivo, FileMode.Create))
+            {
+                datos.Foto.CopyTo(destino);
+            }
+            nueva.Foto = "/img/resenas/" + nombreArchivo;
+        }
+
         // El procedimiento CrearResena guarda la reseña con la fecha de ahora, así que
-        // se publica 24 horas después y no se muestra enseguida
-        int error = BD.GuardarResena(nueva);
+        // se publica 24 horas después y no se muestra enseguida (sus fotos tampoco)
+        int error;
+        try
+        {
+            error = BD.GuardarResena(nueva);
+        }
+        catch
+        {
+            // Si la base falla no queda una foto suelta
+            if (rutaArchivo != "") System.IO.File.Delete(rutaArchivo);
+            throw;
+        }
+
+        if (error != 0 && rutaArchivo != "") System.IO.File.Delete(rutaArchivo);
         if (error == 1) return Json(new { ok = false, mensaje = "Elegí un puntaje del 1 al 5." });
         if (error == 2) return Json(new { ok = false, mensaje = "Ya dejaste una reseña de este lugar." });
 
@@ -259,8 +302,27 @@ public class RestaurantesController : Controller
             nombre = resena.NombreCompleto,
             iniciales = resena.ObtenerIniciales(),
             foto = Fotos.Avatar(resena.FotoPerfil),
+            fotoResena = Fotos.Avatar(resena.Foto),
             hace = resena.TextoHace()
         };
+    }
+
+    // Mira los primeros bytes del archivo: ".jpg", ".png" o ".webp". Si no es ninguna, "".
+    private static string ExtensionDeImagen(IFormFile archivo)
+    {
+        byte[] inicio = new byte[12];
+        int leidos;
+        using (Stream lector = archivo.OpenReadStream())
+        {
+            leidos = lector.Read(inicio, 0, inicio.Length);
+        }
+        if (leidos < 12) return "";
+
+        if (inicio[0] == 0xFF && inicio[1] == 0xD8 && inicio[2] == 0xFF) return ".jpg";
+        if (inicio[0] == 0x89 && inicio[1] == 0x50 && inicio[2] == 0x4E && inicio[3] == 0x47) return ".png";
+        if (inicio[0] == 'R' && inicio[1] == 'I' && inicio[2] == 'F' && inicio[3] == 'F'
+            && inicio[8] == 'W' && inicio[9] == 'E' && inicio[10] == 'B' && inicio[11] == 'P') return ".webp";
+        return "";
     }
 
     private Usuarios UsuarioDeSesion()

@@ -7,6 +7,8 @@ public class ResenaComunidad
     public int Id { get; set; }
     public int Puntaje { get; set; }
     public string? Comentario { get; set; }
+    // La foto que adjuntó a la reseña (Reseñas.Foto), null si no puso ninguna
+    public string? Foto { get; set; }
     public DateTime Fecha { get; set; }
     public string? NombreCompleto { get; set; }
     // La foto de perfil de quien la escribió (null: se muestran las iniciales)

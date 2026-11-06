@@ -62,24 +62,35 @@ function mostrarFotoDelVisor(indice) {
     visorContador.textContent = (fotoActual + 1) + " de " + fotosGaleria.length;
 }
 
+const visorAnterior = document.getElementById("visorAnterior");
+const visorSiguiente = document.getElementById("visorSiguiente");
+
 document.querySelectorAll(".galeria-foto").forEach(function (boton) {
     boton.addEventListener("click", function () {
+        // Con una sola foto no hay a dónde pasar
+        visorAnterior.hidden = fotosGaleria.length === 1;
+        visorSiguiente.hidden = fotosGaleria.length === 1;
+        visorContador.hidden = false;
         mostrarFotoDelVisor(Number(boton.dataset.indice));
         visor.showModal();
     });
 });
 
-// Con una sola foto no hay a dónde pasar
-if (fotosGaleria.length === 1) {
-    document.getElementById("visorAnterior").hidden = true;
-    document.getElementById("visorSiguiente").hidden = true;
+// La foto de una reseña se ve sola en el mismo visor: sin flechas ni contador. Se cierra con la X o Escape.
+function abrirFotoDeResena(ruta) {
+    fotoActual = 0;
+    visorAnterior.hidden = true;
+    visorSiguiente.hidden = true;
+    visorContador.hidden = true;
+    visorFoto.src = ruta;
+    visor.showModal();
 }
 
-document.getElementById("visorAnterior").addEventListener("click", function () {
+visorAnterior.addEventListener("click", function () {
     mostrarFotoDelVisor(fotoActual - 1);
 });
 
-document.getElementById("visorSiguiente").addEventListener("click", function () {
+visorSiguiente.addEventListener("click", function () {
     mostrarFotoDelVisor(fotoActual + 1);
 });
 
@@ -93,6 +104,8 @@ visor.addEventListener("click", function (evento) {
 });
 
 visor.addEventListener("keydown", function (evento) {
+    // Las flechas del teclado solo pasan fotos si el visor tiene flechas en pantalla
+    if (visorAnterior.hidden) return;
     if (evento.key === "ArrowLeft") mostrarFotoDelVisor(fotoActual - 1);
     if (evento.key === "ArrowRight") mostrarFotoDelVisor(fotoActual + 1);
 });
@@ -149,8 +162,30 @@ function crearTarjetaResena(resena) {
         texto.textContent = resena.comentario;
         tarjeta.appendChild(texto);
     }
+
+    // La foto de la reseña: miniatura debajo del texto
+    if (resena.fotoResena) {
+        const boton = document.createElement("button");
+        boton.type = "button";
+        boton.className = "resena-foto";
+        boton.setAttribute("aria-label", "Ver la foto de la reseña");
+        const imagen = document.createElement("img");
+        imagen.src = resena.fotoResena;
+        imagen.width = 96;
+        imagen.height = 96;
+        imagen.loading = "lazy";
+        imagen.alt = "";
+        boton.appendChild(imagen);
+        tarjeta.appendChild(boton);
+    }
     return tarjeta;
 }
+
+// Las tarjetas de "Ver las N" se agregan después: un solo oyente en la lista
+listaResenas.addEventListener("click", function (evento) {
+    const boton = evento.target.closest(".resena-foto");
+    if (boton) abrirFotoDeResena(boton.querySelector("img").getAttribute("src"));
+});
 
 // "Ver las N" se ve mientras haya reseñas sin mostrar
 function actualizarVerResenas() {
@@ -222,6 +257,94 @@ function actualizarPuntajeGeneral() {
 
 formularioResena.addEventListener("change", actualizarPuntajeGeneral);
 
+// ---------- Foto de la reseña (opcional, una sola) ----------
+// Se elige tocando el campo o arrastrando el archivo. Solo jpg, png o webp de hasta 5 MB
+// (el servidor lo vuelve a revisar). Si no cumple, se muestra el estado de error del kit.
+
+const TIPOS_FOTO = ["image/jpeg", "image/png", "image/webp"];
+const TAMANO_MAXIMO_FOTO = 5 * 1024 * 1024;
+
+const campoFotos = document.getElementById("campoFotos");
+const zonaFoto = document.getElementById("zonaFoto");
+const archivoFoto = document.getElementById("archivoFoto");
+const miniaturaFoto = document.getElementById("miniaturaFoto");
+const miniaturaImagen = document.getElementById("miniaturaImagen");
+let fotoElegida = null;
+
+// Estado de error del kit: ícono de atención + tooltip negro (igual que en cuenta.js)
+function mostrarErrorFoto(mensaje) {
+    limpiarErrorFoto();
+    campoFotos.classList.add("campo-con-error");
+
+    const error = document.createElement("span");
+    error.className = "campo-error";
+    error.innerHTML = '<span class="tooltip"></span><img src="/img/icono-error.svg" width="24" height="24" alt="Error" />';
+    error.querySelector(".tooltip").textContent = mensaje;
+    campoFotos.querySelector(".campo-entrada").appendChild(error);
+}
+
+function limpiarErrorFoto() {
+    campoFotos.classList.remove("campo-con-error");
+    const error = campoFotos.querySelector(".campo-error");
+    if (error) error.remove();
+}
+
+// Devuelve el mensaje de error de un archivo, o "" si está bien
+function errorDeFoto(archivo) {
+    if (!TIPOS_FOTO.includes(archivo.type)) return "La foto tiene que ser JPG, PNG o WEBP.";
+    if (archivo.size > TAMANO_MAXIMO_FOTO) return "La foto no puede pesar más de 5 MB.";
+    return "";
+}
+
+function quitarFoto() {
+    if (miniaturaImagen.src.startsWith("blob:")) URL.revokeObjectURL(miniaturaImagen.src);
+    fotoElegida = null;
+    archivoFoto.value = "";
+    miniaturaImagen.removeAttribute("src");
+    miniaturaFoto.hidden = true;
+}
+
+function elegirFoto(archivo) {
+    const mensaje = errorDeFoto(archivo);
+    if (mensaje !== "") {
+        // La que ya estaba elegida (si había) queda como estaba
+        archivoFoto.value = "";
+        mostrarErrorFoto(mensaje);
+        return;
+    }
+
+    limpiarErrorFoto();
+    quitarFoto();
+    fotoElegida = archivo;
+    miniaturaImagen.src = URL.createObjectURL(archivo);
+    miniaturaFoto.hidden = false;
+}
+
+archivoFoto.addEventListener("change", function () {
+    if (archivoFoto.files.length > 0) elegirFoto(archivoFoto.files[0]);
+});
+
+document.getElementById("quitarFoto").addEventListener("click", function () {
+    quitarFoto();
+    limpiarErrorFoto();
+});
+
+// Arrastrar y soltar
+zonaFoto.addEventListener("dragover", function (evento) {
+    evento.preventDefault();
+    zonaFoto.classList.add("arrastrando");
+});
+
+zonaFoto.addEventListener("dragleave", function () {
+    zonaFoto.classList.remove("arrastrando");
+});
+
+zonaFoto.addEventListener("drop", function (evento) {
+    evento.preventDefault();
+    zonaFoto.classList.remove("arrastrando");
+    if (evento.dataTransfer.files.length > 0) elegirFoto(evento.dataTransfer.files[0]);
+});
+
 function mostrarAviso(idAviso, mensaje) {
     const aviso = document.getElementById(idAviso);
     document.getElementById(idAviso + "Texto").textContent = mensaje;
@@ -261,24 +384,27 @@ formularioResena.addEventListener("submit", async function (evento) {
     botonPublicarResena.classList.add("cargando");
 
     try {
+        // Va como formulario (no JSON) por la foto
+        const datos = new FormData();
+        datos.append("idRestaurante", idRestaurante);
+        datos.append("comida", puntajeDe("comida"));
+        datos.append("ambiente", puntajeDe("ambiente"));
+        datos.append("atencion", puntajeDe("atencion"));
+        datos.append("precio", puntajeDe("precio"));
+        datos.append("comentario", comentarioResena.value);
+        datos.append("esCanje", formularioResena.querySelector('input[name="visita"]:checked').value === "canje");
+        if (fotoElegida !== null) datos.append("foto", fotoElegida);
+
         const respuesta = await fetch("/Restaurantes/DejarResena", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                idRestaurante: idRestaurante,
-                comida: puntajeDe("comida"),
-                ambiente: puntajeDe("ambiente"),
-                atencion: puntajeDe("atencion"),
-                precio: puntajeDe("precio"),
-                comentario: comentarioResena.value,
-                esCanje: formularioResena.querySelector('input[name="visita"]:checked').value === "canje"
-            })
+            body: datos
         });
         if (irAlLoginSiHaceFalta(respuesta)) return;
 
         const resultado = await respuesta.json();
         if (resultado.ok) {
             modalResena.close();
+            quitarFoto();
             // Se deja una sola reseña por lugar
             botonDejarResena.disabled = true;
             botonDejarResena.textContent = "Ya dejaste una reseña";
@@ -295,6 +421,9 @@ formularioResena.addEventListener("submit", async function (evento) {
             } else {
                 mostrarAviso("avisoDetalle", "Tu reseña se publica 24 horas después de la visita.");
             }
+        } else if (resultado.campo === "foto") {
+            // El servidor rechazó la foto: mismo estado de error del kit
+            mostrarErrorFoto(resultado.mensaje);
         } else {
             mostrarAviso("aviso", resultado.mensaje || "No se pudo guardar la reseña. Probá de nuevo.");
         }
