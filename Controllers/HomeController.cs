@@ -36,7 +36,7 @@ public class HomeController : Controller
 
         // "Solo lo apto para mí": se elige en el onboarding o en Editar perfil y queda en Usuarios.SoloApto
         bool soloApto = BD.ObtenerSoloApto(usuario.Id);
-        ViewBag.Recomendados = BD.ObtenerMejorPuntuados(4, usuario.Id, soloApto, restriccion);
+        ViewBag.Recomendados = BD.ObtenerRecomendados(4, usuario.Id, soloApto, restriccion);
 
         List<TarjetaRestaurante> favoritos = BD.ObtenerFavoritos(usuario.Id);
         if (restriccion != null)

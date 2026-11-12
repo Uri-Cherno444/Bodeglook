@@ -900,6 +900,48 @@ public static class BD
         }
     }
 
+    // Las tarjetas "Recomendado para vos" de Inicio: lugares que se parecen a los gustos del usuario y que cambian en cada visita.
+    // Cada lugar suma puntos de afinidad:
+    //   +2 si está en un barrio que le interesa (ZonasUsuarios o su barrio del perfil)
+    //   +2 si es de una categoría que ya marcó como favorita o reseñó con 4 o 5
+    //   +1 si tiene buen puntaje (4 o más)
+    // Después se le suma un número al azar (0 a 3) y se toman los de arriba: los que más le gustan salen seguido,
+    // pero no son siempre los mismos. No muestra lo que ya tiene en favoritos (eso va en "Tus favoritos").
+    // soloApto e idRestriccion funcionan igual que en ObtenerMejorPuntuados.
+    public static List<TarjetaRestaurante> ObtenerRecomendados(int cantidad, int idUsuario, bool soloApto, int? idRestriccion = null)
+    {
+        string consulta = @"
+            SELECT TOP (@cantidad) t.Id, t.Nombre, t.Foto, t.Categoria, t.Barrio, t.Puntaje, t.EsFavorito
+            FROM (
+                SELECT r.Id, r.Nombre, r.Foto, c.Nombre AS Categoria, b.Nombre AS Barrio,
+                       (SELECT AVG(CAST(Puntaje AS float)) FROM Reseñas WHERE IdRestaurante = r.Id AND Fecha <= DATEADD(hour, -24, GETDATE())) AS Puntaje,
+                       CAST(0 AS bit) AS EsFavorito,
+                       (CASE WHEN r.IdBarrio IN (SELECT IdBarrio FROM ZonasUsuarios WHERE IdUsuario = @idUsuario)
+                               OR r.IdBarrio = (SELECT IdBarrio FROM Usuarios WHERE Id = @idUsuario) THEN 2 ELSE 0 END)
+                     + (CASE WHEN r.IdCategoria IN (SELECT x.IdCategoria FROM Favoritos f JOIN Restaurantes x ON x.Id = f.IdRestaurante WHERE f.IdUsuario = @idUsuario
+                                                    UNION
+                                                    SELECT x.IdCategoria FROM Reseñas rs JOIN Restaurantes x ON x.Id = rs.IdRestaurante WHERE rs.IdUsuario = @idUsuario AND rs.Puntaje >= 4) THEN 2 ELSE 0 END)
+                     + (CASE WHEN (SELECT AVG(CAST(Puntaje AS float)) FROM Reseñas WHERE IdRestaurante = r.Id) >= 4 THEN 1 ELSE 0 END) AS Afinidad
+                FROM Restaurantes r
+                LEFT JOIN Categorias c ON c.Id = r.IdCategoria
+                LEFT JOIN Barrios b ON b.Id = r.IdBarrio
+                WHERE NOT EXISTS (SELECT 1 FROM Favoritos WHERE IdUsuario = @idUsuario AND IdRestaurante = r.Id)
+                  AND (@soloApto = 0
+                   OR NOT EXISTS (SELECT 1 FROM RestriccionesUsuarios WHERE IdUsuario = @idUsuario)
+                   OR EXISTS (SELECT 1 FROM RestriccionesRestaurantes rr
+                              JOIN RestriccionesUsuarios ru ON ru.IdRestricciones = rr.IdRestriccion
+                              WHERE rr.IdRestaurante = r.Id AND ru.IdUsuario = @idUsuario))
+                  AND (@idRestriccion IS NULL
+                   OR EXISTS (SELECT 1 FROM RestriccionesRestaurantes
+                              WHERE IdRestaurante = r.Id AND IdRestriccion = @idRestriccion))
+            ) t
+            ORDER BY t.Afinidad + (ABS(CHECKSUM(NEWID())) % 1000) / 1000.0 * 3 DESC";
+        using (SqlConnection conexion = new SqlConnection(CadenaConexion))
+        {
+            return conexion.Query<TarjetaRestaurante>(consulta, new { cantidad, idUsuario, soloApto, idRestriccion }).ToList();
+        }
+    }
+
     // ---------- 05 · Descubrir ----------
 
     // Las palabras que no sirven para buscar ("parrilla en Palermo" -> "parrilla", "Palermo")
@@ -910,15 +952,21 @@ public static class BD
     // COLLATE ..._CI_AI hace que no importen mayúsculas ni tildes ("nunez" encuentra "Núñez").
     // soloApto: igual que en Inicio, solo los que cumplen al menos una restricción del usuario.
     // idBarrio: el desplegable "Barrio". null = todos los barrios.
-    private static string ArmarFiltroBusqueda(string texto, int idUsuario, bool soloApto, int? idBarrio, DynamicParameters parametros)
+    private static string ArmarFiltroBusqueda(FiltroBusqueda f, DynamicParameters parametros)
     {
+        string texto = f.Texto;
+        int idUsuario = f.IdUsuario;
+        bool soloApto = f.SoloApto;
+        int? idBarrio = f.IdBarrio;
         string filtro = @"
             WHERE (@soloApto = 0
                OR NOT EXISTS (SELECT 1 FROM RestriccionesUsuarios WHERE IdUsuario = @idUsuario)
                OR EXISTS (SELECT 1 FROM RestriccionesRestaurantes rr
                           JOIN RestriccionesUsuarios ru ON ru.IdRestricciones = rr.IdRestriccion
                           WHERE rr.IdRestaurante = r.Id AND ru.IdUsuario = @idUsuario))
-              AND (@idBarrio IS NULL OR r.IdBarrio = @idBarrio)";
+              AND (@idBarrio IS NULL OR r.IdBarrio = @idBarrio)
+              AND (@idCategoria IS NULL OR r.IdCategoria = @idCategoria)";
+        parametros.Add("idCategoria", f.IdCategoria);
         parametros.Add("idUsuario", idUsuario);
         parametros.Add("soloApto", soloApto);
         parametros.Add("idBarrio", idBarrio);
@@ -939,15 +987,43 @@ public static class BD
                 OR c.Nombre COLLATE Latin1_General_CI_AI LIKE @sinS{numero})";
             numero++;
         }
+        // Solo lo que cae dentro de lo que se ve en el mapa (el pin sale de las coordenadas del lugar o, si no tiene, de su barrio)
+        if (f.TieneZona)
+        {
+            filtro += @"
+              AND ISNULL(r.Latitud, b.Latitud) BETWEEN @sur AND @norte
+              AND ISNULL(r.Longitud, b.Longitud) BETWEEN @oeste AND @este";
+            parametros.Add("norte", f.Norte);
+            parametros.Add("sur", f.Sur);
+            parametros.Add("este", f.Este);
+            parametros.Add("oeste", f.Oeste);
+        }
+
+        // Cuanto más lejos está el mapa, menos lugares y los mejores: se quedan los Limite lugares de mejor puntaje.
+        // El puntaje se "suaviza" (como si todos tuvieran 3 reseñas de 3,5) para que un solo 5 no le gane a un 4,8 con muchas reseñas.
+        // Los que no tienen reseñas valen 3,5: quedan detrás de los bien puntuados y delante de los mal puntuados.
+        // Los empates: primero los Pro y después por Id. La lista y los pins usan este mismo filtro, así que muestran lo mismo.
+        if (f.Limite != null)
+        {
+            filtro += @"
+              AND r.Id IN (SELECT TOP (@limite) r.Id
+                           FROM Restaurantes r
+                           LEFT JOIN Categorias c ON c.Id = r.IdCategoria
+                           LEFT JOIN Barrios b ON b.Id = r.IdBarrio" + filtro + @"
+                           ORDER BY (SELECT (ISNULL(SUM(CAST(Puntaje AS float)), 0) + 10.5) / (COUNT(*) + 3)
+                                     FROM Reseñas WHERE IdRestaurante = r.Id AND Fecha <= DATEADD(hour, -24, GETDATE())) DESC,
+                                    r.EsPro DESC, r.Id)";
+            parametros.Add("limite", f.Limite);
+        }
         return filtro;
     }
 
     // El Pro que sale destacado ("Recomendado") arriba de todo en la página 1 cuando no hay barrio elegido:
     // el más cercano al usuario entre los que coinciden con la búsqueda. null si no hay ningún Pro.
-    public static int? ObtenerProDestacado(string texto, int idUsuario, bool soloApto, double? latitud, double? longitud)
+    public static int? ObtenerProDestacado(FiltroBusqueda filtroBusqueda, double? latitud, double? longitud)
     {
         DynamicParameters parametros = new DynamicParameters();
-        string filtro = ArmarFiltroBusqueda(texto, idUsuario, soloApto, null, parametros);
+        string filtro = ArmarFiltroBusqueda(filtroBusqueda, parametros);
         parametros.Add("latitudUsuario", latitud);
         parametros.Add("longitudUsuario", longitud);
 
@@ -974,11 +1050,11 @@ public static class BD
     // Los que no tienen distancia (sin ubicación o el lugar sin coordenadas) o sin reseñas van al final.
     // CROSS APPLY calcula la distancia y el puntaje una sola vez para usarlos en el SELECT y en el ORDER BY.
     // El pin del mapa sale de las coordenadas del lugar o, si no tiene, de las de su barrio.
-    public static List<TarjetaRestaurante> BuscarRestaurantes(string texto, int idUsuario, bool soloApto, int? idBarrio,
+    public static List<TarjetaRestaurante> BuscarRestaurantes(FiltroBusqueda filtroBusqueda,
         double? latitud, double? longitud, string orden, int? idDestacado, int desde, int cantidad)
     {
         DynamicParameters parametros = new DynamicParameters();
-        string filtro = ArmarFiltroBusqueda(texto, idUsuario, soloApto, idBarrio, parametros);
+        string filtro = ArmarFiltroBusqueda(filtroBusqueda, parametros);
         parametros.Add("latitudUsuario", latitud);
         parametros.Add("longitudUsuario", longitud);
         parametros.Add("orden", orden);
@@ -1013,11 +1089,33 @@ public static class BD
         }
     }
 
-    // Cuántos resultados hay en total (para la paginación)
-    public static int ContarRestaurantes(string texto, int idUsuario, bool soloApto, int? idBarrio)
+    // Los lugares de la búsqueda para dibujar sus pins en el mapa: los mismos que la lista (la lista va de a páginas, el mapa los muestra juntos).
+    // Trae solo lo que necesita un pin y su tarjetita; los que no tienen coordenadas (ni propias ni de su barrio) no van.
+    public static List<TarjetaRestaurante> ObtenerPinesMapa(FiltroBusqueda filtroBusqueda)
     {
         DynamicParameters parametros = new DynamicParameters();
-        string filtro = ArmarFiltroBusqueda(texto, idUsuario, soloApto, idBarrio, parametros);
+        string filtro = ArmarFiltroBusqueda(filtroBusqueda, parametros);
+
+        string consulta = @"
+            SELECT r.Id, r.Nombre, r.Foto, c.Nombre AS Categoria, b.Nombre AS Barrio,
+                   ISNULL(r.Latitud, b.Latitud) AS Latitud, ISNULL(r.Longitud, b.Longitud) AS Longitud,
+                   (SELECT AVG(CAST(Puntaje AS float)) FROM Reseñas WHERE IdRestaurante = r.Id AND Fecha <= DATEADD(hour, -24, GETDATE())) AS Puntaje
+            FROM Restaurantes r
+            LEFT JOIN Categorias c ON c.Id = r.IdCategoria
+            LEFT JOIN Barrios b ON b.Id = r.IdBarrio" + filtro + @"
+              AND ISNULL(r.Latitud, b.Latitud) IS NOT NULL AND ISNULL(r.Longitud, b.Longitud) IS NOT NULL
+            ORDER BY r.Id";
+        using (SqlConnection conexion = new SqlConnection(CadenaConexion))
+        {
+            return conexion.Query<TarjetaRestaurante>(consulta, parametros).ToList();
+        }
+    }
+
+    // Cuántos resultados hay en total (para la paginación)
+    public static int ContarRestaurantes(FiltroBusqueda filtroBusqueda)
+    {
+        DynamicParameters parametros = new DynamicParameters();
+        string filtro = ArmarFiltroBusqueda(filtroBusqueda, parametros);
 
         string consulta = @"
             SELECT COUNT(*)
@@ -1032,10 +1130,10 @@ public static class BD
 
     // Cuando la búsqueda no da nada en el barrio elegido: el otro barrio donde el texto tiene más resultados
     // (para "No encontramos sushi en Palermo. Hay 3 en Belgrano"). null si no aparece en ningún otro.
-    public static BarrioConResultados? ObtenerBarrioConMasResultados(string texto, int idUsuario, bool soloApto, int idBarrioElegido)
+    public static BarrioConResultados? ObtenerBarrioConMasResultados(FiltroBusqueda filtroBusqueda, int idBarrioElegido)
     {
         DynamicParameters parametros = new DynamicParameters();
-        string filtro = ArmarFiltroBusqueda(texto, idUsuario, soloApto, null, parametros);
+        string filtro = ArmarFiltroBusqueda(filtroBusqueda, parametros);
         parametros.Add("idBarrioElegido", idBarrioElegido);
 
         string consulta = @"

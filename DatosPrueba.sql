@@ -7,7 +7,7 @@
 USE Bodeglook;
 GO
 
-/* ---------- 1) Barrios (11) ---------- */
+/* ---------- 1) Barrios (48: los de CABA) ---------- */
 
 INSERT INTO Barrios (Nombre, Latitud, Longitud) VALUES
 (N'Palermo',       -34.588900, -58.430600),
@@ -20,13 +20,51 @@ INSERT INTO Barrios (Nombre, Latitud, Longitud) VALUES
 (N'Núñez',         -34.544500, -58.463700),
 (N'Puerto Madero', -34.611800, -58.363600),
 (N'Colegiales',    -34.574000, -58.449000),
-(N'Cañuelas',      -35.051700, -58.760600);
+(N'Agronomía', -34.595300, -58.493000),
+(N'Balvanera', -34.609600, -58.400000),
+(N'Barracas', -34.645800, -58.378900),
+(N'Boedo', -34.625200, -58.418000),
+(N'Chacarita', -34.587900, -58.454000),
+(N'Coghlan', -34.560000, -58.475000),
+(N'Constitución', -34.627000, -58.383000),
+(N'Flores', -34.628000, -58.463000),
+(N'Floresta', -34.631000, -58.485000),
+(N'La Boca', -34.634500, -58.363100),
+(N'La Paternal', -34.600000, -58.469000),
+(N'Liniers', -34.643000, -58.520000),
+(N'Mataderos', -34.660000, -58.503000),
+(N'Monte Castro', -34.615000, -58.512000),
+(N'Montserrat', -34.612000, -58.380000),
+(N'Nueva Pompeya', -34.650000, -58.416000),
+(N'Parque Avellaneda', -34.648000, -58.481000),
+(N'Parque Chacabuco', -34.635000, -58.435000),
+(N'Parque Chas', -34.585000, -58.479000),
+(N'Parque Patricios', -34.636000, -58.400000),
+(N'Retiro', -34.592000, -58.375000),
+(N'Saavedra', -34.552000, -58.485000),
+(N'San Cristóbal', -34.622000, -58.402000),
+(N'San Nicolás', -34.604000, -58.380000),
+(N'Vélez Sarsfield', -34.628000, -58.493000),
+(N'Versalles', -34.629000, -58.520000),
+(N'Villa del Parque', -34.605000, -58.496000),
+(N'Villa Devoto', -34.600000, -58.515000),
+(N'Villa General Mitre', -34.608000, -58.468000),
+(N'Villa Lugano', -34.684000, -58.470000),
+(N'Villa Luro', -34.635000, -58.505000),
+(N'Villa Ortúzar', -34.580000, -58.465000),
+(N'Villa Pueyrredón', -34.583000, -58.505000),
+(N'Villa Real', -34.620000, -58.520000),
+(N'Villa Riachuelo', -34.685000, -58.460000),
+(N'Villa Santa Rita', -34.617000, -58.477000),
+(N'Villa Soldati', -34.670000, -58.440000),
+(N'Villa Urquiza', -34.573000, -58.490000);
 
 /* ---------- Categorías (12) ---------- */
 
 INSERT INTO Categorias (Nombre) VALUES
 (N'Vinoteca'), (N'Bar de vinos'), (N'Parrilla'), (N'Japonesa'), (N'Italiana'), (N'Vegana'),
-(N'Bodegón'), (N'Brunch'), (N'Árabe'), (N'Cervecería'), (N'Pizzería'), (N'Heladería');
+(N'Bodegón'), (N'Brunch'), (N'Árabe'), (N'Cervecería'), (N'Pizzería'), (N'Heladería'),
+(N'Restaurante'), (N'Bar'), (N'Cafetería'), (N'Mexicana'), (N'Peruana'), (N'Hamburguesería');
 
 /* ---------- Restricciones (10) ---------- */
 
@@ -39,19 +77,19 @@ INSERT INTO Restricciones (Nombre) VALUES
 
 INSERT INTO Usuarios (NombreCompleto, NombreUsuario, Email, Contraseña, FotoPerfil, Biografía,
                       FechaRegistro, idBarrio, Frecuencia, SoloApto)
-SELECT v.Nombre, v.Usuario, v.Email, N'Bodeglook2026', NULL, v.Bio, v.Fecha, B.ID, v.Frec, v.Solo
+SELECT v.Nombre, v.Usuario, v.Email, v.Clave, NULL, v.Bio, v.Fecha, B.ID, v.Frec, v.Solo
 FROM (VALUES
-    (N'Camila Fernández', 'camilaf',     'camila.fernandez@example.com', N'Vegetariana, fan de las vinotecas y de armar planes con amigos.', '2026-02-01T10:00:00', N'Palermo',       'Una vez por semana',      0),
-    (N'Julián Pérez',     'julianperez', 'julian.perez@example.com',     N'Malbec y tabla de quesos, siempre.',                              '2026-02-03T19:20:00', N'Recoleta',      'Varias veces por semana', 0),
-    (N'Sofi Ortega',      'sofiortega',  'sofi.ortega@example.com',      N'Celíaca: busco lugares sin TACC de verdad.',                      '2026-02-05T21:15:00', N'San Telmo',     'Una vez por semana',      1),
-    (N'Fran Molina',      'franmolina',  'fran.molina@example.com',      N'Sushi los jueves, asado los domingos.',                           '2026-02-08T12:40:00', N'Belgrano',      'Cada tanto',              0),
-    (N'Martina Giménez',  'martinag',    'martina.gimenez@example.com',  N'Brunch lover y cazadora de cafés lindos.',                        '2026-02-11T09:05:00', N'Caballito',     'Una vez por semana',      0),
-    (N'Nico Ramos',       'nicoramos',   'nico.ramos@example.com',       N'After office y cervezas artesanales.',                            '2026-03-01T18:30:00', N'Villa Crespo',  'Varias veces por semana', 0),
-    (N'Lucía Paz',        'lucipaz',     'lucia.paz@example.com',        N'Pruebo un lugar nuevo cada semana.',                              '2026-03-10T16:00:00', N'Almagro',       'Una vez por semana',      0),
-    (N'Lucía Benítez',    'lucib',       'lucia.benitez@example.com',    N'Vegana hace cinco años.',                                         '2026-03-15T11:25:00', N'Núñez',         'Cada tanto',              1),
-    (N'Tomás Aguirre',    'tomiaguirre', 'tomas.aguirre@example.com',    N'Fútbol los martes y después tercer tiempo.',                      '2026-04-02T22:10:00', N'Colegiales',    'Una vez por semana',      0),
-    (N'Delfina Castro',   'delficastro', 'delfina.castro@example.com',   N'Organizo el viaje a Mendoza, pregúntenme por bodegas.',           '2026-04-20T14:45:00', N'Puerto Madero', 'Cada tanto',              0)
-) v(Nombre, Usuario, Email, Bio, Fecha, Barrio, Frec, Solo)
+    (N'Camila Fernández', 'camilaf',     'camila.fernandez@example.com', N'Vegetariana, fan de las vinotecas y de armar planes con amigos.', '2026-02-01T10:00:00', N'Palermo',       'Una vez por semana',      0, 'afVs05isWWjCCM/c/KDURJtNbRQNV8dG'),
+    (N'Julián Pérez',     'julianperez', 'julian.perez@example.com',     N'Malbec y tabla de quesos, siempre.',                              '2026-02-03T19:20:00', N'Recoleta',      'Varias veces por semana', 0, 'HIGlRbapNOrwQ9jYvbWq2LBLYHmk1565'),
+    (N'Sofi Ortega',      'sofiortega',  'sofi.ortega@example.com',      N'Celíaca: busco lugares sin TACC de verdad.',                      '2026-02-05T21:15:00', N'San Telmo',     'Una vez por semana',      1, 'eMMkc0QruxdAVIIHPhB8AK9Dld/nIDpA'),
+    (N'Fran Molina',      'franmolina',  'fran.molina@example.com',      N'Sushi los jueves, asado los domingos.',                           '2026-02-08T12:40:00', N'Belgrano',      'Cada tanto',              0, 'V79s/5zbZJ+LQFqh+VC3b7DcF7GpGhWi'),
+    (N'Martina Giménez',  'martinag',    'martina.gimenez@example.com',  N'Brunch lover y cazadora de cafés lindos.',                        '2026-02-11T09:05:00', N'Caballito',     'Una vez por semana',      0, '2sETeUozBmzWIKdIvpchs0PrNS2y2qp0'),
+    (N'Nico Ramos',       'nicoramos',   'nico.ramos@example.com',       N'After office y cervezas artesanales.',                            '2026-03-01T18:30:00', N'Villa Crespo',  'Varias veces por semana', 0, 'EMRFo9wpDb+ZIQUHaqkmMro5Hcy8dHe0'),
+    (N'Lucía Paz',        'lucipaz',     'lucia.paz@example.com',        N'Pruebo un lugar nuevo cada semana.',                              '2026-03-10T16:00:00', N'Almagro',       'Una vez por semana',      0, '2vusOuH+kbXdcnvuUnaxn1SnWP6x3Tva'),
+    (N'Lucía Benítez',    'lucib',       'lucia.benitez@example.com',    N'Vegana hace cinco años.',                                         '2026-03-15T11:25:00', N'Núñez',         'Cada tanto',              1, '7uwGQlW4UfVzI8ezh56914JbNo9h0VmQ'),
+    (N'Tomás Aguirre',    'tomiaguirre', 'tomas.aguirre@example.com',    N'Fútbol los martes y después tercer tiempo.',                      '2026-04-02T22:10:00', N'Colegiales',    'Una vez por semana',      0, 'mCbjuXHUTNKvhh6ZXnhncTo4jfFHEhrs'),
+    (N'Delfina Castro',   'delficastro', 'delfina.castro@example.com',   N'Organizo el viaje a Mendoza, pregúntenme por bodegas.',           '2026-04-20T14:45:00', N'Puerto Madero', 'Cada tanto',              0, 'n5MDJ/pz62LPjMEuJDB/dpWw/y2CCoSf')
+) v(Nombre, Usuario, Email, Bio, Fecha, Barrio, Frec, Solo, Clave)
 INNER JOIN Barrios B ON B.Nombre = v.Barrio;
 
 
@@ -63,7 +101,6 @@ INSERT INTO Restaurantes (Nombre, DireccionCalle, DireccionNumero, DireccionCodi
 SELECT v.Nombre, v.Calle, v.Numero, v.CP, v.Descr, v.Tel, v.Abre, v.Cierra, v.Precio, NULL, B.ID, C.ID,
        v.Pro, v.Web, NULL, v.Lat, v.Lon, 'Manual'
 FROM (VALUES
-    (N'Bodega Los Alamos',    N'Av. Libertad',      1250, 1814, N'Bodega boutique con salón de degustación y patio al aire libre. Especialidad en vinos de la región y maridajes con tabla de quesos.', '+54 11 5555-1234', '1900-01-01T12:00:00', '1900-01-01T23:00:00', 3, N'Cañuelas',      N'Vinoteca',     1, 'https://ejemplo.com/bodega-los-alamos', -35.050900, -58.758200),
     (N'Vinos del Sur',        N'Defensa',           1020, 1065, N'Bar de vinos con más de 200 etiquetas y picadas para compartir.',                                                            '+54 11 4362-1020', '1900-01-01T18:00:00', '1900-01-01T23:30:00', 3, N'San Telmo',     N'Bar de vinos', 1, 'https://ejemplo.com/vinos-del-sur',     -34.620500, -58.371800),
     (N'Asador Don Pepe',      N'Av. Pueyrredón',    1720, 1119, N'Parrilla de barrio con cortes a la leña y provoleta.',                                                                       '+54 11 4823-1720', '1900-01-01T12:00:00', '1900-01-01T23:30:00', 3, N'Recoleta',      N'Parrilla',     0, NULL,                                    -34.590600, -58.398600),
     (N'Sushi Bar Nami',       N'Juramento',         2380, 1428, N'Barra de sushi omakase y rolls de autor.',                                                                                   '+54 11 4783-2380', '1900-01-01T19:30:00', '1900-01-01T23:30:00', 4, N'Belgrano',      N'Japonesa',     1, 'https://ejemplo.com/sushi-bar-nami',    -34.561800, -58.456900),
@@ -83,21 +120,20 @@ INNER JOIN Categorias C ON C.Nombre = v.Categoria;
 /* ---------- 4) Cuentas de restaurantes (12) ---------- */
 
 INSERT INTO CuentasRestaurantes (Email, Contraseña, FechaRegistro, idRestaurante)
-SELECT v.Email, N'Bodeglook2026', v.Fecha, R.ID
+SELECT v.Email, v.Clave, v.Fecha, R.ID
 FROM (VALUES
-    ('contacto@bodegalosalamos.example.com', '2026-05-02T10:00:00', N'Bodega Los Alamos'),
-    ('hola@vinosdelsur.example.com',         '2026-05-10T11:30:00', N'Vinos del Sur'),
-    ('reservas@asadordonpepe.example.com',   '2026-05-18T12:15:00', N'Asador Don Pepe'),
-    ('info@sushibarnami.example.com',        '2026-06-01T09:40:00', N'Sushi Bar Nami'),
-    ('hola@trattoriabellini.example.com',    '2026-06-12T16:20:00', N'Trattoria Bellini'),
-    ('contacto@huertaalmagro.example.com',   '2026-06-25T10:05:00', N'La Huerta de Almagro'),
-    ('elpibe@bodegonelpibe.example.com',     '2026-07-03T13:50:00', N'Bodegón El Pibe'),
-    ('hola@cafeparadiso.example.com',        '2026-07-15T08:45:00', N'Café Paradiso'),
-    ('info@shawarmabeirut.example.com',      '2026-07-28T17:10:00', N'Shawarma Beirut'),
-    ('birra@cervecerialupulo.example.com',   '2026-08-09T18:30:00', N'Cervecería Lúpulo'),
-    ('hola@lafugazza.example.com',           '2026-08-20T12:00:00', N'Pizzería La Fugazza'),
-    ('info@nievepura.example.com',           '2026-09-02T15:30:00', N'Heladería Nieve Pura')
-) v(Email, Fecha, Rest)
+    ('hola@vinosdelsur.example.com',         '2026-05-10T11:30:00', N'Vinos del Sur', '8fE246ua5AII7mIo6VUvZ6ivUaDOgUyQ'),
+    ('reservas@asadordonpepe.example.com',   '2026-05-18T12:15:00', N'Asador Don Pepe', 'Ja+LpAIyRndX17POnoB4JrdMzmkbIDyr'),
+    ('info@sushibarnami.example.com',        '2026-06-01T09:40:00', N'Sushi Bar Nami', 'kh5p69oiw9p90lYTSyWzmEkRCKUqHtBc'),
+    ('hola@trattoriabellini.example.com',    '2026-06-12T16:20:00', N'Trattoria Bellini', 'AjuCLHZ8/znh/rnJs6bMi2IDIhkb+poA'),
+    ('contacto@huertaalmagro.example.com',   '2026-06-25T10:05:00', N'La Huerta de Almagro', '34IDFHukWwmh13hDTDhg8QtH6fn3Aua4'),
+    ('elpibe@bodegonelpibe.example.com',     '2026-07-03T13:50:00', N'Bodegón El Pibe', '8P1CXDPqGp9TROcaQl73h+CVKgRk4oML'),
+    ('hola@cafeparadiso.example.com',        '2026-07-15T08:45:00', N'Café Paradiso', '80GRy4OaaWhEp9eNUU6tHR/5n2lKPHSl'),
+    ('info@shawarmabeirut.example.com',      '2026-07-28T17:10:00', N'Shawarma Beirut', '1X0FMc+z4KFwkG1BrZRtcpC8h6R6cKlg'),
+    ('birra@cervecerialupulo.example.com',   '2026-08-09T18:30:00', N'Cervecería Lúpulo', 'jr7er/PI+1rgL6TXalbcKvnDMEqBOk/9'),
+    ('hola@lafugazza.example.com',           '2026-08-20T12:00:00', N'Pizzería La Fugazza', '8qtS7ymCvkfSKfj8+Q8csHGc37BWchYU'),
+    ('info@nievepura.example.com',           '2026-09-02T15:30:00', N'Heladería Nieve Pura', 'NVLUXzp/ewsm2X7ef0I0Uxf4YGzqK/Nq')
+) v(Email, Fecha, Rest, Clave)
 INNER JOIN Restaurantes R ON R.Nombre = v.Rest;
 
 
@@ -106,7 +142,6 @@ INNER JOIN Restaurantes R ON R.Nombre = v.Rest;
 INSERT INTO RestriccionesRestaurantes (idRestaurante, idRestriccion)
 SELECT R.ID, X.ID
 FROM (VALUES
-    (N'Bodega Los Alamos', N'Sin TACC'), (N'Bodega Los Alamos', N'Vegetariano'),
     (N'Vinos del Sur', N'Vegetariano'),
     (N'Asador Don Pepe', N'Sin TACC'),
     (N'Sushi Bar Nami', N'Sin lactosa'),
@@ -168,7 +203,6 @@ INNER JOIN Usuarios U ON U.NombreUsuario = v.Usuario;
 INSERT INTO Busquedas (idUsuario, Texto, Fecha)
 SELECT U.ID, v.Texto, v.Fecha
 FROM (VALUES
-    ('camilaf', N'Bodega Los Alamos',    '2026-11-03T20:10:00'),
     ('camilaf', N'Sushi Bar Nami',       '2026-11-03T20:12:00'),
     ('camilaf', N'Parrillas en Palermo', '2026-11-03T20:15:00'),
     ('camilaf', N'vinoteca',             '2026-11-01T18:40:00'),
@@ -188,9 +222,9 @@ INNER JOIN Usuarios U ON U.NombreUsuario = v.Usuario;
 INSERT INTO Favoritos (idRestaurante, idUsuario)
 SELECT R.ID, U.ID
 FROM (VALUES
-    ('camilaf', N'Sushi Bar Nami'), ('camilaf', N'Bodega Los Alamos'),
+    ('camilaf', N'Sushi Bar Nami'),
     ('camilaf', N'Trattoria Bellini'), ('camilaf', N'Café Paradiso'),
-    ('julianperez', N'Bodega Los Alamos'), ('julianperez', N'Asador Don Pepe'),
+    ('julianperez', N'Asador Don Pepe'),
     ('sofiortega', N'Café Paradiso'), ('sofiortega', N'Vinos del Sur'),
     ('lucib', N'La Huerta de Almagro'), ('nicoramos', N'Shawarma Beirut'),
     ('franmolina', N'Cervecería Lúpulo')
@@ -200,16 +234,12 @@ INNER JOIN Restaurantes R ON R.Nombre = v.Rest;
 
 
 /* ---------- 9) Reseñas (47) — Camila tiene 12, como en su perfil del Figma.
-   Promedios del Figma: Bodega Los Alamos 4.7 · Vinos del Sur 4.8 · Asador Don Pepe 4.5
+   Promedios del Figma: Vinos del Sur 4.8 · Asador Don Pepe 4.5
    Sushi Bar Nami 4.9 · Trattoria Bellini 4.3 · Café Paradiso 4.6 ---------- */
 
 INSERT INTO [Reseñas] (Puntaje, Comentario, Foto, Fecha, idUsuario, idRestaurante)
 SELECT v.Puntaje, v.Comentario, NULL, v.Fecha, U.ID, R.ID
 FROM (VALUES
-    -- Bodega Los Alamos (4.7)
-    (5, N'El patio es hermoso y la tabla de quesos con el malbec fue un golazo. Atención de 10.', '2026-11-02T13:20:00', 'julianperez', N'Bodega Los Alamos'),
-    (5, N'Muy buena opción sin TACC, nos cuidaron mucho. Recomiendo ir temprano.',               '2026-10-26T11:00:00', 'sofiortega',  N'Bodega Los Alamos'),
-    (4, N'Fuimos por el cumple de Sofi. Lindo lugar, opciones vegetarianas ricas, un poco lejos.', '2026-10-25T10:30:00', 'camilaf',     N'Bodega Los Alamos'),
     -- Vinos del Sur (4.8)
     (5, N'La carta de vinos es enorme y te recomiendan bien.',            '2026-09-14T23:10:00', 'camilaf',   N'Vinos del Sur'),
     (5, N'Picada abundante y buena música. Volvemos seguro.',             '2026-09-20T22:45:00', 'franmolina', N'Vinos del Sur'),
@@ -314,12 +344,12 @@ INNER JOIN Grupos G   ON G.Nombre = v.Grupo;
 INSERT INTO Planes (Titulo, FechaCierreVotacion, FechaSalida, Estado, idGrupo, idRestauranteElegido, idUsuarioCreador)
 SELECT v.Titulo, v.Cierre, v.Salida, v.Estado, G.ID, R.ID, U.ID
 FROM (VALUES
-    (N'Cena de cumpleaños de Sofi', '2026-10-23T20:00:00', '2026-10-24T21:00:00', 1, N'Grupo Colegio',        N'Bodega Los Alamos', 'camilaf'),
+    (N'Cena de cumpleaños de Sofi', '2026-10-23T20:00:00', '2026-10-24T21:00:00', 0, N'Grupo Colegio',        NULL,                 'camilaf'),
     (N'Asado de fin de año',        '2026-12-10T20:00:00', '2026-12-12T21:00:00', 0, N'Grupo Colegio',        NULL,                 'julianperez'),
     (N'Sushi de los jueves',        '2026-11-11T18:00:00', '2026-11-12T21:00:00', 0, N'Club del sushi',       NULL,                 'franmolina'),
     (N'Brunch de cumple de Martina','2026-09-26T20:00:00', '2026-09-27T11:30:00', 1, N'Amigas de la facu',    N'Café Paradiso',     'martinag'),
     (N'After del viernes',          '2026-10-08T18:00:00', '2026-10-09T20:00:00', 1, N'After office',         N'Cervecería Lúpulo', 'nicoramos'),
-    (N'Degustación en Cañuelas',    '2026-08-27T20:00:00', '2026-08-29T13:00:00', 1, N'Los del vino',         N'Bodega Los Alamos', 'julianperez'),
+    (N'Degustación en Cañuelas',    '2026-08-27T20:00:00', '2026-08-29T13:00:00', 0, N'Los del vino',         NULL,                 'julianperez'),
     (N'Cena del cumple de Fran',    '2026-09-17T20:00:00', '2026-09-19T21:00:00', 1, N'Cumple de Fran',       N'Bodegón El Pibe',   'sofiortega'),
     (N'Brunch dominguero',          '2026-11-13T20:00:00', '2026-11-15T11:00:00', 0, N'Brunch de domingo',    NULL,                 'delficastro'),
     (N'Tercer tiempo',              '2026-10-26T18:00:00', '2026-10-27T21:30:00', 1, N'Fútbol de los martes', N'Cervecería Lúpulo', 'tomiaguirre'),
@@ -335,16 +365,16 @@ LEFT JOIN Restaurantes R ON R.Nombre = v.Elegido;
 INSERT INTO PlanesRestaurantes (idPlan, idRestaurante)
 SELECT P.ID, R.ID
 FROM (VALUES
-    (N'Cena de cumpleaños de Sofi', N'Bodega Los Alamos'), (N'Cena de cumpleaños de Sofi', N'Vinos del Sur'), (N'Cena de cumpleaños de Sofi', N'Asador Don Pepe'),
+    (N'Cena de cumpleaños de Sofi', N'Vinos del Sur'), (N'Cena de cumpleaños de Sofi', N'Asador Don Pepe'),
     (N'Asado de fin de año', N'Asador Don Pepe'), (N'Asado de fin de año', N'Bodegón El Pibe'), (N'Asado de fin de año', N'Cervecería Lúpulo'),
     (N'Sushi de los jueves', N'Sushi Bar Nami'), (N'Sushi de los jueves', N'Trattoria Bellini'), (N'Sushi de los jueves', N'La Huerta de Almagro'),
     (N'Brunch de cumple de Martina', N'Café Paradiso'), (N'Brunch de cumple de Martina', N'La Huerta de Almagro'), (N'Brunch de cumple de Martina', N'Trattoria Bellini'),
     (N'After del viernes', N'Cervecería Lúpulo'), (N'After del viernes', N'Shawarma Beirut'), (N'After del viernes', N'Bodegón El Pibe'),
-    (N'Degustación en Cañuelas', N'Bodega Los Alamos'), (N'Degustación en Cañuelas', N'Vinos del Sur'), (N'Degustación en Cañuelas', N'Trattoria Bellini'),
+    (N'Degustación en Cañuelas', N'Vinos del Sur'), (N'Degustación en Cañuelas', N'Trattoria Bellini'),
     (N'Cena del cumple de Fran', N'Bodegón El Pibe'), (N'Cena del cumple de Fran', N'Shawarma Beirut'), (N'Cena del cumple de Fran', N'Asador Don Pepe'),
     (N'Brunch dominguero', N'Café Paradiso'), (N'Brunch dominguero', N'La Huerta de Almagro'), (N'Brunch dominguero', N'Trattoria Bellini'),
     (N'Tercer tiempo', N'Cervecería Lúpulo'), (N'Tercer tiempo', N'Bodegón El Pibe'), (N'Tercer tiempo', N'Asador Don Pepe'),
-    (N'Previa del viaje a Mendoza', N'Vinos del Sur'), (N'Previa del viaje a Mendoza', N'Bodega Los Alamos'), (N'Previa del viaje a Mendoza', N'Trattoria Bellini')
+    (N'Previa del viaje a Mendoza', N'Vinos del Sur'), (N'Previa del viaje a Mendoza', N'Trattoria Bellini')
 ) v(TituloPlan, Rest)
 INNER JOIN Planes P       ON P.Titulo = v.TituloPlan
 INNER JOIN Restaurantes R ON R.Nombre = v.Rest;
@@ -367,9 +397,6 @@ CROSS JOIN (VALUES (-30), (0), (30)) T(Minutos);
 INSERT INTO Votos (idUsuario, idPlan, idRestaurante, idHorarioVotado)
 SELECT U.ID, P.ID, R.ID, PH.ID
 FROM (VALUES
-    ('camilaf',     N'Cena de cumpleaños de Sofi', N'Bodega Los Alamos', '2026-10-24T21:00:00'),
-    ('sofiortega',  N'Cena de cumpleaños de Sofi', N'Bodega Los Alamos', '2026-10-24T21:00:00'),
-    ('julianperez', N'Cena de cumpleaños de Sofi', N'Bodega Los Alamos', '2026-10-24T21:00:00'),
     ('franmolina',  N'Cena de cumpleaños de Sofi', N'Vinos del Sur',     '2026-10-24T21:30:00'),
     ('julianperez', N'Asado de fin de año', N'Asador Don Pepe', '2026-12-12T21:00:00'),
     ('camilaf',     N'Asado de fin de año', N'Asador Don Pepe', '2026-12-12T21:30:00'),
@@ -384,8 +411,6 @@ FROM (VALUES
     ('julianperez', N'After del viernes', N'Cervecería Lúpulo', '2026-10-09T20:00:00'),
     ('lucib',       N'After del viernes', N'Cervecería Lúpulo', '2026-10-09T20:00:00'),
     ('camilaf',     N'After del viernes', N'Shawarma Beirut',   '2026-10-09T20:30:00'),
-    ('julianperez', N'Degustación en Cañuelas', N'Bodega Los Alamos', '2026-08-29T13:00:00'),
-    ('delficastro', N'Degustación en Cañuelas', N'Bodega Los Alamos', '2026-08-29T13:00:00'),
     ('camilaf',     N'Degustación en Cañuelas', N'Vinos del Sur',     '2026-08-29T13:30:00'),
     ('franmolina',  N'Cena del cumple de Fran', N'Bodegón El Pibe', '2026-09-19T21:00:00'),
     ('nicoramos',   N'Cena del cumple de Fran', N'Bodegón El Pibe', '2026-09-19T21:00:00'),

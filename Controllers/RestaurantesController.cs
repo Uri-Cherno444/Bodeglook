@@ -129,23 +129,50 @@ public class RestaurantesController : Controller
     {
         if (HttpContext.Session.GetString("usuario") == null) return RedirectToAction("IniciarSesion", "Cuenta");
 
+        Usuarios usuario = UsuarioDeSesion();
         ViewBag.Texto = (q ?? "").Trim();
-        ViewBag.Recientes = BD.ObtenerBusquedasRecientes(UsuarioDeSesion().Id, BusquedasRecientes);
-        // Las opciones del desplegable "Barrio"
+        ViewBag.Recientes = BD.ObtenerBusquedasRecientes(usuario.Id, BusquedasRecientes);
+        // Las opciones del desplegable "Barrio" y los chips de categoría
         ViewBag.Barrios = BD.ObtenerBarrios();
+        ViewBag.Categorias = BD.ObtenerCategorias();
+        // Donde arranca el mapa si el navegador no da la ubicación: el centro del barrio del perfil (si no, el centro de la Ciudad)
+        Barrios? barrioUsuario = BD.ObtenerBarrioDeUsuario(usuario.Id);
+        bool hayBarrio = barrioUsuario != null && barrioUsuario.Latitud != null && barrioUsuario.Longitud != null;
+        ViewBag.CentroLatitud = hayBarrio ? (double)barrioUsuario!.Latitud!.Value : -34.6037;
+        ViewBag.CentroLongitud = hayBarrio ? (double)barrioUsuario!.Longitud!.Value : -58.4000;
+        ViewBag.CentroEsBarrio = hayBarrio;
         return View();
     }
 
-    // La llama descubrir.js con fetch al buscar, al cambiar de página, de barrio o de orden.
+    // Cuántos lugares se muestran según el zoom del mapa: cuanto más lejos, menos y los mejores; cuanto más cerca, más.
+    // Sin zoom (se busca en toda la Ciudad) son los 80 mejores.
+    private static int LimiteSegunZoom(int? zoom)
+    {
+        if (zoom == null) return 80;
+        if (zoom <= 11) return 15;
+        if (zoom == 12) return 25;
+        if (zoom == 13) return 50;
+        if (zoom == 14) return 100;
+        if (zoom == 15) return 200;
+        return 400;
+    }
+
+    // La llama descubrir.js con fetch al buscar, al cambiar de página, de barrio, de categoría, de orden o al mover el mapa.
     // idBarrio: el desplegable "Barrio" (sin él, todos los barrios).
-    // orden: solo con barrio elegido, "cerca" (Más cerca, el de siempre) o "puntaje" (Mejor puntuados).
-    //   Sin barrio, 1 Pro destacado arriba de la página 1 (el más cercano) y el resto por distancia.
+    // idCategoria: el chip de categoría elegido (sin él, todas).
+    // norte, sur, este, oeste y zoom: lo que se ve en el mapa. Con zona, la lista y los pins son solo de esa zona y
+    //   cuanto menos zoom, menos lugares (los mejores). Sin zona (recién se buscó o se cambió un filtro) es toda la Ciudad.
+    // pines: si es true también devuelve en "pines" los lugares para el mapa (los mismos que la lista, todas las páginas).
+    //   descubrir.js lo pide solo cuando cambia la búsqueda, el filtro o la zona, no al cambiar de página.
+    // orden: "cerca" (Más cerca, el de siempre) o "puntaje" (Mejor puntuados), con o sin barrio elegido.
+    //   Sin barrio y ordenando por cercanía, 1 Pro destacado arriba de la página 1 (el más cercano).
     // latitud y longitud: la ubicación del navegador. Solo se usan para medir las distancias: no se guardan.
     // Si no vienen, se mide desde el centro del barrio del perfil y se devuelve su nombre en desdeBarrio (para el aviso).
-    // Devuelve { pagina, totalPaginas, resultados, recientes, desdeBarrio, barrioElegido, otroBarrio }.
+    // Devuelve { pagina, totalPaginas, total, resultados, pines, recientes, desdeBarrio, barrioElegido, otroBarrio }.
     // otroBarrio solo viene si no hubo nada en el barrio elegido pero el texto está en otro.
-    // Cada búsqueda nueva (pagina 1 con texto) se guarda.
-    public async Task<IActionResult> Resultados(string? texto, int pagina, int? idBarrio, string? orden, double? latitud, double? longitud)
+    // Cada búsqueda nueva (pagina 1 con texto, sin zona) se guarda.
+    public async Task<IActionResult> Resultados(string? texto, int pagina, int? idBarrio, int? idCategoria, string? orden,
+        double? latitud, double? longitud, double? norte, double? sur, double? este, double? oeste, int? zoom, bool pines = false)
     {
         if (HttpContext.Session.GetString("usuario") == null) return Unauthorized();
 
@@ -153,12 +180,13 @@ public class RestaurantesController : Controller
         texto = (texto ?? "").Trim();
         if (texto.Length > 100) texto = texto.Substring(0, 100);
 
-        // Un barrio que no existe se toma como "Todos los barrios"
+        // Un barrio o una categoría que no existen se toman como "todos"
         Barrios? barrioElegido = idBarrio == null ? null : BD.ObtenerBarrios().FirstOrDefault(b => b.Id == idBarrio);
         if (barrioElegido == null) idBarrio = null;
+        if (idCategoria != null && !BD.ObtenerCategorias().Any(c => c.Id == idCategoria)) idCategoria = null;
 
-        // "Mejor puntuados" solo con barrio; si no, "cerca"
-        string ordenFinal = idBarrio != null && orden == "puntaje" ? "puntaje" : "cerca";
+        // "puntaje" (Mejor puntuados) o, para cualquier otro valor, "cerca"
+        string ordenFinal = orden == "puntaje" ? "puntaje" : "cerca";
 
         // Si el navegador no mandó una ubicación válida, se mide desde el barrio del perfil
         string? desdeBarrio = null;
@@ -178,31 +206,55 @@ public class RestaurantesController : Controller
         // "Solo lo apto para mí" del onboarding o de Editar perfil (Usuarios.SoloApto)
         bool soloApto = BD.ObtenerSoloApto(usuario.Id);
 
+        // Lo que se pide: la búsqueda, el barrio, la categoría y, si el mapa mandó una zona válida, esa zona con su límite por zoom
+        FiltroBusqueda filtro = new FiltroBusqueda();
+        filtro.Texto = texto;
+        filtro.IdUsuario = usuario.Id;
+        filtro.SoloApto = soloApto;
+        filtro.IdBarrio = idBarrio;
+        filtro.IdCategoria = idCategoria;
+        bool hayZona = EsZonaValida(norte, sur, este, oeste);
+        if (hayZona)
+        {
+            filtro.Norte = norte;
+            filtro.Sur = sur;
+            filtro.Este = este;
+            filtro.Oeste = oeste;
+        }
+        filtro.Limite = LimiteSegunZoom(hayZona ? zoom : null);
+
+        // Lo mismo pero en toda la Ciudad y sin límite (para saber si el texto existe en otro lado y para avisar en qué barrio hay)
+        FiltroBusqueda filtroCiudad = new FiltroBusqueda();
+        filtroCiudad.Texto = texto;
+        filtroCiudad.IdUsuario = usuario.Id;
+        filtroCiudad.SoloApto = soloApto;
+        filtroCiudad.IdCategoria = idCategoria;
+
         // Se busca primero en nuestra base. Solo si no hay nada se pregunta a Geoapify, se guarda lo que encuentre y se vuelve a buscar.
         // Con un barrio elegido, a Geoapify se le pregunta solo si el texto tampoco está en otros barrios (así no se gastan créditos de más).
-        // Si Geoapify no responde o se pasó el límite, queda "sin resultados" como siempre: sin errores técnicos.
-        int total = BD.ContarRestaurantes(texto, usuario.Id, soloApto, idBarrio);
-        if (total == 0 && texto != "" && pagina <= 1
-            && (idBarrio == null || BD.ContarRestaurantes(texto, usuario.Id, soloApto, null) == 0))
+        // Al mover el mapa no se pregunta a Geoapify. Si no responde o se pasó el límite, queda "sin resultados" como siempre.
+        int total = BD.ContarRestaurantes(filtro);
+        if (total == 0 && texto != "" && pagina <= 1 && !hayZona
+            && (idBarrio == null || BD.ContarRestaurantes(filtroCiudad) == 0))
         {
-            if (await Geoapify.BuscarYGuardar(texto) > 0) total = BD.ContarRestaurantes(texto, usuario.Id, soloApto, idBarrio);
+            if (await Geoapify.BuscarYGuardar(texto) > 0) total = BD.ContarRestaurantes(filtro);
         }
         int totalPaginas = Math.Max(1, (int)Math.Ceiling(total / (double)ResultadosPorPagina));
         if (pagina < 1) pagina = 1;
         if (pagina > totalPaginas) pagina = totalPaginas;
 
-        if (pagina == 1 && texto != "") BD.GuardarBusqueda(usuario.Id, texto);
+        if (pagina == 1 && texto != "" && !hayZona) BD.GuardarBusqueda(usuario.Id, texto);
 
         List<object> resultados = new List<object>();
-        // Sin barrio: como máximo 1 Pro destacado ("Recomendado"), el más cercano
-        int? idDestacado = idBarrio == null ? BD.ObtenerProDestacado(texto, usuario.Id, soloApto, latitud, longitud) : null;
+        // Sin barrio y ordenando por cercanía: como máximo 1 Pro destacado ("Recomendado"), el más cercano
+        int? idDestacado = idBarrio == null && ordenFinal == "cerca" ? BD.ObtenerProDestacado(filtro, latitud, longitud) : null;
 
         // Nada en el barrio elegido: ¿en qué otro barrio sí está ese texto?
         BarrioConResultados? otroBarrio = null;
         if (total == 0 && idBarrio != null && texto != "")
-            otroBarrio = BD.ObtenerBarrioConMasResultados(texto, usuario.Id, soloApto, idBarrio.Value);
+            otroBarrio = BD.ObtenerBarrioConMasResultados(filtroCiudad, idBarrio.Value);
 
-        foreach (TarjetaRestaurante lugar in BD.BuscarRestaurantes(texto, usuario.Id, soloApto, idBarrio, latitud, longitud,
+        foreach (TarjetaRestaurante lugar in BD.BuscarRestaurantes(filtro, latitud, longitud,
             ordenFinal, idDestacado, (pagina - 1) * ResultadosPorPagina, ResultadosPorPagina))
         {
             resultados.Add(new
@@ -224,16 +276,47 @@ public class RestaurantesController : Controller
             });
         }
 
+        // Los pins del mapa: los mismos lugares que la lista (todas las páginas), solo con lo que necesita cada pin
+        List<object>? listaPines = null;
+        if (pines)
+        {
+            listaPines = new List<object>();
+            foreach (TarjetaRestaurante lugar in BD.ObtenerPinesMapa(filtro))
+            {
+                listaPines.Add(new
+                {
+                    id = lugar.Id,
+                    nombre = lugar.Nombre,
+                    foto = lugar.Foto,
+                    categoria = lugar.Categoria,
+                    puntaje = lugar.Puntaje == null ? null : lugar.Puntaje.Value.ToString("0.0", CultureInfo.InvariantCulture),
+                    latitud = lugar.Latitud,
+                    longitud = lugar.Longitud
+                });
+            }
+        }
+
         return Json(new
         {
             pagina,
             totalPaginas,
+            total,
             resultados,
+            pines = listaPines,
             recientes = BD.ObtenerBusquedasRecientes(usuario.Id, BusquedasRecientes),
             desdeBarrio,
             barrioElegido = barrioElegido?.Nombre,
             otroBarrio = otroBarrio == null ? null : new { id = otroBarrio.Id, nombre = otroBarrio.Nombre, cantidad = otroBarrio.Cantidad }
         });
+    }
+
+    // Una zona de mapa con números de verdad, norte arriba del sur y este a la derecha del oeste
+    private static bool EsZonaValida(double? norte, double? sur, double? este, double? oeste)
+    {
+        if (norte == null || sur == null || este == null || oeste == null) return false;
+        if (!double.IsFinite(norte.Value) || !double.IsFinite(sur.Value) || !double.IsFinite(este.Value) || !double.IsFinite(oeste.Value)) return false;
+        if (norte > 90 || sur < -90 || este > 180 || oeste < -180) return false;
+        return norte > sur && este > oeste;
     }
 
     // Una latitud entre -90 y 90 y una longitud entre -180 y 180 (y que sean números de verdad)

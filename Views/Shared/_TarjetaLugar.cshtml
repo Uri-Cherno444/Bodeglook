@@ -16,7 +16,7 @@
         </button>
     </div>
     <div class="tarjeta-lugar-titulo">
-        <a class="tarjeta-lugar-nombre tarjeta-lugar-enlace" href="/Restaurantes/Detalle/@Model.Id">@Model.Nombre</a>
+        <a class="tarjeta-lugar-nombre tarjeta-lugar-enlace" href="/Restaurantes/Detalle/@Model.Id" title="@Model.Nombre">@Model.Nombre</a>
         @if (Model.Puntaje != null)
         {
             <span class="puntaje">★ @Model.Puntaje.Value.ToString("0.0", CultureInfo.InvariantCulture)</span>

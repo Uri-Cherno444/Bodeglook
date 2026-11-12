@@ -208,8 +208,20 @@ public static class Geoapify
                     string? categoria = lugar.NombreCategoria();
                     if (categoria == null || !categorias.ContainsKey(categoria)) { resultado.SinCategoria++; continue; }
 
-                    if (BD.GuardarLugarGeoapify(lugar, barrio.Id, categorias[categoria])) resultado.Nuevos++;
-                    else resultado.Actualizados++;
+                    try
+                    {
+                        if (BD.GuardarLugarGeoapify(lugar, barrio.Id, categorias[categoria])) resultado.Nuevos++;
+                        else resultado.Actualizados++;
+                    }
+                    catch (Exception error)
+                    {
+                        // Un lugar con un dato que no entra no corta toda la importación: se cuenta y se anota el primero
+                        resultado.ConError++;
+                        if (resultado.PrimerError == null)
+                            resultado.PrimerError = error.Message + " | Nombre(" + (lugar.Nombre ?? "").Length + "): " + lugar.Nombre +
+                                " | Calle(" + (lugar.Calle ?? "").Length + "): " + lugar.Calle +
+                                " | Id(" + (lugar.IdGeoapify ?? "").Length + "): " + lugar.IdGeoapify;
+                    }
                 }
 
                 if (pagina.Count < LugaresPorPagina) break;

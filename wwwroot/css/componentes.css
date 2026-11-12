@@ -746,6 +746,24 @@
 
 .tarjeta-lugar-nombre {
     font-size: 20px;
+    /* Nombres largos (los lugares importados): máximo 2 líneas y "..." al final */
+    min-width: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    overflow-wrap: anywhere;
+}
+
+.tarjeta-lugar-titulo {
+    gap: 8px;
+}
+
+.tarjeta-lugar-detalle .ubicacion {
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .puntaje {

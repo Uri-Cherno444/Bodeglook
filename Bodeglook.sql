@@ -328,7 +328,7 @@ CREATE TABLE [dbo].[Restaurantes](
 	[idCategoria] [int] NOT NULL,
 	[EsPro] [bit] NOT NULL,
 	[SitioWeb] [varchar](200) NULL,
-	[IdGeoapify] [varchar](50) NULL,
+	[IdGeoapify] [varchar](300) NULL,
 	[Latitud] [decimal](9, 6) NULL,
 	[Longitud] [decimal](9, 6) NULL,
 	[Origen] [varchar](20) NOT NULL,
@@ -465,12 +465,48 @@ INSERT [dbo].[Barrios] ([ID], [Nombre], [Latitud], [Longitud]) VALUES (7, N'Alma
 INSERT [dbo].[Barrios] ([ID], [Nombre], [Latitud], [Longitud]) VALUES (8, N'Núñez', CAST(-34.544500 AS Decimal(9, 6)), CAST(-58.463700 AS Decimal(9, 6)))
 INSERT [dbo].[Barrios] ([ID], [Nombre], [Latitud], [Longitud]) VALUES (9, N'Puerto Madero', CAST(-34.611800 AS Decimal(9, 6)), CAST(-58.363600 AS Decimal(9, 6)))
 INSERT [dbo].[Barrios] ([ID], [Nombre], [Latitud], [Longitud]) VALUES (10, N'Colegiales', CAST(-34.574000 AS Decimal(9, 6)), CAST(-58.449000 AS Decimal(9, 6)))
-INSERT [dbo].[Barrios] ([ID], [Nombre], [Latitud], [Longitud]) VALUES (11, N'Cañuelas', CAST(-35.051700 AS Decimal(9, 6)), CAST(-58.760600 AS Decimal(9, 6)))
+INSERT [dbo].[Barrios] ([ID], [Nombre], [Latitud], [Longitud]) VALUES (12, N'Agronomía', CAST(-34.595300 AS Decimal(9, 6)), CAST(-58.493000 AS Decimal(9, 6)))
+INSERT [dbo].[Barrios] ([ID], [Nombre], [Latitud], [Longitud]) VALUES (13, N'Balvanera', CAST(-34.609600 AS Decimal(9, 6)), CAST(-58.400000 AS Decimal(9, 6)))
+INSERT [dbo].[Barrios] ([ID], [Nombre], [Latitud], [Longitud]) VALUES (14, N'Barracas', CAST(-34.645800 AS Decimal(9, 6)), CAST(-58.378900 AS Decimal(9, 6)))
+INSERT [dbo].[Barrios] ([ID], [Nombre], [Latitud], [Longitud]) VALUES (15, N'Boedo', CAST(-34.625200 AS Decimal(9, 6)), CAST(-58.418000 AS Decimal(9, 6)))
+INSERT [dbo].[Barrios] ([ID], [Nombre], [Latitud], [Longitud]) VALUES (16, N'Chacarita', CAST(-34.587900 AS Decimal(9, 6)), CAST(-58.454000 AS Decimal(9, 6)))
+INSERT [dbo].[Barrios] ([ID], [Nombre], [Latitud], [Longitud]) VALUES (17, N'Coghlan', CAST(-34.560000 AS Decimal(9, 6)), CAST(-58.475000 AS Decimal(9, 6)))
+INSERT [dbo].[Barrios] ([ID], [Nombre], [Latitud], [Longitud]) VALUES (18, N'Constitución', CAST(-34.627000 AS Decimal(9, 6)), CAST(-58.383000 AS Decimal(9, 6)))
+INSERT [dbo].[Barrios] ([ID], [Nombre], [Latitud], [Longitud]) VALUES (19, N'Flores', CAST(-34.628000 AS Decimal(9, 6)), CAST(-58.463000 AS Decimal(9, 6)))
+INSERT [dbo].[Barrios] ([ID], [Nombre], [Latitud], [Longitud]) VALUES (20, N'Floresta', CAST(-34.631000 AS Decimal(9, 6)), CAST(-58.485000 AS Decimal(9, 6)))
+INSERT [dbo].[Barrios] ([ID], [Nombre], [Latitud], [Longitud]) VALUES (21, N'La Boca', CAST(-34.634500 AS Decimal(9, 6)), CAST(-58.363100 AS Decimal(9, 6)))
+INSERT [dbo].[Barrios] ([ID], [Nombre], [Latitud], [Longitud]) VALUES (22, N'La Paternal', CAST(-34.600000 AS Decimal(9, 6)), CAST(-58.469000 AS Decimal(9, 6)))
+INSERT [dbo].[Barrios] ([ID], [Nombre], [Latitud], [Longitud]) VALUES (23, N'Liniers', CAST(-34.643000 AS Decimal(9, 6)), CAST(-58.520000 AS Decimal(9, 6)))
+INSERT [dbo].[Barrios] ([ID], [Nombre], [Latitud], [Longitud]) VALUES (24, N'Mataderos', CAST(-34.660000 AS Decimal(9, 6)), CAST(-58.503000 AS Decimal(9, 6)))
+INSERT [dbo].[Barrios] ([ID], [Nombre], [Latitud], [Longitud]) VALUES (25, N'Monte Castro', CAST(-34.615000 AS Decimal(9, 6)), CAST(-58.512000 AS Decimal(9, 6)))
+INSERT [dbo].[Barrios] ([ID], [Nombre], [Latitud], [Longitud]) VALUES (26, N'Montserrat', CAST(-34.612000 AS Decimal(9, 6)), CAST(-58.380000 AS Decimal(9, 6)))
+INSERT [dbo].[Barrios] ([ID], [Nombre], [Latitud], [Longitud]) VALUES (27, N'Nueva Pompeya', CAST(-34.650000 AS Decimal(9, 6)), CAST(-58.416000 AS Decimal(9, 6)))
+INSERT [dbo].[Barrios] ([ID], [Nombre], [Latitud], [Longitud]) VALUES (28, N'Parque Avellaneda', CAST(-34.648000 AS Decimal(9, 6)), CAST(-58.481000 AS Decimal(9, 6)))
+INSERT [dbo].[Barrios] ([ID], [Nombre], [Latitud], [Longitud]) VALUES (29, N'Parque Chacabuco', CAST(-34.635000 AS Decimal(9, 6)), CAST(-58.435000 AS Decimal(9, 6)))
+INSERT [dbo].[Barrios] ([ID], [Nombre], [Latitud], [Longitud]) VALUES (30, N'Parque Chas', CAST(-34.585000 AS Decimal(9, 6)), CAST(-58.479000 AS Decimal(9, 6)))
+INSERT [dbo].[Barrios] ([ID], [Nombre], [Latitud], [Longitud]) VALUES (31, N'Parque Patricios', CAST(-34.636000 AS Decimal(9, 6)), CAST(-58.400000 AS Decimal(9, 6)))
+INSERT [dbo].[Barrios] ([ID], [Nombre], [Latitud], [Longitud]) VALUES (32, N'Retiro', CAST(-34.592000 AS Decimal(9, 6)), CAST(-58.375000 AS Decimal(9, 6)))
+INSERT [dbo].[Barrios] ([ID], [Nombre], [Latitud], [Longitud]) VALUES (33, N'Saavedra', CAST(-34.552000 AS Decimal(9, 6)), CAST(-58.485000 AS Decimal(9, 6)))
+INSERT [dbo].[Barrios] ([ID], [Nombre], [Latitud], [Longitud]) VALUES (34, N'San Cristóbal', CAST(-34.622000 AS Decimal(9, 6)), CAST(-58.402000 AS Decimal(9, 6)))
+INSERT [dbo].[Barrios] ([ID], [Nombre], [Latitud], [Longitud]) VALUES (35, N'San Nicolás', CAST(-34.604000 AS Decimal(9, 6)), CAST(-58.380000 AS Decimal(9, 6)))
+INSERT [dbo].[Barrios] ([ID], [Nombre], [Latitud], [Longitud]) VALUES (36, N'Vélez Sarsfield', CAST(-34.628000 AS Decimal(9, 6)), CAST(-58.493000 AS Decimal(9, 6)))
+INSERT [dbo].[Barrios] ([ID], [Nombre], [Latitud], [Longitud]) VALUES (37, N'Versalles', CAST(-34.629000 AS Decimal(9, 6)), CAST(-58.520000 AS Decimal(9, 6)))
+INSERT [dbo].[Barrios] ([ID], [Nombre], [Latitud], [Longitud]) VALUES (38, N'Villa del Parque', CAST(-34.605000 AS Decimal(9, 6)), CAST(-58.496000 AS Decimal(9, 6)))
+INSERT [dbo].[Barrios] ([ID], [Nombre], [Latitud], [Longitud]) VALUES (39, N'Villa Devoto', CAST(-34.600000 AS Decimal(9, 6)), CAST(-58.515000 AS Decimal(9, 6)))
+INSERT [dbo].[Barrios] ([ID], [Nombre], [Latitud], [Longitud]) VALUES (40, N'Villa General Mitre', CAST(-34.608000 AS Decimal(9, 6)), CAST(-58.468000 AS Decimal(9, 6)))
+INSERT [dbo].[Barrios] ([ID], [Nombre], [Latitud], [Longitud]) VALUES (41, N'Villa Lugano', CAST(-34.684000 AS Decimal(9, 6)), CAST(-58.470000 AS Decimal(9, 6)))
+INSERT [dbo].[Barrios] ([ID], [Nombre], [Latitud], [Longitud]) VALUES (42, N'Villa Luro', CAST(-34.635000 AS Decimal(9, 6)), CAST(-58.505000 AS Decimal(9, 6)))
+INSERT [dbo].[Barrios] ([ID], [Nombre], [Latitud], [Longitud]) VALUES (43, N'Villa Ortúzar', CAST(-34.580000 AS Decimal(9, 6)), CAST(-58.465000 AS Decimal(9, 6)))
+INSERT [dbo].[Barrios] ([ID], [Nombre], [Latitud], [Longitud]) VALUES (44, N'Villa Pueyrredón', CAST(-34.583000 AS Decimal(9, 6)), CAST(-58.505000 AS Decimal(9, 6)))
+INSERT [dbo].[Barrios] ([ID], [Nombre], [Latitud], [Longitud]) VALUES (45, N'Villa Real', CAST(-34.620000 AS Decimal(9, 6)), CAST(-58.520000 AS Decimal(9, 6)))
+INSERT [dbo].[Barrios] ([ID], [Nombre], [Latitud], [Longitud]) VALUES (46, N'Villa Riachuelo', CAST(-34.685000 AS Decimal(9, 6)), CAST(-58.460000 AS Decimal(9, 6)))
+INSERT [dbo].[Barrios] ([ID], [Nombre], [Latitud], [Longitud]) VALUES (47, N'Villa Santa Rita', CAST(-34.617000 AS Decimal(9, 6)), CAST(-58.477000 AS Decimal(9, 6)))
+INSERT [dbo].[Barrios] ([ID], [Nombre], [Latitud], [Longitud]) VALUES (48, N'Villa Soldati', CAST(-34.670000 AS Decimal(9, 6)), CAST(-58.440000 AS Decimal(9, 6)))
+INSERT [dbo].[Barrios] ([ID], [Nombre], [Latitud], [Longitud]) VALUES (49, N'Villa Urquiza', CAST(-34.573000 AS Decimal(9, 6)), CAST(-58.490000 AS Decimal(9, 6)))
 SET IDENTITY_INSERT [dbo].[Barrios] OFF
 GO
 SET IDENTITY_INSERT [dbo].[Busquedas] ON 
 
-INSERT [dbo].[Busquedas] ([ID], [idUsuario], [Texto], [Fecha]) VALUES (1, 1, N'Bodega Los Alamos', CAST(N'2026-11-03T20:10:00.000' AS DateTime))
 INSERT [dbo].[Busquedas] ([ID], [idUsuario], [Texto], [Fecha]) VALUES (2, 1, N'Sushi Bar Nami', CAST(N'2026-11-03T20:12:00.000' AS DateTime))
 INSERT [dbo].[Busquedas] ([ID], [idUsuario], [Texto], [Fecha]) VALUES (3, 1, N'Parrillas en Palermo', CAST(N'2026-11-03T20:15:00.000' AS DateTime))
 INSERT [dbo].[Busquedas] ([ID], [idUsuario], [Texto], [Fecha]) VALUES (4, 1, N'vinoteca', CAST(N'2026-11-01T18:40:00.000' AS DateTime))
@@ -497,6 +533,12 @@ INSERT [dbo].[Categorias] ([ID], [Nombre]) VALUES (9, N'Árabe')
 INSERT [dbo].[Categorias] ([ID], [Nombre]) VALUES (10, N'Cervecería')
 INSERT [dbo].[Categorias] ([ID], [Nombre]) VALUES (11, N'Pizzería')
 INSERT [dbo].[Categorias] ([ID], [Nombre]) VALUES (12, N'Heladería')
+INSERT [dbo].[Categorias] ([ID], [Nombre]) VALUES (13, N'Restaurante')
+INSERT [dbo].[Categorias] ([ID], [Nombre]) VALUES (14, N'Bar')
+INSERT [dbo].[Categorias] ([ID], [Nombre]) VALUES (15, N'Cafetería')
+INSERT [dbo].[Categorias] ([ID], [Nombre]) VALUES (16, N'Mexicana')
+INSERT [dbo].[Categorias] ([ID], [Nombre]) VALUES (17, N'Peruana')
+INSERT [dbo].[Categorias] ([ID], [Nombre]) VALUES (18, N'Hamburguesería')
 SET IDENTITY_INSERT [dbo].[Categorias] OFF
 GO
 SET IDENTITY_INSERT [dbo].[CompaniasUsuarios] ON 
@@ -519,24 +561,21 @@ SET IDENTITY_INSERT [dbo].[CompaniasUsuarios] OFF
 GO
 SET IDENTITY_INSERT [dbo].[CuentasRestaurantes] ON 
 
-INSERT [dbo].[CuentasRestaurantes] ([ID], [Email], [Contraseña], [FechaRegistro], [idRestaurante]) VALUES (1, N'contacto@bodegalosalamos.example.com', N'Bodeglook2026', CAST(N'2026-05-02T10:00:00.000' AS DateTime), 1)
-INSERT [dbo].[CuentasRestaurantes] ([ID], [Email], [Contraseña], [FechaRegistro], [idRestaurante]) VALUES (2, N'hola@vinosdelsur.example.com', N'Bodeglook2026', CAST(N'2026-05-10T11:30:00.000' AS DateTime), 2)
-INSERT [dbo].[CuentasRestaurantes] ([ID], [Email], [Contraseña], [FechaRegistro], [idRestaurante]) VALUES (3, N'reservas@asadordonpepe.example.com', N'Bodeglook2026', CAST(N'2026-05-18T12:15:00.000' AS DateTime), 3)
-INSERT [dbo].[CuentasRestaurantes] ([ID], [Email], [Contraseña], [FechaRegistro], [idRestaurante]) VALUES (4, N'info@sushibarnami.example.com', N'Bodeglook2026', CAST(N'2026-06-01T09:40:00.000' AS DateTime), 4)
-INSERT [dbo].[CuentasRestaurantes] ([ID], [Email], [Contraseña], [FechaRegistro], [idRestaurante]) VALUES (5, N'hola@trattoriabellini.example.com', N'Bodeglook2026', CAST(N'2026-06-12T16:20:00.000' AS DateTime), 5)
-INSERT [dbo].[CuentasRestaurantes] ([ID], [Email], [Contraseña], [FechaRegistro], [idRestaurante]) VALUES (6, N'contacto@huertaalmagro.example.com', N'Bodeglook2026', CAST(N'2026-06-25T10:05:00.000' AS DateTime), 6)
-INSERT [dbo].[CuentasRestaurantes] ([ID], [Email], [Contraseña], [FechaRegistro], [idRestaurante]) VALUES (7, N'elpibe@bodegonelpibe.example.com', N'Bodeglook2026', CAST(N'2026-07-03T13:50:00.000' AS DateTime), 7)
-INSERT [dbo].[CuentasRestaurantes] ([ID], [Email], [Contraseña], [FechaRegistro], [idRestaurante]) VALUES (8, N'hola@cafeparadiso.example.com', N'Bodeglook2026', CAST(N'2026-07-15T08:45:00.000' AS DateTime), 8)
-INSERT [dbo].[CuentasRestaurantes] ([ID], [Email], [Contraseña], [FechaRegistro], [idRestaurante]) VALUES (9, N'info@shawarmabeirut.example.com', N'Bodeglook2026', CAST(N'2026-07-28T17:10:00.000' AS DateTime), 9)
-INSERT [dbo].[CuentasRestaurantes] ([ID], [Email], [Contraseña], [FechaRegistro], [idRestaurante]) VALUES (10, N'birra@cervecerialupulo.example.com', N'Bodeglook2026', CAST(N'2026-08-09T18:30:00.000' AS DateTime), 10)
-INSERT [dbo].[CuentasRestaurantes] ([ID], [Email], [Contraseña], [FechaRegistro], [idRestaurante]) VALUES (11, N'hola@lafugazza.example.com', N'Bodeglook2026', CAST(N'2026-08-20T12:00:00.000' AS DateTime), 11)
-INSERT [dbo].[CuentasRestaurantes] ([ID], [Email], [Contraseña], [FechaRegistro], [idRestaurante]) VALUES (12, N'info@nievepura.example.com', N'Bodeglook2026', CAST(N'2026-09-02T15:30:00.000' AS DateTime), 12)
+INSERT [dbo].[CuentasRestaurantes] ([ID], [Email], [Contraseña], [FechaRegistro], [idRestaurante]) VALUES (2, N'hola@vinosdelsur.example.com', N'8fE246ua5AII7mIo6VUvZ6ivUaDOgUyQ', CAST(N'2026-05-10T11:30:00.000' AS DateTime), 2)
+INSERT [dbo].[CuentasRestaurantes] ([ID], [Email], [Contraseña], [FechaRegistro], [idRestaurante]) VALUES (3, N'reservas@asadordonpepe.example.com', N'Ja+LpAIyRndX17POnoB4JrdMzmkbIDyr', CAST(N'2026-05-18T12:15:00.000' AS DateTime), 3)
+INSERT [dbo].[CuentasRestaurantes] ([ID], [Email], [Contraseña], [FechaRegistro], [idRestaurante]) VALUES (4, N'info@sushibarnami.example.com', N'kh5p69oiw9p90lYTSyWzmEkRCKUqHtBc', CAST(N'2026-06-01T09:40:00.000' AS DateTime), 4)
+INSERT [dbo].[CuentasRestaurantes] ([ID], [Email], [Contraseña], [FechaRegistro], [idRestaurante]) VALUES (5, N'hola@trattoriabellini.example.com', N'AjuCLHZ8/znh/rnJs6bMi2IDIhkb+poA', CAST(N'2026-06-12T16:20:00.000' AS DateTime), 5)
+INSERT [dbo].[CuentasRestaurantes] ([ID], [Email], [Contraseña], [FechaRegistro], [idRestaurante]) VALUES (6, N'contacto@huertaalmagro.example.com', N'34IDFHukWwmh13hDTDhg8QtH6fn3Aua4', CAST(N'2026-06-25T10:05:00.000' AS DateTime), 6)
+INSERT [dbo].[CuentasRestaurantes] ([ID], [Email], [Contraseña], [FechaRegistro], [idRestaurante]) VALUES (7, N'elpibe@bodegonelpibe.example.com', N'8P1CXDPqGp9TROcaQl73h+CVKgRk4oML', CAST(N'2026-07-03T13:50:00.000' AS DateTime), 7)
+INSERT [dbo].[CuentasRestaurantes] ([ID], [Email], [Contraseña], [FechaRegistro], [idRestaurante]) VALUES (8, N'hola@cafeparadiso.example.com', N'80GRy4OaaWhEp9eNUU6tHR/5n2lKPHSl', CAST(N'2026-07-15T08:45:00.000' AS DateTime), 8)
+INSERT [dbo].[CuentasRestaurantes] ([ID], [Email], [Contraseña], [FechaRegistro], [idRestaurante]) VALUES (9, N'info@shawarmabeirut.example.com', N'1X0FMc+z4KFwkG1BrZRtcpC8h6R6cKlg', CAST(N'2026-07-28T17:10:00.000' AS DateTime), 9)
+INSERT [dbo].[CuentasRestaurantes] ([ID], [Email], [Contraseña], [FechaRegistro], [idRestaurante]) VALUES (10, N'birra@cervecerialupulo.example.com', N'jr7er/PI+1rgL6TXalbcKvnDMEqBOk/9', CAST(N'2026-08-09T18:30:00.000' AS DateTime), 10)
+INSERT [dbo].[CuentasRestaurantes] ([ID], [Email], [Contraseña], [FechaRegistro], [idRestaurante]) VALUES (11, N'hola@lafugazza.example.com', N'8qtS7ymCvkfSKfj8+Q8csHGc37BWchYU', CAST(N'2026-08-20T12:00:00.000' AS DateTime), 11)
+INSERT [dbo].[CuentasRestaurantes] ([ID], [Email], [Contraseña], [FechaRegistro], [idRestaurante]) VALUES (12, N'info@nievepura.example.com', N'NVLUXzp/ewsm2X7ef0I0Uxf4YGzqK/Nq', CAST(N'2026-09-02T15:30:00.000' AS DateTime), 12)
 SET IDENTITY_INSERT [dbo].[CuentasRestaurantes] OFF
 GO
 SET IDENTITY_INSERT [dbo].[Favoritos] ON 
 
-INSERT [dbo].[Favoritos] ([ID], [idRestaurante], [idUsuario]) VALUES (1, 1, 1)
-INSERT [dbo].[Favoritos] ([ID], [idRestaurante], [idUsuario]) VALUES (2, 1, 2)
 INSERT [dbo].[Favoritos] ([ID], [idRestaurante], [idUsuario]) VALUES (3, 2, 4)
 INSERT [dbo].[Favoritos] ([ID], [idRestaurante], [idUsuario]) VALUES (4, 3, 2)
 INSERT [dbo].[Favoritos] ([ID], [idRestaurante], [idUsuario]) VALUES (5, 4, 1)
@@ -588,12 +627,12 @@ SET IDENTITY_INSERT [dbo].[Mensajes] OFF
 GO
 SET IDENTITY_INSERT [dbo].[Planes] ON 
 
-INSERT [dbo].[Planes] ([ID], [Titulo], [FechaCierreVotacion], [FechaSalida], [Estado], [idGrupo], [idRestauranteElegido], [idUsuarioCreador]) VALUES (1, N'Cena de cumpleaños de Sofi', CAST(N'2026-10-23T20:00:00.000' AS DateTime), CAST(N'2026-10-24T21:00:00.000' AS DateTime), 1, 1, 1, 1)
+INSERT [dbo].[Planes] ([ID], [Titulo], [FechaCierreVotacion], [FechaSalida], [Estado], [idGrupo], [idRestauranteElegido], [idUsuarioCreador]) VALUES (1, N'Cena de cumpleaños de Sofi', CAST(N'2026-10-23T20:00:00.000' AS DateTime), CAST(N'2026-10-24T21:00:00.000' AS DateTime), 0, 1, NULL, 1)
 INSERT [dbo].[Planes] ([ID], [Titulo], [FechaCierreVotacion], [FechaSalida], [Estado], [idGrupo], [idRestauranteElegido], [idUsuarioCreador]) VALUES (2, N'Asado de fin de año', CAST(N'2026-12-10T20:00:00.000' AS DateTime), CAST(N'2026-12-12T21:00:00.000' AS DateTime), 0, 1, NULL, 2)
 INSERT [dbo].[Planes] ([ID], [Titulo], [FechaCierreVotacion], [FechaSalida], [Estado], [idGrupo], [idRestauranteElegido], [idUsuarioCreador]) VALUES (3, N'Sushi de los jueves', CAST(N'2026-11-11T18:00:00.000' AS DateTime), CAST(N'2026-11-12T21:00:00.000' AS DateTime), 0, 5, NULL, 3)
 INSERT [dbo].[Planes] ([ID], [Titulo], [FechaCierreVotacion], [FechaSalida], [Estado], [idGrupo], [idRestauranteElegido], [idUsuarioCreador]) VALUES (4, N'Brunch de cumple de Martina', CAST(N'2026-09-26T20:00:00.000' AS DateTime), CAST(N'2026-09-27T11:30:00.000' AS DateTime), 1, 2, 8, 5)
 INSERT [dbo].[Planes] ([ID], [Titulo], [FechaCierreVotacion], [FechaSalida], [Estado], [idGrupo], [idRestauranteElegido], [idUsuarioCreador]) VALUES (5, N'After del viernes', CAST(N'2026-10-08T18:00:00.000' AS DateTime), CAST(N'2026-10-09T20:00:00.000' AS DateTime), 1, 3, 10, 6)
-INSERT [dbo].[Planes] ([ID], [Titulo], [FechaCierreVotacion], [FechaSalida], [Estado], [idGrupo], [idRestauranteElegido], [idUsuarioCreador]) VALUES (6, N'Degustación en Cañuelas', CAST(N'2026-08-27T20:00:00.000' AS DateTime), CAST(N'2026-08-29T13:00:00.000' AS DateTime), 1, 4, 1, 2)
+INSERT [dbo].[Planes] ([ID], [Titulo], [FechaCierreVotacion], [FechaSalida], [Estado], [idGrupo], [idRestauranteElegido], [idUsuarioCreador]) VALUES (6, N'Degustación en Cañuelas', CAST(N'2026-08-27T20:00:00.000' AS DateTime), CAST(N'2026-08-29T13:00:00.000' AS DateTime), 0, 4, NULL, 2)
 INSERT [dbo].[Planes] ([ID], [Titulo], [FechaCierreVotacion], [FechaSalida], [Estado], [idGrupo], [idRestauranteElegido], [idUsuarioCreador]) VALUES (7, N'Cena del cumple de Fran', CAST(N'2026-09-17T20:00:00.000' AS DateTime), CAST(N'2026-09-19T21:00:00.000' AS DateTime), 1, 10, 7, 4)
 INSERT [dbo].[Planes] ([ID], [Titulo], [FechaCierreVotacion], [FechaSalida], [Estado], [idGrupo], [idRestauranteElegido], [idUsuarioCreador]) VALUES (8, N'Brunch dominguero', CAST(N'2026-11-13T20:00:00.000' AS DateTime), CAST(N'2026-11-15T11:00:00.000' AS DateTime), 0, 6, NULL, 9)
 INSERT [dbo].[Planes] ([ID], [Titulo], [FechaCierreVotacion], [FechaSalida], [Estado], [idGrupo], [idRestauranteElegido], [idUsuarioCreador]) VALUES (9, N'Tercer tiempo', CAST(N'2026-10-26T18:00:00.000' AS DateTime), CAST(N'2026-10-27T21:30:00.000' AS DateTime), 1, 8, 10, 10)
@@ -602,9 +641,6 @@ SET IDENTITY_INSERT [dbo].[Planes] OFF
 GO
 SET IDENTITY_INSERT [dbo].[PlanesHorarios] ON 
 
-INSERT [dbo].[PlanesHorarios] ([ID], [idPlan], [idRestaurante], [FechaHoraPropuesta]) VALUES (1, 1, 1, CAST(N'2026-10-24T20:30:00.000' AS DateTime))
-INSERT [dbo].[PlanesHorarios] ([ID], [idPlan], [idRestaurante], [FechaHoraPropuesta]) VALUES (2, 1, 1, CAST(N'2026-10-24T21:00:00.000' AS DateTime))
-INSERT [dbo].[PlanesHorarios] ([ID], [idPlan], [idRestaurante], [FechaHoraPropuesta]) VALUES (3, 1, 1, CAST(N'2026-10-24T21:30:00.000' AS DateTime))
 INSERT [dbo].[PlanesHorarios] ([ID], [idPlan], [idRestaurante], [FechaHoraPropuesta]) VALUES (4, 1, 2, CAST(N'2026-10-24T20:30:00.000' AS DateTime))
 INSERT [dbo].[PlanesHorarios] ([ID], [idPlan], [idRestaurante], [FechaHoraPropuesta]) VALUES (5, 1, 2, CAST(N'2026-10-24T21:00:00.000' AS DateTime))
 INSERT [dbo].[PlanesHorarios] ([ID], [idPlan], [idRestaurante], [FechaHoraPropuesta]) VALUES (6, 1, 2, CAST(N'2026-10-24T21:30:00.000' AS DateTime))
@@ -647,9 +683,6 @@ INSERT [dbo].[PlanesHorarios] ([ID], [idPlan], [idRestaurante], [FechaHoraPropue
 INSERT [dbo].[PlanesHorarios] ([ID], [idPlan], [idRestaurante], [FechaHoraPropuesta]) VALUES (43, 5, 10, CAST(N'2026-10-09T19:30:00.000' AS DateTime))
 INSERT [dbo].[PlanesHorarios] ([ID], [idPlan], [idRestaurante], [FechaHoraPropuesta]) VALUES (44, 5, 10, CAST(N'2026-10-09T20:00:00.000' AS DateTime))
 INSERT [dbo].[PlanesHorarios] ([ID], [idPlan], [idRestaurante], [FechaHoraPropuesta]) VALUES (45, 5, 10, CAST(N'2026-10-09T20:30:00.000' AS DateTime))
-INSERT [dbo].[PlanesHorarios] ([ID], [idPlan], [idRestaurante], [FechaHoraPropuesta]) VALUES (46, 6, 1, CAST(N'2026-08-29T12:30:00.000' AS DateTime))
-INSERT [dbo].[PlanesHorarios] ([ID], [idPlan], [idRestaurante], [FechaHoraPropuesta]) VALUES (47, 6, 1, CAST(N'2026-08-29T13:00:00.000' AS DateTime))
-INSERT [dbo].[PlanesHorarios] ([ID], [idPlan], [idRestaurante], [FechaHoraPropuesta]) VALUES (48, 6, 1, CAST(N'2026-08-29T13:30:00.000' AS DateTime))
 INSERT [dbo].[PlanesHorarios] ([ID], [idPlan], [idRestaurante], [FechaHoraPropuesta]) VALUES (49, 6, 2, CAST(N'2026-08-29T12:30:00.000' AS DateTime))
 INSERT [dbo].[PlanesHorarios] ([ID], [idPlan], [idRestaurante], [FechaHoraPropuesta]) VALUES (50, 6, 2, CAST(N'2026-08-29T13:00:00.000' AS DateTime))
 INSERT [dbo].[PlanesHorarios] ([ID], [idPlan], [idRestaurante], [FechaHoraPropuesta]) VALUES (51, 6, 2, CAST(N'2026-08-29T13:30:00.000' AS DateTime))
@@ -683,9 +716,6 @@ INSERT [dbo].[PlanesHorarios] ([ID], [idPlan], [idRestaurante], [FechaHoraPropue
 INSERT [dbo].[PlanesHorarios] ([ID], [idPlan], [idRestaurante], [FechaHoraPropuesta]) VALUES (79, 9, 10, CAST(N'2026-10-27T21:00:00.000' AS DateTime))
 INSERT [dbo].[PlanesHorarios] ([ID], [idPlan], [idRestaurante], [FechaHoraPropuesta]) VALUES (80, 9, 10, CAST(N'2026-10-27T21:30:00.000' AS DateTime))
 INSERT [dbo].[PlanesHorarios] ([ID], [idPlan], [idRestaurante], [FechaHoraPropuesta]) VALUES (81, 9, 10, CAST(N'2026-10-27T22:00:00.000' AS DateTime))
-INSERT [dbo].[PlanesHorarios] ([ID], [idPlan], [idRestaurante], [FechaHoraPropuesta]) VALUES (82, 10, 1, CAST(N'2026-11-20T20:00:00.000' AS DateTime))
-INSERT [dbo].[PlanesHorarios] ([ID], [idPlan], [idRestaurante], [FechaHoraPropuesta]) VALUES (83, 10, 1, CAST(N'2026-11-20T20:30:00.000' AS DateTime))
-INSERT [dbo].[PlanesHorarios] ([ID], [idPlan], [idRestaurante], [FechaHoraPropuesta]) VALUES (84, 10, 1, CAST(N'2026-11-20T21:00:00.000' AS DateTime))
 INSERT [dbo].[PlanesHorarios] ([ID], [idPlan], [idRestaurante], [FechaHoraPropuesta]) VALUES (85, 10, 2, CAST(N'2026-11-20T20:00:00.000' AS DateTime))
 INSERT [dbo].[PlanesHorarios] ([ID], [idPlan], [idRestaurante], [FechaHoraPropuesta]) VALUES (86, 10, 2, CAST(N'2026-11-20T20:30:00.000' AS DateTime))
 INSERT [dbo].[PlanesHorarios] ([ID], [idPlan], [idRestaurante], [FechaHoraPropuesta]) VALUES (87, 10, 2, CAST(N'2026-11-20T21:00:00.000' AS DateTime))
@@ -696,7 +726,6 @@ SET IDENTITY_INSERT [dbo].[PlanesHorarios] OFF
 GO
 SET IDENTITY_INSERT [dbo].[PlanesRestaurantes] ON 
 
-INSERT [dbo].[PlanesRestaurantes] ([ID], [idPlan], [idRestaurante]) VALUES (1, 1, 1)
 INSERT [dbo].[PlanesRestaurantes] ([ID], [idPlan], [idRestaurante]) VALUES (2, 1, 2)
 INSERT [dbo].[PlanesRestaurantes] ([ID], [idPlan], [idRestaurante]) VALUES (3, 1, 3)
 INSERT [dbo].[PlanesRestaurantes] ([ID], [idPlan], [idRestaurante]) VALUES (4, 2, 3)
@@ -711,7 +740,6 @@ INSERT [dbo].[PlanesRestaurantes] ([ID], [idPlan], [idRestaurante]) VALUES (10, 
 INSERT [dbo].[PlanesRestaurantes] ([ID], [idPlan], [idRestaurante]) VALUES (15, 5, 7)
 INSERT [dbo].[PlanesRestaurantes] ([ID], [idPlan], [idRestaurante]) VALUES (14, 5, 9)
 INSERT [dbo].[PlanesRestaurantes] ([ID], [idPlan], [idRestaurante]) VALUES (13, 5, 10)
-INSERT [dbo].[PlanesRestaurantes] ([ID], [idPlan], [idRestaurante]) VALUES (16, 6, 1)
 INSERT [dbo].[PlanesRestaurantes] ([ID], [idPlan], [idRestaurante]) VALUES (17, 6, 2)
 INSERT [dbo].[PlanesRestaurantes] ([ID], [idPlan], [idRestaurante]) VALUES (18, 6, 5)
 INSERT [dbo].[PlanesRestaurantes] ([ID], [idPlan], [idRestaurante]) VALUES (21, 7, 3)
@@ -723,16 +751,12 @@ INSERT [dbo].[PlanesRestaurantes] ([ID], [idPlan], [idRestaurante]) VALUES (22, 
 INSERT [dbo].[PlanesRestaurantes] ([ID], [idPlan], [idRestaurante]) VALUES (27, 9, 3)
 INSERT [dbo].[PlanesRestaurantes] ([ID], [idPlan], [idRestaurante]) VALUES (26, 9, 7)
 INSERT [dbo].[PlanesRestaurantes] ([ID], [idPlan], [idRestaurante]) VALUES (25, 9, 10)
-INSERT [dbo].[PlanesRestaurantes] ([ID], [idPlan], [idRestaurante]) VALUES (29, 10, 1)
 INSERT [dbo].[PlanesRestaurantes] ([ID], [idPlan], [idRestaurante]) VALUES (28, 10, 2)
 INSERT [dbo].[PlanesRestaurantes] ([ID], [idPlan], [idRestaurante]) VALUES (30, 10, 5)
 SET IDENTITY_INSERT [dbo].[PlanesRestaurantes] OFF
 GO
 SET IDENTITY_INSERT [dbo].[Reseñas] ON 
 
-INSERT [dbo].[Reseñas] ([ID], [Puntaje], [Comentario], [Foto], [Fecha], [idUsuario], [idRestaurante]) VALUES (1, 5, N'El patio es hermoso y la tabla de quesos con el malbec fue un golazo. Atención de 10.', NULL, CAST(N'2026-11-02T13:20:00.000' AS DateTime), 2, 1)
-INSERT [dbo].[Reseñas] ([ID], [Puntaje], [Comentario], [Foto], [Fecha], [idUsuario], [idRestaurante]) VALUES (2, 5, N'Muy buena opción sin TACC, nos cuidaron mucho. Recomiendo ir temprano.', NULL, CAST(N'2026-10-26T11:00:00.000' AS DateTime), 4, 1)
-INSERT [dbo].[Reseñas] ([ID], [Puntaje], [Comentario], [Foto], [Fecha], [idUsuario], [idRestaurante]) VALUES (3, 4, N'Fuimos por el cumple de Sofi. Lindo lugar, opciones vegetarianas ricas, un poco lejos.', NULL, CAST(N'2026-10-25T10:30:00.000' AS DateTime), 1, 1)
 INSERT [dbo].[Reseñas] ([ID], [Puntaje], [Comentario], [Foto], [Fecha], [idUsuario], [idRestaurante]) VALUES (4, 5, N'La carta de vinos es enorme y te recomiendan bien.', NULL, CAST(N'2026-09-14T23:10:00.000' AS DateTime), 1, 2)
 INSERT [dbo].[Reseñas] ([ID], [Puntaje], [Comentario], [Foto], [Fecha], [idUsuario], [idRestaurante]) VALUES (5, 5, N'Picada abundante y buena música. Volvemos seguro.', NULL, CAST(N'2026-09-20T22:45:00.000' AS DateTime), 3, 2)
 INSERT [dbo].[Reseñas] ([ID], [Puntaje], [Comentario], [Foto], [Fecha], [idUsuario], [idRestaurante]) VALUES (6, 5, N'Ideal para ir con amigas un jueves.', NULL, CAST(N'2026-09-25T21:30:00.000' AS DateTime), 5, 2)
@@ -781,7 +805,6 @@ SET IDENTITY_INSERT [dbo].[Reseñas] OFF
 GO
 SET IDENTITY_INSERT [dbo].[Restaurantes] ON 
 
-INSERT [dbo].[Restaurantes] ([ID], [Nombre], [DireccionCalle], [DireccionNumero], [DireccionCodigoPostal], [Descripcion], [Telefono], [HorarioApertura], [HorarioCerrado], [RangoPrecio], [Foto], [idBarrio], [idCategoria], [EsPro], [SitioWeb], [IdGeoapify], [Latitud], [Longitud], [Origen]) VALUES (1, N'Bodega Los Alamos', N'Av. Libertad', 1250, 1814, N'Bodega boutique con salón de degustación y patio al aire libre. Especialidad en vinos de la región y maridajes con tabla de quesos.', N'+54 11 5555-1234', CAST(N'1900-01-01T12:00:00.000' AS DateTime), CAST(N'1900-01-01T23:00:00.000' AS DateTime), 3, NULL, 11, 1, 1, N'https://ejemplo.com/bodega-los-alamos', NULL, CAST(-35.050900 AS Decimal(9, 6)), CAST(-58.758200 AS Decimal(9, 6)), N'Manual')
 INSERT [dbo].[Restaurantes] ([ID], [Nombre], [DireccionCalle], [DireccionNumero], [DireccionCodigoPostal], [Descripcion], [Telefono], [HorarioApertura], [HorarioCerrado], [RangoPrecio], [Foto], [idBarrio], [idCategoria], [EsPro], [SitioWeb], [IdGeoapify], [Latitud], [Longitud], [Origen]) VALUES (2, N'Vinos del Sur', N'Defensa', 1020, 1065, N'Bar de vinos con más de 200 etiquetas y picadas para compartir.', N'+54 11 4362-1020', CAST(N'1900-01-01T18:00:00.000' AS DateTime), CAST(N'1900-01-01T23:30:00.000' AS DateTime), 3, NULL, 4, 2, 1, N'https://ejemplo.com/vinos-del-sur', NULL, CAST(-34.620500 AS Decimal(9, 6)), CAST(-58.371800 AS Decimal(9, 6)), N'Manual')
 INSERT [dbo].[Restaurantes] ([ID], [Nombre], [DireccionCalle], [DireccionNumero], [DireccionCodigoPostal], [Descripcion], [Telefono], [HorarioApertura], [HorarioCerrado], [RangoPrecio], [Foto], [idBarrio], [idCategoria], [EsPro], [SitioWeb], [IdGeoapify], [Latitud], [Longitud], [Origen]) VALUES (3, N'Asador Don Pepe', N'Av. Pueyrredón', 1720, 1119, N'Parrilla de barrio con cortes a la leña y provoleta.', N'+54 11 4823-1720', CAST(N'1900-01-01T12:00:00.000' AS DateTime), CAST(N'1900-01-01T23:30:00.000' AS DateTime), 3, NULL, 2, 3, 0, NULL, NULL, CAST(-34.590600 AS Decimal(9, 6)), CAST(-58.398600 AS Decimal(9, 6)), N'Manual')
 INSERT [dbo].[Restaurantes] ([ID], [Nombre], [DireccionCalle], [DireccionNumero], [DireccionCodigoPostal], [Descripcion], [Telefono], [HorarioApertura], [HorarioCerrado], [RangoPrecio], [Foto], [idBarrio], [idCategoria], [EsPro], [SitioWeb], [IdGeoapify], [Latitud], [Longitud], [Origen]) VALUES (4, N'Sushi Bar Nami', N'Juramento', 2380, 1428, N'Barra de sushi omakase y rolls de autor.', N'+54 11 4783-2380', CAST(N'1900-01-01T19:30:00.000' AS DateTime), CAST(N'1900-01-01T23:30:00.000' AS DateTime), 4, NULL, 3, 4, 1, N'https://ejemplo.com/sushi-bar-nami', NULL, CAST(-34.561800 AS Decimal(9, 6)), CAST(-58.456900 AS Decimal(9, 6)), N'Manual')
@@ -811,8 +834,6 @@ SET IDENTITY_INSERT [dbo].[Restricciones] OFF
 GO
 SET IDENTITY_INSERT [dbo].[RestriccionesRestaurantes] ON 
 
-INSERT [dbo].[RestriccionesRestaurantes] ([ID], [idRestaurante], [idRestriccion]) VALUES (1, 1, 1)
-INSERT [dbo].[RestriccionesRestaurantes] ([ID], [idRestaurante], [idRestriccion]) VALUES (2, 1, 2)
 INSERT [dbo].[RestriccionesRestaurantes] ([ID], [idRestaurante], [idRestriccion]) VALUES (3, 2, 2)
 INSERT [dbo].[RestriccionesRestaurantes] ([ID], [idRestaurante], [idRestriccion]) VALUES (4, 3, 1)
 INSERT [dbo].[RestriccionesRestaurantes] ([ID], [idRestaurante], [idRestriccion]) VALUES (5, 4, 4)
@@ -846,16 +867,16 @@ SET IDENTITY_INSERT [dbo].[RestriccionesUsuarios] OFF
 GO
 SET IDENTITY_INSERT [dbo].[Usuarios] ON 
 
-INSERT [dbo].[Usuarios] ([ID], [NombreCompleto], [NombreUsuario], [Email], [Contraseña], [FotoPerfil], [Biografía], [FechaRegistro], [idBarrio], [Frecuencia], [SoloApto]) VALUES (1, N'Camila Fernández', N'camilaf', N'camila.fernandez@example.com', N'Bodeglook2026', NULL, N'Vegetariana, fan de las vinotecas y de armar planes con amigos.', CAST(N'2026-02-01T10:00:00.000' AS DateTime), 1, N'Una vez por semana', 0)
-INSERT [dbo].[Usuarios] ([ID], [NombreCompleto], [NombreUsuario], [Email], [Contraseña], [FotoPerfil], [Biografía], [FechaRegistro], [idBarrio], [Frecuencia], [SoloApto]) VALUES (2, N'Julián Pérez', N'julianperez', N'julian.perez@example.com', N'Bodeglook2026', NULL, N'Malbec y tabla de quesos, siempre.', CAST(N'2026-02-03T19:20:00.000' AS DateTime), 2, N'Varias veces por semana', 0)
-INSERT [dbo].[Usuarios] ([ID], [NombreCompleto], [NombreUsuario], [Email], [Contraseña], [FotoPerfil], [Biografía], [FechaRegistro], [idBarrio], [Frecuencia], [SoloApto]) VALUES (3, N'Fran Molina', N'franmolina', N'fran.molina@example.com', N'Bodeglook2026', NULL, N'Sushi los jueves, asado los domingos.', CAST(N'2026-02-08T12:40:00.000' AS DateTime), 3, N'Cada tanto', 0)
-INSERT [dbo].[Usuarios] ([ID], [NombreCompleto], [NombreUsuario], [Email], [Contraseña], [FotoPerfil], [Biografía], [FechaRegistro], [idBarrio], [Frecuencia], [SoloApto]) VALUES (4, N'Sofi Ortega', N'sofiortega', N'sofi.ortega@example.com', N'Bodeglook2026', NULL, N'Celíaca: busco lugares sin TACC de verdad.', CAST(N'2026-02-05T21:15:00.000' AS DateTime), 4, N'Una vez por semana', 1)
-INSERT [dbo].[Usuarios] ([ID], [NombreCompleto], [NombreUsuario], [Email], [Contraseña], [FotoPerfil], [Biografía], [FechaRegistro], [idBarrio], [Frecuencia], [SoloApto]) VALUES (5, N'Martina Giménez', N'martinag', N'martina.gimenez@example.com', N'Bodeglook2026', NULL, N'Brunch lover y cazadora de cafés lindos.', CAST(N'2026-02-11T09:05:00.000' AS DateTime), 5, N'Una vez por semana', 0)
-INSERT [dbo].[Usuarios] ([ID], [NombreCompleto], [NombreUsuario], [Email], [Contraseña], [FotoPerfil], [Biografía], [FechaRegistro], [idBarrio], [Frecuencia], [SoloApto]) VALUES (6, N'Nico Ramos', N'nicoramos', N'nico.ramos@example.com', N'Bodeglook2026', NULL, N'After office y cervezas artesanales.', CAST(N'2026-03-01T18:30:00.000' AS DateTime), 6, N'Varias veces por semana', 0)
-INSERT [dbo].[Usuarios] ([ID], [NombreCompleto], [NombreUsuario], [Email], [Contraseña], [FotoPerfil], [Biografía], [FechaRegistro], [idBarrio], [Frecuencia], [SoloApto]) VALUES (7, N'Lucía Paz', N'lucipaz', N'lucia.paz@example.com', N'Bodeglook2026', NULL, N'Pruebo un lugar nuevo cada semana.', CAST(N'2026-03-10T16:00:00.000' AS DateTime), 7, N'Una vez por semana', 0)
-INSERT [dbo].[Usuarios] ([ID], [NombreCompleto], [NombreUsuario], [Email], [Contraseña], [FotoPerfil], [Biografía], [FechaRegistro], [idBarrio], [Frecuencia], [SoloApto]) VALUES (8, N'Lucía Benítez', N'lucib', N'lucia.benitez@example.com', N'Bodeglook2026', NULL, N'Vegana hace cinco años.', CAST(N'2026-03-15T11:25:00.000' AS DateTime), 8, N'Cada tanto', 1)
-INSERT [dbo].[Usuarios] ([ID], [NombreCompleto], [NombreUsuario], [Email], [Contraseña], [FotoPerfil], [Biografía], [FechaRegistro], [idBarrio], [Frecuencia], [SoloApto]) VALUES (9, N'Delfina Castro', N'delficastro', N'delfina.castro@example.com', N'Bodeglook2026', NULL, N'Organizo el viaje a Mendoza, pregúntenme por bodegas.', CAST(N'2026-04-20T14:45:00.000' AS DateTime), 9, N'Cada tanto', 0)
-INSERT [dbo].[Usuarios] ([ID], [NombreCompleto], [NombreUsuario], [Email], [Contraseña], [FotoPerfil], [Biografía], [FechaRegistro], [idBarrio], [Frecuencia], [SoloApto]) VALUES (10, N'Tomás Aguirre', N'tomiaguirre', N'tomas.aguirre@example.com', N'Bodeglook2026', NULL, N'Fútbol los martes y después tercer tiempo.', CAST(N'2026-04-02T22:10:00.000' AS DateTime), 10, N'Una vez por semana', 0)
+INSERT [dbo].[Usuarios] ([ID], [NombreCompleto], [NombreUsuario], [Email], [Contraseña], [FotoPerfil], [Biografía], [FechaRegistro], [idBarrio], [Frecuencia], [SoloApto]) VALUES (1, N'Camila Fernández', N'camilaf', N'camila.fernandez@example.com', N'afVs05isWWjCCM/c/KDURJtNbRQNV8dG', NULL, N'Vegetariana, fan de las vinotecas y de armar planes con amigos.', CAST(N'2026-02-01T10:00:00.000' AS DateTime), 1, N'Una vez por semana', 0)
+INSERT [dbo].[Usuarios] ([ID], [NombreCompleto], [NombreUsuario], [Email], [Contraseña], [FotoPerfil], [Biografía], [FechaRegistro], [idBarrio], [Frecuencia], [SoloApto]) VALUES (2, N'Julián Pérez', N'julianperez', N'julian.perez@example.com', N'HIGlRbapNOrwQ9jYvbWq2LBLYHmk1565', NULL, N'Malbec y tabla de quesos, siempre.', CAST(N'2026-02-03T19:20:00.000' AS DateTime), 2, N'Varias veces por semana', 0)
+INSERT [dbo].[Usuarios] ([ID], [NombreCompleto], [NombreUsuario], [Email], [Contraseña], [FotoPerfil], [Biografía], [FechaRegistro], [idBarrio], [Frecuencia], [SoloApto]) VALUES (3, N'Fran Molina', N'franmolina', N'fran.molina@example.com', N'V79s/5zbZJ+LQFqh+VC3b7DcF7GpGhWi', NULL, N'Sushi los jueves, asado los domingos.', CAST(N'2026-02-08T12:40:00.000' AS DateTime), 3, N'Cada tanto', 0)
+INSERT [dbo].[Usuarios] ([ID], [NombreCompleto], [NombreUsuario], [Email], [Contraseña], [FotoPerfil], [Biografía], [FechaRegistro], [idBarrio], [Frecuencia], [SoloApto]) VALUES (4, N'Sofi Ortega', N'sofiortega', N'sofi.ortega@example.com', N'eMMkc0QruxdAVIIHPhB8AK9Dld/nIDpA', NULL, N'Celíaca: busco lugares sin TACC de verdad.', CAST(N'2026-02-05T21:15:00.000' AS DateTime), 4, N'Una vez por semana', 1)
+INSERT [dbo].[Usuarios] ([ID], [NombreCompleto], [NombreUsuario], [Email], [Contraseña], [FotoPerfil], [Biografía], [FechaRegistro], [idBarrio], [Frecuencia], [SoloApto]) VALUES (5, N'Martina Giménez', N'martinag', N'martina.gimenez@example.com', N'2sETeUozBmzWIKdIvpchs0PrNS2y2qp0', NULL, N'Brunch lover y cazadora de cafés lindos.', CAST(N'2026-02-11T09:05:00.000' AS DateTime), 5, N'Una vez por semana', 0)
+INSERT [dbo].[Usuarios] ([ID], [NombreCompleto], [NombreUsuario], [Email], [Contraseña], [FotoPerfil], [Biografía], [FechaRegistro], [idBarrio], [Frecuencia], [SoloApto]) VALUES (6, N'Nico Ramos', N'nicoramos', N'nico.ramos@example.com', N'EMRFo9wpDb+ZIQUHaqkmMro5Hcy8dHe0', NULL, N'After office y cervezas artesanales.', CAST(N'2026-03-01T18:30:00.000' AS DateTime), 6, N'Varias veces por semana', 0)
+INSERT [dbo].[Usuarios] ([ID], [NombreCompleto], [NombreUsuario], [Email], [Contraseña], [FotoPerfil], [Biografía], [FechaRegistro], [idBarrio], [Frecuencia], [SoloApto]) VALUES (7, N'Lucía Paz', N'lucipaz', N'lucia.paz@example.com', N'2vusOuH+kbXdcnvuUnaxn1SnWP6x3Tva', NULL, N'Pruebo un lugar nuevo cada semana.', CAST(N'2026-03-10T16:00:00.000' AS DateTime), 7, N'Una vez por semana', 0)
+INSERT [dbo].[Usuarios] ([ID], [NombreCompleto], [NombreUsuario], [Email], [Contraseña], [FotoPerfil], [Biografía], [FechaRegistro], [idBarrio], [Frecuencia], [SoloApto]) VALUES (8, N'Lucía Benítez', N'lucib', N'lucia.benitez@example.com', N'7uwGQlW4UfVzI8ezh56914JbNo9h0VmQ', NULL, N'Vegana hace cinco años.', CAST(N'2026-03-15T11:25:00.000' AS DateTime), 8, N'Cada tanto', 1)
+INSERT [dbo].[Usuarios] ([ID], [NombreCompleto], [NombreUsuario], [Email], [Contraseña], [FotoPerfil], [Biografía], [FechaRegistro], [idBarrio], [Frecuencia], [SoloApto]) VALUES (9, N'Delfina Castro', N'delficastro', N'delfina.castro@example.com', N'n5MDJ/pz62LPjMEuJDB/dpWw/y2CCoSf', NULL, N'Organizo el viaje a Mendoza, pregúntenme por bodegas.', CAST(N'2026-04-20T14:45:00.000' AS DateTime), 9, N'Cada tanto', 0)
+INSERT [dbo].[Usuarios] ([ID], [NombreCompleto], [NombreUsuario], [Email], [Contraseña], [FotoPerfil], [Biografía], [FechaRegistro], [idBarrio], [Frecuencia], [SoloApto]) VALUES (10, N'Tomás Aguirre', N'tomiaguirre', N'tomas.aguirre@example.com', N'mCbjuXHUTNKvhh6ZXnhncTo4jfFHEhrs', NULL, N'Fútbol los martes y después tercer tiempo.', CAST(N'2026-04-02T22:10:00.000' AS DateTime), 10, N'Una vez por semana', 0)
 SET IDENTITY_INSERT [dbo].[Usuarios] OFF
 GO
 SET IDENTITY_INSERT [dbo].[UsuariosGrupos] ON 
@@ -898,9 +919,6 @@ SET IDENTITY_INSERT [dbo].[UsuariosGrupos] OFF
 GO
 SET IDENTITY_INSERT [dbo].[Votos] ON 
 
-INSERT [dbo].[Votos] ([ID], [idUsuario], [idPlan], [idRestaurante], [idHorarioVotado]) VALUES (1, 1, 1, 1, 2)
-INSERT [dbo].[Votos] ([ID], [idUsuario], [idPlan], [idRestaurante], [idHorarioVotado]) VALUES (2, 4, 1, 1, 2)
-INSERT [dbo].[Votos] ([ID], [idUsuario], [idPlan], [idRestaurante], [idHorarioVotado]) VALUES (3, 2, 1, 1, 2)
 INSERT [dbo].[Votos] ([ID], [idUsuario], [idPlan], [idRestaurante], [idHorarioVotado]) VALUES (4, 3, 1, 2, 6)
 INSERT [dbo].[Votos] ([ID], [idUsuario], [idPlan], [idRestaurante], [idHorarioVotado]) VALUES (5, 2, 2, 3, 11)
 INSERT [dbo].[Votos] ([ID], [idUsuario], [idPlan], [idRestaurante], [idHorarioVotado]) VALUES (6, 1, 2, 3, 12)
@@ -915,8 +933,6 @@ INSERT [dbo].[Votos] ([ID], [idUsuario], [idPlan], [idRestaurante], [idHorarioVo
 INSERT [dbo].[Votos] ([ID], [idUsuario], [idPlan], [idRestaurante], [idHorarioVotado]) VALUES (15, 6, 5, 10, 44)
 INSERT [dbo].[Votos] ([ID], [idUsuario], [idPlan], [idRestaurante], [idHorarioVotado]) VALUES (16, 2, 5, 10, 44)
 INSERT [dbo].[Votos] ([ID], [idUsuario], [idPlan], [idRestaurante], [idHorarioVotado]) VALUES (17, 8, 5, 10, 44)
-INSERT [dbo].[Votos] ([ID], [idUsuario], [idPlan], [idRestaurante], [idHorarioVotado]) VALUES (18, 2, 6, 1, 47)
-INSERT [dbo].[Votos] ([ID], [idUsuario], [idPlan], [idRestaurante], [idHorarioVotado]) VALUES (19, 9, 6, 1, 47)
 INSERT [dbo].[Votos] ([ID], [idUsuario], [idPlan], [idRestaurante], [idHorarioVotado]) VALUES (20, 1, 6, 2, 51)
 INSERT [dbo].[Votos] ([ID], [idUsuario], [idPlan], [idRestaurante], [idHorarioVotado]) VALUES (21, 3, 7, 7, 59)
 INSERT [dbo].[Votos] ([ID], [idUsuario], [idPlan], [idRestaurante], [idHorarioVotado]) VALUES (22, 6, 7, 7, 59)

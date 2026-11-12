@@ -41,15 +41,15 @@ public class LugarGeoapify
     public string? NombreCategoria()
     {
         // Bodegas y vinotecas: "drinks" mezcla comercios de todo tipo, así que ahí se pide además que el nombre hable de vino
-        if (Categorias.Contains("production.winery")) return "Bodega";
+        if (Categorias.Contains("production.winery")) return "Vinoteca";
         if (Categorias.Contains("commercial.food_and_drink.drinks") &&
             Regex.IsMatch(Nombre ?? "", @"vino|vinoteca|vinicola|vinería|wine|bodega|cava|sommelier", RegexOptions.IgnoreCase))
-            return "Bodega";
+            return "Vinoteca";
 
         if (Tiene("catering.restaurant.steak_house", "catering.restaurant.barbecue", "catering.restaurant.argentinian")) return "Parrilla";
         if (Tiene("catering.restaurant.pizza", "catering.fast_food.pizza")) return "Pizzería";
-        if (Tiene("catering.restaurant.italian")) return "Pastas";
-        if (Tiene("catering.restaurant.sushi", "catering.restaurant.japanese")) return "Sushi";
+        if (Tiene("catering.restaurant.italian")) return "Italiana";
+        if (Tiene("catering.restaurant.sushi", "catering.restaurant.japanese")) return "Japonesa";
         if (Tiene("catering.restaurant.mexican", "catering.restaurant.tacos", "catering.restaurant.tex-mex", "catering.fast_food.tacos")) return "Mexicana";
         if (Tiene("catering.restaurant.peruvian")) return "Peruana";
         if (Tiene("catering.restaurant.burger", "catering.fast_food.burger")) return "Hamburguesería";

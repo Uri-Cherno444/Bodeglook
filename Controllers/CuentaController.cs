@@ -61,7 +61,7 @@ public class CuentaController : Controller
     public IActionResult Ingresar([FromBody] Usuarios datos)
     {
         if (string.IsNullOrWhiteSpace(datos.NombreUsuario))
-            return Json(new { ok = false, campo = "usuario", mensaje = "Completá tu usuario o email." });
+            return Json(new { ok = false, campo = "usuario", mensaje = "Completá tu email." });
         if (string.IsNullOrWhiteSpace(datos.Contraseña))
             return Json(new { ok = false, campo = "contrasena", mensaje = "Completá tu contraseña." });
 

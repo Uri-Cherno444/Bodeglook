@@ -12,6 +12,9 @@ public class ResultadoImportacion
     public int SinNombre { get; set; }
     // No encajan en ninguna de nuestras categorías: se saltean
     public int SinCategoria { get; set; }
+    // No se pudieron guardar (un dato no entra en la columna, etc.) y el detalle del primero
+    public int ConError { get; set; }
+    public string? PrimerError { get; set; }
     // Si Geoapify no respondió o se pasó el tope diario
     public string? Aviso { get; set; }
 }
