@@ -18,6 +18,9 @@ public class TarjetaRestaurante
     public double? Puntaje { get; set; }
     public bool EsFavorito { get; set; }
 
+    // Solo para "Recomendado para vos": los puntos de afinidad que calcula el procedimiento ListarRecomendables
+    public int Afinidad { get; set; }
+
     // Para 05 · Descubrir: chip "Recomendado" y pin en el mapa
     public bool EsPro { get; set; }
     // "Manual" o "Geoapify": los de Geoapify llevan los créditos de OpenStreetMap

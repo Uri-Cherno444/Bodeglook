@@ -13,7 +13,7 @@ public static class BD
     {
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            int resultado = conexion.QueryFirst<int>("SELECT 1");
+            int resultado = conexion.QueryFirst<int>("ProbarConexion", commandType: CommandType.StoredProcedure);
             return resultado == 1;
         }
     }
@@ -69,25 +69,25 @@ public static class BD
         }
     }
 
-    // Todas las reseñas que escribió, publicadas o no
+    // Procedimiento ContarResenasUsuario: todas las reseñas que escribió, publicadas o no
     public static int ContarResenasDeUsuario(int idUsuario)
     {
-        string consulta = "SELECT COUNT(*) FROM Reseñas WHERE IdUsuario = @idUsuario";
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            return conexion.QueryFirst<int>(consulta, new { idUsuario });
+            return conexion.QueryFirst<int>("ContarResenasUsuario",
+                new { idUsuario },
+                commandType: CommandType.StoredProcedure);
         }
     }
 
     // ---------- Onboarding (gustos y filtro dietario) ----------
 
-    // Todas las restricciones: son los chips de "Restricciones dietarias"
+    // Procedimiento ListarRestricciones: son los chips de "Restricciones dietarias"
     public static List<Restricciones> ObtenerRestricciones()
     {
-        string consulta = "SELECT Id, Nombre FROM Restricciones ORDER BY Id";
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            return conexion.Query<Restricciones>(consulta).ToList();
+            return conexion.Query<Restricciones>("ListarRestricciones", commandType: CommandType.StoredProcedure).ToList();
         }
     }
 
@@ -109,34 +109,31 @@ public static class BD
         }
     }
 
-    // Los barrios con el centro (Latitud y Longitud), para ubicar los lugares nuevos y armar los límites de la importación
+    // Procedimiento ListarBarriosConCoordenadas: los barrios con el centro (Latitud y Longitud),
+    // para ubicar los lugares nuevos y armar los límites de la importación
     public static List<Barrios> ObtenerBarriosConCoordenadas()
     {
-        string consulta = "SELECT Id, Nombre, Latitud, Longitud FROM Barrios ORDER BY Id";
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            return conexion.Query<Barrios>(consulta).ToList();
+            return conexion.Query<Barrios>("ListarBarriosConCoordenadas", commandType: CommandType.StoredProcedure).ToList();
         }
     }
 
-    // El barrio del perfil del usuario, con su centro. En Descubrir se usa para medir las distancias
-    // cuando el navegador no da la ubicación. null si el usuario no tiene barrio.
+    // Procedimiento ObtenerBarrioUsuario: el barrio del perfil del usuario, con su centro. En Descubrir se usa para
+    // medir las distancias cuando el navegador no da la ubicación. null si el usuario no tiene barrio.
     public static Barrios? ObtenerBarrioDeUsuario(int idUsuario)
     {
-        string consulta = @"
-            SELECT b.Id, b.Nombre, b.Latitud, b.Longitud
-            FROM Usuarios u
-            JOIN Barrios b ON b.Id = u.IdBarrio
-            WHERE u.Id = @idUsuario";
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            return conexion.QueryFirstOrDefault<Barrios>(consulta, new { idUsuario });
+            return conexion.QueryFirstOrDefault<Barrios>("ObtenerBarrioUsuario",
+                new { idUsuario },
+                commandType: CommandType.StoredProcedure);
         }
     }
 
     // ---------- Lugares de Geoapify ----------
 
-    // Guarda un lugar traído de Geoapify. Si ya existe (mismo IdGeoapify) lo actualiza en vez de duplicarlo.
+    // Procedimiento GuardarLugarGeoapify. Guarda un lugar traído de Geoapify. Si ya existe (mismo IdGeoapify) lo actualiza en vez de duplicarlo.
     // Al actualizar no se pisan los datos que se pudieron completar a mano (teléfono, web, foto, descripción, plan Pro).
     // Las columnas que no aceptan NULL y que Geoapify no trae van vacías: '' y 0, y los horarios iguales (= "sin dato").
     // Devuelve true si el lugar era nuevo y false si se actualizó.
@@ -160,33 +157,21 @@ public static class BD
             idCategoria
         };
 
-        string actualizar = @"
-            UPDATE Restaurantes
-            SET Nombre = @Nombre, DireccionCalle = @Calle, DireccionNumero = @Numero, DireccionCodigoPostal = @CodigoPostal,
-                Latitud = @Latitud, Longitud = @Longitud, idBarrio = @idBarrio, idCategoria = @idCategoria
-            WHERE IdGeoapify = @IdGeoapify";
-        string insertar = @"
-            INSERT INTO Restaurantes (Nombre, DireccionCalle, DireccionNumero, DireccionCodigoPostal, Descripcion, Telefono,
-                                      HorarioApertura, HorarioCerrado, RangoPrecio, Foto, idBarrio, idCategoria, EsPro,
-                                      SitioWeb, IdGeoapify, Latitud, Longitud, Origen)
-            VALUES (@Nombre, @Calle, @Numero, @CodigoPostal, '', '',
-                    '19000101', '19000101', 0, NULL, @idBarrio, @idCategoria, 0,
-                    NULL, @IdGeoapify, @Latitud, @Longitud, 'Geoapify')";
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            if (conexion.Execute(actualizar, datos) > 0) return false;
-            conexion.Execute(insertar, datos);
-            return true;
+            return conexion.QueryFirst<bool>("GuardarLugarGeoapify", datos, commandType: CommandType.StoredProcedure);
         }
     }
 
-    // De dónde salió el lugar: "Manual" o "Geoapify" (decide si se muestran los créditos). null si no existe.
+    // Procedimiento ObtenerOrigenRestaurante: de dónde salió el lugar: "Manual" o "Geoapify"
+    // (decide si se muestran los créditos). null si no existe.
     public static string? ObtenerOrigenRestaurante(int idRestaurante)
     {
-        string consulta = "SELECT Origen FROM Restaurantes WHERE Id = @idRestaurante";
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            return conexion.QueryFirstOrDefault<string>(consulta, new { idRestaurante });
+            return conexion.QueryFirstOrDefault<string>("ObtenerOrigenRestaurante",
+                new { idRestaurante },
+                commandType: CommandType.StoredProcedure);
         }
     }
 
@@ -202,83 +187,83 @@ public static class BD
         }
     }
 
-    // Las restricciones que marcó el usuario
+    // Procedimiento ListarRestriccionesUsuario: las restricciones que marcó el usuario
     public static List<Restricciones> ObtenerRestriccionesDeUsuario(int idUsuario)
     {
-        string consulta = @"
-            SELECT re.Id, re.Nombre
-            FROM RestriccionesUsuarios ru
-            JOIN Restricciones re ON re.Id = ru.IdRestricciones
-            WHERE ru.IdUsuario = @idUsuario
-            ORDER BY re.Id";
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            return conexion.Query<Restricciones>(consulta, new { idUsuario }).ToList();
+            return conexion.Query<Restricciones>("ListarRestriccionesUsuario",
+                new { idUsuario },
+                commandType: CommandType.StoredProcedure).ToList();
         }
     }
 
     // ---------- 08c · Editar perfil y gustos ----------
 
-    // Lo que carga el modal Editar perfil: nombre, usuario, foto, barrio, frecuencia y "solo lo apto"
+    // Procedimiento ObtenerDatosEdicionUsuario: lo que carga el modal Editar perfil:
+    // nombre, usuario, foto, barrio, frecuencia y "solo lo apto"
     public static Usuarios? ObtenerDatosEdicion(int idUsuario)
     {
-        string consulta = @"
-            SELECT Id, NombreCompleto, NombreUsuario, FotoPerfil, IdBarrio, Frecuencia, SoloApto
-            FROM Usuarios
-            WHERE Id = @idUsuario";
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            return conexion.QueryFirstOrDefault<Usuarios>(consulta, new { idUsuario });
+            return conexion.QueryFirstOrDefault<Usuarios>("ObtenerDatosEdicionUsuario",
+                new { idUsuario },
+                commandType: CommandType.StoredProcedure);
         }
     }
 
-    // Los Id de los barrios que le interesan al usuario
+    // Procedimiento ListarZonasUsuario: los Id de los barrios que le interesan al usuario
     public static List<int> ObtenerZonasDeUsuario(int idUsuario)
     {
-        string consulta = "SELECT IdBarrio FROM ZonasUsuarios WHERE IdUsuario = @idUsuario ORDER BY IdBarrio";
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            return conexion.Query<int>(consulta, new { idUsuario }).ToList();
+            return conexion.Query<int>("ListarZonasUsuario",
+                new { idUsuario },
+                commandType: CommandType.StoredProcedure).ToList();
         }
     }
 
-    // Con quién sale: "Amigos", "Pareja", etc.
+    // Procedimiento ListarCompaniasUsuario: con quién sale: "Amigos", "Pareja", etc.
     public static List<string> ObtenerCompaniasDeUsuario(int idUsuario)
     {
-        string consulta = "SELECT Compania FROM CompaniasUsuarios WHERE IdUsuario = @idUsuario ORDER BY Id";
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            return conexion.Query<string>(consulta, new { idUsuario }).ToList();
+            return conexion.Query<string>("ListarCompaniasUsuario",
+                new { idUsuario },
+                commandType: CommandType.StoredProcedure).ToList();
         }
     }
 
-    // "Solo lo apto para mí". Si todavía no eligió (null) se muestra todo.
+    // Procedimiento ObtenerSoloAptoUsuario: "Solo lo apto para mí". Si todavía no eligió (null) se muestra todo.
     public static bool ObtenerSoloApto(int idUsuario)
     {
-        string consulta = "SELECT SoloApto FROM Usuarios WHERE Id = @idUsuario";
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            return conexion.QueryFirstOrDefault<bool?>(consulta, new { idUsuario }) == true;
+            return conexion.QueryFirstOrDefault<bool?>("ObtenerSoloAptoUsuario",
+                new { idUsuario },
+                commandType: CommandType.StoredProcedure) == true;
         }
     }
 
-    // Paso 2 del onboarding (02d): guarda "Solo lo apto para mí" (true) o "Ver todo" (false)
+    // Procedimiento GuardarSoloApto. Paso 2 del onboarding (02d): guarda "Solo lo apto para mí" (true) o "Ver todo" (false)
     public static void GuardarSoloApto(int idUsuario, bool soloApto)
     {
-        string consulta = "UPDATE Usuarios SET SoloApto = @soloApto WHERE Id = @idUsuario";
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            conexion.Execute(consulta, new { idUsuario, soloApto });
+            conexion.Execute("GuardarSoloApto",
+                new { idUsuario, soloApto },
+                commandType: CommandType.StoredProcedure);
         }
     }
 
-    // true si otro usuario (no el idUsuario) ya tiene ese nombre de usuario
+    // Procedimiento ExisteNombreUsuario: true si otro usuario (no el idUsuario) ya tiene ese nombre de usuario
     public static bool ExisteNombreUsuario(string nombreUsuario, int idUsuario)
     {
-        string consulta = "SELECT COUNT(*) FROM Usuarios WHERE NombreUsuario = @nombreUsuario AND Id <> @idUsuario";
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            return conexion.QueryFirst<int>(consulta, new { nombreUsuario, idUsuario }) > 0;
+            return conexion.QueryFirst<bool>("ExisteNombreUsuario",
+                new { nombreUsuario, idUsuario },
+                commandType: CommandType.StoredProcedure);
         }
     }
 
@@ -306,13 +291,11 @@ public static class BD
             conexion.Open();
             using (SqlTransaction transaccion = conexion.BeginTransaction())
             {
-                string consulta = @"
-                    UPDATE Usuarios
-                    SET NombreCompleto = @nombreCompleto, NombreUsuario = @nombreUsuario, IdBarrio = @idBarrio,
-                        FotoPerfil = ISNULL(@fotoNueva, FotoPerfil), SoloApto = @soloApto
-                    WHERE Id = @idUsuario";
-                conexion.Execute(consulta,
-                    new { idUsuario, nombreCompleto, nombreUsuario, idBarrio, fotoNueva, soloApto }, transaccion);
+                // Procedimiento GuardarDatosPerfilUsuario
+                conexion.Execute("GuardarDatosPerfilUsuario",
+                    new { idUsuario, nombreCompleto, nombreUsuario, idBarrio, fotoNueva, soloApto },
+                    transaccion,
+                    commandType: CommandType.StoredProcedure);
                 GuardarGustosEnTransaccion(conexion, transaccion, idUsuario, gustos);
                 transaccion.Commit();
             }
@@ -322,28 +305,35 @@ public static class BD
     // Borra lo que tenía el usuario y guarda lo nuevo (las 4 listas de gustos)
     private static void GuardarGustosEnTransaccion(SqlConnection conexion, SqlTransaction transaccion, int idUsuario, DatosGustos gustos)
     {
-        conexion.Execute("UPDATE Usuarios SET Frecuencia = @frecuencia WHERE Id = @idUsuario",
-            new { idUsuario, frecuencia = gustos.Frecuencia }, transaccion);
+        conexion.Execute("GuardarFrecuenciaUsuario",
+            new { idUsuario, frecuencia = gustos.Frecuencia }, transaccion,
+            commandType: CommandType.StoredProcedure);
 
-        conexion.Execute("DELETE FROM RestriccionesUsuarios WHERE IdUsuario = @idUsuario", new { idUsuario }, transaccion);
+        conexion.Execute("BorrarRestriccionesUsuario", new { idUsuario }, transaccion,
+            commandType: CommandType.StoredProcedure);
         foreach (int idRestriccion in gustos.Restricciones)
         {
-            conexion.Execute("INSERT INTO RestriccionesUsuarios (IdUsuario, IdRestricciones) VALUES (@idUsuario, @idRestriccion)",
-                new { idUsuario, idRestriccion }, transaccion);
+            conexion.Execute("AgregarRestriccionUsuario",
+                new { idUsuario, idRestriccion }, transaccion,
+                commandType: CommandType.StoredProcedure);
         }
 
-        conexion.Execute("DELETE FROM ZonasUsuarios WHERE IdUsuario = @idUsuario", new { idUsuario }, transaccion);
+        conexion.Execute("BorrarZonasUsuario", new { idUsuario }, transaccion,
+            commandType: CommandType.StoredProcedure);
         foreach (int idBarrio in gustos.Zonas)
         {
-            conexion.Execute("INSERT INTO ZonasUsuarios (IdUsuario, IdBarrio) VALUES (@idUsuario, @idBarrio)",
-                new { idUsuario, idBarrio }, transaccion);
+            conexion.Execute("AgregarZonaUsuario",
+                new { idUsuario, idBarrio }, transaccion,
+                commandType: CommandType.StoredProcedure);
         }
 
-        conexion.Execute("DELETE FROM CompaniasUsuarios WHERE IdUsuario = @idUsuario", new { idUsuario }, transaccion);
+        conexion.Execute("BorrarCompaniasUsuario", new { idUsuario }, transaccion,
+            commandType: CommandType.StoredProcedure);
         foreach (string compania in gustos.Companias)
         {
-            conexion.Execute("INSERT INTO CompaniasUsuarios (IdUsuario, Compania) VALUES (@idUsuario, @compania)",
-                new { idUsuario, compania }, transaccion);
+            conexion.Execute("AgregarCompaniaUsuario",
+                new { idUsuario, compania }, transaccion,
+                commandType: CommandType.StoredProcedure);
         }
     }
 
@@ -369,41 +359,19 @@ public static class BD
         return ObtenerIntegrantesDeGrupo(idGrupo).Any(integrante => integrante.Id == idUsuario);
     }
 
-    // Los grupos del usuario (procedimiento ListarGruposUsuario) con la fecha del último mensaje
+    // Los grupos del usuario con la fecha del último mensaje
     // y cuántos mensajes no leyó (usa UsuariosGrupos.UltimaLectura).
     public static List<ResumenChat> ObtenerChatsDeUsuario(int idUsuario)
     {
-        List<Grupos> grupos;
-        List<ResumenChat> chats = new List<ResumenChat>();
+        // Procedimiento ListarChatsUsuario: trae cada grupo con la fecha de su último mensaje y los no leídos
+        // (mensajes de otros posteriores a su UltimaLectura). El chat con el mensaje más nuevo va primero.
+        List<ResumenChat> chats;
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            grupos = conexion.Query<Grupos>("ListarGruposUsuario",
+            chats = conexion.Query<ResumenChat>("ListarChatsUsuario",
                 new { idUsuario },
                 commandType: CommandType.StoredProcedure).ToList();
-
-            foreach (Grupos grupo in grupos)
-            {
-                ResumenChat chat = new ResumenChat();
-                chat.IdGrupo = grupo.Id;
-                chat.Nombre = grupo.Nombre;
-                chat.Foto = grupo.Foto;
-                chat.UltimaFecha = conexion.QueryFirst<DateTime?>(
-                    "SELECT MAX(FechaHora) FROM Mensajes WHERE idGrupo = @idGrupo",
-                    new { idGrupo = grupo.Id });
-                // No leídos = mensajes de otros posteriores a su UltimaLectura
-                chat.NoLeidos = conexion.QueryFirst<int>(@"
-                    SELECT COUNT(*) FROM Mensajes m
-                    JOIN UsuariosGrupos ug ON ug.idGrupo = m.idGrupo AND ug.idUsuario = @idUsuario
-                    WHERE m.idGrupo = @idGrupo AND m.idUsuario <> @idUsuario
-                      AND (ug.UltimaLectura IS NULL OR m.FechaHora > ug.UltimaLectura)",
-                    new { idGrupo = grupo.Id, idUsuario });
-                chat.FechaOrden = chat.UltimaFecha ?? grupo.FechaCreacion;
-                chats.Add(chat);
-            }
         }
-
-        // El chat con el mensaje más nuevo va primero
-        chats = chats.OrderByDescending(chat => chat.FechaOrden).ToList();
 
         // Debajo del nombre del grupo van los integrantes: "Cami, Sofi, yo"
         foreach (ResumenChat chat in chats)
@@ -419,60 +387,60 @@ public static class BD
         return chats;
     }
 
+    // Procedimiento ObtenerGrupo
     public static Grupos? ObtenerGrupo(int idGrupo)
     {
-        string consulta = "SELECT Id, Nombre, Foto, FechaCreacion FROM Grupos WHERE Id = @idGrupo";
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            return conexion.QueryFirstOrDefault<Grupos>(consulta, new { idGrupo });
+            return conexion.QueryFirstOrDefault<Grupos>("ObtenerGrupo",
+                new { idGrupo },
+                commandType: CommandType.StoredProcedure);
         }
     }
 
-    // Los mensajes del grupo con Id mayor a desdeId, del más viejo al más nuevo.
+    // Procedimiento ListarMensajesGrupo: los mensajes del grupo con Id mayor a desdeId, del más viejo al más nuevo.
     // Con desdeId = 0 trae todos; el chat después pide solo los nuevos.
     public static List<MensajeChat> ObtenerMensajes(int idGrupo, int desdeId)
     {
-        string consulta = @"
-            SELECT m.Id, m.Contenido, m.FechaHora, m.IdUsuario, u.NombreCompleto, u.FotoPerfil, m.IdPlan
-            FROM Mensajes m
-            JOIN Usuarios u ON u.Id = m.IdUsuario
-            WHERE m.IdGrupo = @idGrupo AND m.Id > @desdeId
-            ORDER BY m.Id";
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            return conexion.Query<MensajeChat>(consulta, new { idGrupo, desdeId }).ToList();
+            return conexion.Query<MensajeChat>("ListarMensajesGrupo",
+                new { idGrupo, desdeId },
+                commandType: CommandType.StoredProcedure).ToList();
         }
     }
 
+    // Procedimiento GuardarMensaje
     public static void GuardarMensaje(int idGrupo, int idUsuario, string contenido)
     {
-        string consulta = @"
-            INSERT INTO Mensajes (Contenido, FechaHora, IdGrupo, IdUsuario)
-            VALUES (@contenido, GETDATE(), @idGrupo, @idUsuario)";
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            conexion.Execute(consulta, new { contenido, idGrupo, idUsuario });
+            conexion.Execute("GuardarMensaje",
+                new { contenido, idGrupo, idUsuario },
+                commandType: CommandType.StoredProcedure);
         }
     }
 
-    // Al abrir el chat (y cada vez que llegan mensajes con el chat abierto) sus no leídos quedan en cero
+    // Procedimiento MarcarGrupoLeido: al abrir el chat (y cada vez que llegan mensajes con el chat abierto)
+    // sus no leídos quedan en cero
     public static void MarcarComoLeido(int idUsuario, int idGrupo)
     {
-        string consulta = "UPDATE UsuariosGrupos SET UltimaLectura = GETDATE() WHERE IdUsuario = @idUsuario AND IdGrupo = @idGrupo";
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            conexion.Execute(consulta, new { idUsuario, idGrupo });
+            conexion.Execute("MarcarGrupoLeido",
+                new { idUsuario, idGrupo },
+                commandType: CommandType.StoredProcedure);
         }
     }
 
-    // Crea el grupo con el creador y los integrantes que sumó. Devuelve el Id nuevo.
+    // Procedimiento CrearGrupo: crea el grupo con el creador y los integrantes que sumó. Devuelve el Id nuevo.
     public static int CrearGrupo(string nombre, int idCreador, List<int> idsIntegrantes)
     {
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            int idGrupo = conexion.QueryFirst<int>(
-                "INSERT INTO Grupos (Nombre, FechaCreacion) OUTPUT INSERTED.Id VALUES (@nombre, GETDATE())",
-                new { nombre });
+            int idGrupo = Convert.ToInt32(conexion.QueryFirst<decimal>("CrearGrupo",
+                new { nombre },
+                commandType: CommandType.StoredProcedure));
 
             // Procedimiento AgregarUsuarioAGrupo: el creador y cada integrante
             conexion.Execute("AgregarUsuarioAGrupo",
@@ -490,25 +458,23 @@ public static class BD
 
     public static void ActualizarFotoGrupo(int idGrupo, string foto)
     {
-        string consulta = "UPDATE Grupos SET Foto = @foto WHERE Id = @idGrupo";
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            conexion.Execute(consulta, new { foto, idGrupo });
+            conexion.Execute("ActualizarFotoGrupo",
+                new { foto, idGrupo },
+                commandType: CommandType.StoredProcedure);
         }
     }
 
-    // "Sumá amigos": las amistades todavía no tienen tabla en la base,
+    // Procedimiento ListarOtrosUsuarios. "Sumá amigos": las amistades todavía no tienen tabla en la base,
     // así que por ahora se puede sumar a cualquier otro usuario registrado.
     public static List<Usuarios> ObtenerOtrosUsuarios(int idUsuario)
     {
-        string consulta = @"
-            SELECT Id, NombreCompleto, NombreUsuario
-            FROM Usuarios
-            WHERE Id <> @idUsuario
-            ORDER BY NombreCompleto";
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            return conexion.Query<Usuarios>(consulta, new { idUsuario }).ToList();
+            return conexion.Query<Usuarios>("ListarOtrosUsuarios",
+                new { idUsuario },
+                commandType: CommandType.StoredProcedure).ToList();
         }
     }
 
@@ -519,19 +485,13 @@ public static class BD
     // La tarjeta muestra el texto del chip, por eso la consulta lo devuelve ya escrito.
     public static List<TarjetaPlan> ObtenerPlanesDeUsuario(int idUsuario, bool? confirmado)
     {
-        string consulta = @"
-            SELECT p.Id, p.Titulo, p.IdGrupo, p.IdRestauranteElegido, r.Nombre AS LugarElegido,
-                   CASE WHEN p.Estado = 1 THEN 'Confirmado' ELSE 'En votación' END AS Estado,
-                   (SELECT COUNT(*) FROM PlanesRestaurantes WHERE IdPlan = p.Id) AS CantidadLugares
-            FROM Planes p
-            JOIN UsuariosGrupos ug ON ug.IdGrupo = p.IdGrupo AND ug.IdUsuario = @idUsuario
-            LEFT JOIN Restaurantes r ON r.Id = p.IdRestauranteElegido
-            WHERE p.Estado <> 2 AND (@confirmado IS NULL OR p.Estado = @confirmado)
-            ORDER BY p.Id DESC";
+        // Procedimiento ListarPlanesUsuario
         List<TarjetaPlan> planes;
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            planes = conexion.Query<TarjetaPlan>(consulta, new { idUsuario, confirmado }).ToList();
+            planes = conexion.Query<TarjetaPlan>("ListarPlanesUsuario",
+                new { idUsuario, confirmado },
+                commandType: CommandType.StoredProcedure).ToList();
         }
 
         // Abajo a la derecha de la tarjeta van las iniciales de los otros integrantes del grupo
@@ -548,38 +508,34 @@ public static class BD
     // El contador "planes en votación" del banner de Inicio: los de todos los grupos del usuario
     public static int ContarPlanesEnVotacion(int idUsuario)
     {
-        string consulta = @"
-            SELECT COUNT(*)
-            FROM Planes p
-            JOIN UsuariosGrupos ug ON ug.IdGrupo = p.IdGrupo AND ug.IdUsuario = @idUsuario
-            WHERE p.Estado = 0";
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            return conexion.QueryFirst<int>(consulta, new { idUsuario });
+            return conexion.QueryFirst<int>("ContarPlanesVotacionUsuario",
+                new { idUsuario },
+                commandType: CommandType.StoredProcedure);
         }
     }
 
-    // El contador "amigos" del banner de Inicio. Las amistades no tienen tabla en la base,
-    // así que cuenta las personas distintas que comparten algún grupo con el usuario.
+    // Procedimiento ContarAmigosUsuario: el contador "amigos" del banner de Inicio. Las amistades no tienen tabla
+    // en la base, así que cuenta las personas distintas que comparten algún grupo con el usuario.
     public static int ContarAmigos(int idUsuario)
     {
-        string consulta = @"
-            SELECT COUNT(DISTINCT otros.IdUsuario)
-            FROM UsuariosGrupos mios
-            JOIN UsuariosGrupos otros ON otros.IdGrupo = mios.IdGrupo AND otros.IdUsuario <> mios.IdUsuario
-            WHERE mios.IdUsuario = @idUsuario";
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            return conexion.QueryFirst<int>(consulta, new { idUsuario });
+            return conexion.QueryFirst<int>("ContarAmigosUsuario",
+                new { idUsuario },
+                commandType: CommandType.StoredProcedure);
         }
     }
 
+    // Procedimiento ObtenerPlan
     public static Planes? ObtenerPlan(int idPlan)
     {
-        string consulta = "SELECT * FROM Planes WHERE Id = @idPlan";
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            return conexion.QueryFirstOrDefault<Planes>(consulta, new { idPlan });
+            return conexion.QueryFirstOrDefault<Planes>("ObtenerPlan",
+                new { idPlan },
+                commandType: CommandType.StoredProcedure);
         }
     }
 
@@ -589,62 +545,24 @@ public static class BD
     // con la primera fila de esa hora (MIN(Id)) y sus votos se cuentan por hora.
     public static EncuestaPlan? ObtenerEncuesta(int idPlan, int idUsuario)
     {
-        string consultaPlan = @"
-            SELECT p.Id, p.Titulo, p.Estado, p.FechaSalida, p.IdGrupo, g.Nombre AS NombreGrupo,
-                   p.IdUsuarioCreador AS IdCreador, u.NombreCompleto AS NombreCreador, p.IdRestauranteElegido,
-                   (SELECT COUNT(*) FROM UsuariosGrupos WHERE IdGrupo = p.IdGrupo) AS CantidadIntegrantes,
-                   (SELECT IdRestaurante FROM Votos WHERE IdPlan = p.Id AND IdUsuario = @idUsuario) AS MiVoto,
-                   (SELECT MIN(ph.Id) FROM Votos v
-                    JOIN PlanesHorarios votado ON votado.Id = v.IdHorarioVotado
-                    JOIN PlanesHorarios ph ON ph.IdPlan = v.IdPlan AND ph.FechaHoraPropuesta = votado.FechaHoraPropuesta
-                    WHERE v.IdPlan = p.Id AND v.IdUsuario = @idUsuario) AS MiVotoHorario
-            FROM Planes p
-            JOIN Grupos g ON g.Id = p.IdGrupo
-            LEFT JOIN Usuarios u ON u.Id = p.IdUsuarioCreador
-            WHERE p.Id = @idPlan";
-        // Los lugares en el orden en que se propusieron
-        string consultaOpciones = @"
-            SELECT r.Id AS IdRestaurante, r.Nombre, r.Foto, c.Nombre AS Categoria, b.Nombre AS Barrio, r.SitioWeb,
-                   (SELECT COUNT(*) FROM Votos WHERE IdPlan = pr.IdPlan AND IdRestaurante = r.Id) AS Votos
-            FROM PlanesRestaurantes pr
-            JOIN Restaurantes r ON r.Id = pr.IdRestaurante
-            LEFT JOIN Categorias c ON c.Id = r.IdCategoria
-            LEFT JOIN Barrios b ON b.Id = r.IdBarrio
-            WHERE pr.IdPlan = @idPlan
-            ORDER BY pr.Id";
-        // Los horarios de más temprano a más tarde
-        string consultaHorarios = @"
-            SELECT MIN(ph.Id) AS IdHorario, ph.FechaHoraPropuesta,
-                   (SELECT COUNT(*) FROM Votos v
-                    JOIN PlanesHorarios votado ON votado.Id = v.IdHorarioVotado
-                    WHERE v.IdPlan = @idPlan AND votado.FechaHoraPropuesta = ph.FechaHoraPropuesta) AS Votos
-            FROM PlanesHorarios ph
-            WHERE ph.IdPlan = @idPlan
-            GROUP BY ph.FechaHoraPropuesta
-            ORDER BY ph.FechaHoraPropuesta";
-        // Todos los integrantes del grupo con su voto de lugar y de horario (null si no votaron).
-        // Primero el que organiza y después por nombre.
-        string consultaParticipantes = @"
-            SELECT u.Id AS IdUsuario, u.NombreCompleto,
-                   v.IdRestaurante AS IdLugarVotado, r.Nombre AS LugarVotado,
-                   (SELECT MIN(ph.Id) FROM PlanesHorarios ph
-                    WHERE ph.IdPlan = p.Id AND ph.FechaHoraPropuesta = votado.FechaHoraPropuesta) AS IdHorarioVotado,
-                   votado.FechaHoraPropuesta AS HorarioVotado
-            FROM Planes p
-            JOIN UsuariosGrupos ug ON ug.IdGrupo = p.IdGrupo
-            JOIN Usuarios u ON u.Id = ug.IdUsuario
-            LEFT JOIN Votos v ON v.IdPlan = p.Id AND v.IdUsuario = u.Id
-            LEFT JOIN Restaurantes r ON r.Id = v.IdRestaurante
-            LEFT JOIN PlanesHorarios votado ON votado.Id = v.IdHorarioVotado
-            WHERE p.Id = @idPlan
-            ORDER BY CASE WHEN u.Id = p.IdUsuarioCreador THEN 0 ELSE 1 END, u.NombreCompleto";
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            EncuestaPlan? encuesta = conexion.QueryFirstOrDefault<EncuestaPlan>(consultaPlan, new { idPlan, idUsuario });
+            // Procedimientos ObtenerEncuestaPlan (el plan), ListarOpcionesPlan (los lugares, en el orden en que se
+            // propusieron), ListarHorariosPlan (de más temprano a más tarde) y ListarParticipantesPlan
+            // (todos los integrantes del grupo con su voto de lugar y de horario; primero el que organiza)
+            EncuestaPlan? encuesta = conexion.QueryFirstOrDefault<EncuestaPlan>("ObtenerEncuestaPlan",
+                new { idPlan, idUsuario },
+                commandType: CommandType.StoredProcedure);
             if (encuesta == null) return null;
-            encuesta.Opciones = conexion.Query<OpcionPlan>(consultaOpciones, new { idPlan }).ToList();
-            encuesta.Horarios = conexion.Query<OpcionHorario>(consultaHorarios, new { idPlan }).ToList();
-            encuesta.Participantes = conexion.Query<Participante>(consultaParticipantes, new { idPlan }).ToList();
+            encuesta.Opciones = conexion.Query<OpcionPlan>("ListarOpcionesPlan",
+                new { idPlan },
+                commandType: CommandType.StoredProcedure).ToList();
+            encuesta.Horarios = conexion.Query<OpcionHorario>("ListarHorariosPlan",
+                new { idPlan },
+                commandType: CommandType.StoredProcedure).ToList();
+            encuesta.Participantes = conexion.Query<Participante>("ListarParticipantesPlan",
+                new { idPlan },
+                commandType: CommandType.StoredProcedure).ToList();
             return encuesta;
         }
     }
@@ -655,9 +573,9 @@ public static class BD
         List<int> idsPlanes;
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            idsPlanes = conexion.Query<int>(
-                "SELECT IdPlan FROM Mensajes WHERE IdGrupo = @idGrupo AND IdPlan IS NOT NULL ORDER BY Id",
-                new { idGrupo }).ToList();
+            idsPlanes = conexion.Query<int>("ListarPlanesPublicadosGrupo",
+                new { idGrupo },
+                commandType: CommandType.StoredProcedure).ToList();
         }
 
         List<EncuestaPlan> encuestas = new List<EncuestaPlan>();
@@ -673,24 +591,13 @@ public static class BD
     // Primero van los aptos para todo el grupo: los que cumplen todas las restricciones de sus integrantes.
     public static List<LugarBuscado> BuscarLugaresParaGrupo(int idGrupo, string texto)
     {
-        string consulta = @"
-            SELECT TOP 6 r.Id, r.Nombre, r.Foto, c.Nombre AS Categoria, b.Nombre AS Barrio,
-                   CAST(CASE WHEN NOT EXISTS (
-                            SELECT 1 FROM RestriccionesUsuarios ru
-                            JOIN UsuariosGrupos ug ON ug.IdUsuario = ru.IdUsuario
-                            WHERE ug.IdGrupo = @idGrupo
-                              AND NOT EXISTS (SELECT 1 FROM RestriccionesRestaurantes rr
-                                              WHERE rr.IdRestaurante = r.Id AND rr.IdRestriccion = ru.IdRestricciones))
-                        THEN 1 ELSE 0 END AS bit) AS AptoParaTodos
-            FROM Restaurantes r
-            LEFT JOIN Categorias c ON c.Id = r.IdCategoria
-            LEFT JOIN Barrios b ON b.Id = r.IdBarrio
-            WHERE r.Nombre LIKE @texto
-            ORDER BY AptoParaTodos DESC, r.Nombre";
+        // Procedimiento BuscarLugaresParaGrupo
         List<LugarBuscado> lugares;
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            lugares = conexion.Query<LugarBuscado>(consulta, new { idGrupo, texto = "%" + texto + "%" }).ToList();
+            lugares = conexion.Query<LugarBuscado>("BuscarLugaresParaGrupo",
+                new { idGrupo, texto },
+                commandType: CommandType.StoredProcedure).ToList();
         }
 
         foreach (LugarBuscado lugar in lugares)
@@ -700,33 +607,26 @@ public static class BD
         return lugares;
     }
 
-    // Un lugar suelto: el que viene ya cargado desde el Detalle del restaurante
+    // Procedimiento ObtenerLugar: un lugar suelto, el que viene ya cargado desde el Detalle del restaurante
     public static LugarBuscado? ObtenerLugar(int idRestaurante)
     {
-        string consulta = @"
-            SELECT r.Id, r.Nombre, r.Foto, c.Nombre AS Categoria, b.Nombre AS Barrio
-            FROM Restaurantes r
-            LEFT JOIN Categorias c ON c.Id = r.IdCategoria
-            LEFT JOIN Barrios b ON b.Id = r.IdBarrio
-            WHERE r.Id = @idRestaurante";
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            return conexion.QueryFirstOrDefault<LugarBuscado>(consulta, new { idRestaurante });
+            return conexion.QueryFirstOrDefault<LugarBuscado>("ObtenerLugar",
+                new { idRestaurante },
+                commandType: CommandType.StoredProcedure);
         }
     }
 
-    // Las restricciones de los integrantes del grupo, sin repetir ("Sin TACC", "Vegetariano")
+    // Procedimiento ListarRestriccionesGrupo: las restricciones de los integrantes del grupo,
+    // sin repetir ("Sin TACC", "Vegetariano")
     public static List<string> ObtenerRestriccionesDeGrupo(int idGrupo)
     {
-        string consulta = @"
-            SELECT DISTINCT re.Nombre
-            FROM RestriccionesUsuarios ru
-            JOIN UsuariosGrupos ug ON ug.IdUsuario = ru.IdUsuario
-            JOIN Restricciones re ON re.Id = ru.IdRestricciones
-            WHERE ug.IdGrupo = @idGrupo";
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            return conexion.Query<string>(consulta, new { idGrupo }).ToList();
+            return conexion.Query<string>("ListarRestriccionesGrupo",
+                new { idGrupo },
+                commandType: CommandType.StoredProcedure).ToList();
         }
     }
 
@@ -755,30 +655,33 @@ public static class BD
                 }
             }
 
-            conexion.Execute(@"
-                INSERT INTO Mensajes (Contenido, FechaHora, IdGrupo, IdUsuario, IdPlan)
-                VALUES (@titulo, GETDATE(), @idGrupo, @idCreador, @idPlan)",
-                new { titulo, idGrupo, idCreador, idPlan });
+            // Procedimiento GuardarMensajePlan: publica el plan en el chat
+            conexion.Execute("GuardarMensajePlan",
+                new { titulo, idGrupo, idCreador, idPlan },
+                commandType: CommandType.StoredProcedure);
             return idPlan;
         }
     }
 
+    // Procedimiento EsLugarDelPlan
     public static bool EsLugarDelPlan(int idPlan, int idRestaurante)
     {
-        string consulta = "SELECT COUNT(*) FROM PlanesRestaurantes WHERE IdPlan = @idPlan AND IdRestaurante = @idRestaurante";
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            return conexion.QueryFirst<int>(consulta, new { idPlan, idRestaurante }) > 0;
+            return conexion.QueryFirst<bool>("EsLugarDelPlan",
+                new { idPlan, idRestaurante },
+                commandType: CommandType.StoredProcedure);
         }
     }
 
-    // El lugar que votó el usuario en el plan (null si todavía no votó)
+    // Procedimiento ObtenerLugarVotado: el lugar que votó el usuario en el plan (null si todavía no votó)
     public static int? ObtenerLugarVotado(int idPlan, int idUsuario)
     {
-        string consulta = "SELECT IdRestaurante FROM Votos WHERE IdPlan = @idPlan AND IdUsuario = @idUsuario";
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            return conexion.QueryFirstOrDefault<int?>(consulta, new { idPlan, idUsuario });
+            return conexion.QueryFirstOrDefault<int?>("ObtenerLugarVotado",
+                new { idPlan, idUsuario },
+                commandType: CommandType.StoredProcedure);
         }
     }
 
@@ -787,26 +690,26 @@ public static class BD
     // en el lugar nuevo, así el horario que ya había votado no se pierde.
     public static void Votar(int idPlan, int idUsuario, int idRestaurante)
     {
-        string consultaHorario = @"
-            SELECT ph.Id FROM Votos v
-            JOIN PlanesHorarios votado ON votado.Id = v.IdHorarioVotado
-            JOIN PlanesHorarios ph ON ph.IdPlan = v.IdPlan AND ph.FechaHoraPropuesta = votado.FechaHoraPropuesta
-            WHERE v.IdPlan = @idPlan AND v.IdUsuario = @idUsuario AND ph.IdRestaurante = @idRestaurante";
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            int? idHorario = conexion.QueryFirstOrDefault<int?>(consultaHorario, new { idPlan, idUsuario, idRestaurante });
+            // Procedimiento ObtenerHorarioVotadoEnLugar
+            int? idHorario = conexion.QueryFirstOrDefault<int?>("ObtenerHorarioVotadoEnLugar",
+                new { idPlan, idUsuario, idRestaurante },
+                commandType: CommandType.StoredProcedure);
             conexion.Execute("VotarPlanCompleto",
                 new { idUsuario, idPlan, idRestaurante, idHorarioDisponibleVotado = idHorario },
                 commandType: System.Data.CommandType.StoredProcedure);
         }
     }
 
+    // Procedimiento EsHorarioDelPlan
     public static bool EsHorarioDelPlan(int idPlan, int idHorario)
     {
-        string consulta = "SELECT COUNT(*) FROM PlanesHorarios WHERE IdPlan = @idPlan AND Id = @idHorario";
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            return conexion.QueryFirst<int>(consulta, new { idPlan, idHorario }) > 0;
+            return conexion.QueryFirst<bool>("EsHorarioDelPlan",
+                new { idPlan, idHorario },
+                commandType: CommandType.StoredProcedure);
         }
     }
 
@@ -814,39 +717,38 @@ public static class BD
     // idHorario es cualquier fila de esa hora; se guarda la fila del lugar que votó.
     public static void VotarHorario(int idPlan, int idUsuario, int idRestaurante, int idHorario)
     {
-        string consultaHorario = @"
-            SELECT ph.Id FROM PlanesHorarios ph
-            JOIN PlanesHorarios elegido ON elegido.Id = @idHorario AND elegido.FechaHoraPropuesta = ph.FechaHoraPropuesta
-            WHERE ph.IdPlan = @idPlan AND ph.IdRestaurante = @idRestaurante";
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            int idFila = conexion.QueryFirst<int>(consultaHorario, new { idPlan, idRestaurante, idHorario });
+            // Procedimiento ObtenerHorarioDeLugar
+            int idFila = conexion.QueryFirst<int>("ObtenerHorarioDeLugar",
+                new { idPlan, idRestaurante, idHorario },
+                commandType: CommandType.StoredProcedure);
             conexion.Execute("VotarPlanCompleto",
                 new { idUsuario, idPlan, idRestaurante, idHorarioDisponibleVotado = idFila },
                 commandType: System.Data.CommandType.StoredProcedure);
         }
     }
 
-    // Queda Confirmado con el lugar ganador; FechaSalida pasa a ser el día y la hora ganadora
+    // Procedimiento ConfirmarPlan: queda Confirmado con el lugar ganador;
+    // FechaSalida pasa a ser el día y la hora ganadora
     public static void ConfirmarPlan(int idPlan, int idRestaurante, DateTime fechaSalida)
     {
-        string consulta = @"
-            UPDATE Planes
-            SET Estado = 1, IdRestauranteElegido = @idRestaurante,
-                FechaSalida = @fechaSalida, FechaCierreVotacion = @fechaSalida
-            WHERE Id = @idPlan";
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            conexion.Execute(consulta, new { idPlan, idRestaurante, fechaSalida });
+            conexion.Execute("ConfirmarPlan",
+                new { idPlan, idRestaurante, fechaSalida },
+                commandType: CommandType.StoredProcedure);
         }
     }
 
+    // Procedimiento CancelarPlan
     public static void CancelarPlan(int idPlan)
     {
-        string consulta = "UPDATE Planes SET Estado = 2 WHERE Id = @idPlan";
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            conexion.Execute(consulta, new { idPlan });
+            conexion.Execute("CancelarPlan",
+                new { idPlan },
+                commandType: CommandType.StoredProcedure);
         }
     }
 
@@ -876,70 +778,38 @@ public static class BD
             return tarjetas;
         }
 
-        string consulta = @"
-            SELECT TOP (@cantidad) r.Id, r.Nombre, r.Foto, c.Nombre AS Categoria, b.Nombre AS Barrio,
-                   (SELECT AVG(CAST(Puntaje AS float)) FROM Reseñas WHERE IdRestaurante = r.Id AND Fecha <= DATEADD(hour, -24, GETDATE())) AS Puntaje,
-                   CAST(CASE WHEN EXISTS (SELECT 1 FROM Favoritos WHERE IdUsuario = @idUsuario AND IdRestaurante = r.Id)
-                        THEN 1 ELSE 0 END AS bit) AS EsFavorito
-            FROM Restaurantes r
-            LEFT JOIN Categorias c ON c.Id = r.IdCategoria
-            LEFT JOIN Barrios b ON b.Id = r.IdBarrio
-            WHERE (@soloApto = 0
-               OR NOT EXISTS (SELECT 1 FROM RestriccionesUsuarios WHERE IdUsuario = @idUsuario)
-               OR EXISTS (SELECT 1 FROM RestriccionesRestaurantes rr
-                          JOIN RestriccionesUsuarios ru ON ru.IdRestricciones = rr.IdRestriccion
-                          WHERE rr.IdRestaurante = r.Id AND ru.IdUsuario = @idUsuario))
-              AND (@idRestriccion IS NULL
-               OR EXISTS (SELECT 1 FROM RestriccionesRestaurantes
-                          WHERE IdRestaurante = r.Id AND IdRestriccion = @idRestriccion))
-            ORDER BY CASE WHEN (SELECT AVG(CAST(Puntaje AS float)) FROM Reseñas WHERE IdRestaurante = r.Id AND Fecha <= DATEADD(hour, -24, GETDATE())) IS NULL THEN 1 ELSE 0 END,
-                     Puntaje DESC, r.Id";
+        // Procedimiento ListarMejorPuntuados
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            return conexion.Query<TarjetaRestaurante>(consulta, new { cantidad, idUsuario, soloApto, idRestriccion }).ToList();
+            return conexion.Query<TarjetaRestaurante>("ListarMejorPuntuados",
+                new { cantidad, idUsuario, soloApto, idRestriccion },
+                commandType: CommandType.StoredProcedure).ToList();
         }
     }
 
     // Las tarjetas "Recomendado para vos" de Inicio: lugares que se parecen a los gustos del usuario y que cambian en cada visita.
-    // Cada lugar suma puntos de afinidad:
+    // El procedimiento ListarRecomendables trae los lugares con sus puntos de afinidad:
     //   +2 si está en un barrio que le interesa (ZonasUsuarios o su barrio del perfil)
     //   +2 si es de una categoría que ya marcó como favorita o reseñó con 4 o 5
     //   +1 si tiene buen puntaje (4 o más)
-    // Después se le suma un número al azar (0 a 3) y se toman los de arriba: los que más le gustan salen seguido,
+    // Acá se le suma un número al azar (0 a 3) a cada uno y se toman los de arriba: los que más le gustan salen seguido,
     // pero no son siempre los mismos. No muestra lo que ya tiene en favoritos (eso va en "Tus favoritos").
     // soloApto e idRestriccion funcionan igual que en ObtenerMejorPuntuados.
     public static List<TarjetaRestaurante> ObtenerRecomendados(int cantidad, int idUsuario, bool soloApto, int? idRestriccion = null)
     {
-        string consulta = @"
-            SELECT TOP (@cantidad) t.Id, t.Nombre, t.Foto, t.Categoria, t.Barrio, t.Puntaje, t.EsFavorito
-            FROM (
-                SELECT r.Id, r.Nombre, r.Foto, c.Nombre AS Categoria, b.Nombre AS Barrio,
-                       (SELECT AVG(CAST(Puntaje AS float)) FROM Reseñas WHERE IdRestaurante = r.Id AND Fecha <= DATEADD(hour, -24, GETDATE())) AS Puntaje,
-                       CAST(0 AS bit) AS EsFavorito,
-                       (CASE WHEN r.IdBarrio IN (SELECT IdBarrio FROM ZonasUsuarios WHERE IdUsuario = @idUsuario)
-                               OR r.IdBarrio = (SELECT IdBarrio FROM Usuarios WHERE Id = @idUsuario) THEN 2 ELSE 0 END)
-                     + (CASE WHEN r.IdCategoria IN (SELECT x.IdCategoria FROM Favoritos f JOIN Restaurantes x ON x.Id = f.IdRestaurante WHERE f.IdUsuario = @idUsuario
-                                                    UNION
-                                                    SELECT x.IdCategoria FROM Reseñas rs JOIN Restaurantes x ON x.Id = rs.IdRestaurante WHERE rs.IdUsuario = @idUsuario AND rs.Puntaje >= 4) THEN 2 ELSE 0 END)
-                     + (CASE WHEN (SELECT AVG(CAST(Puntaje AS float)) FROM Reseñas WHERE IdRestaurante = r.Id) >= 4 THEN 1 ELSE 0 END) AS Afinidad
-                FROM Restaurantes r
-                LEFT JOIN Categorias c ON c.Id = r.IdCategoria
-                LEFT JOIN Barrios b ON b.Id = r.IdBarrio
-                WHERE NOT EXISTS (SELECT 1 FROM Favoritos WHERE IdUsuario = @idUsuario AND IdRestaurante = r.Id)
-                  AND (@soloApto = 0
-                   OR NOT EXISTS (SELECT 1 FROM RestriccionesUsuarios WHERE IdUsuario = @idUsuario)
-                   OR EXISTS (SELECT 1 FROM RestriccionesRestaurantes rr
-                              JOIN RestriccionesUsuarios ru ON ru.IdRestricciones = rr.IdRestriccion
-                              WHERE rr.IdRestaurante = r.Id AND ru.IdUsuario = @idUsuario))
-                  AND (@idRestriccion IS NULL
-                   OR EXISTS (SELECT 1 FROM RestriccionesRestaurantes
-                              WHERE IdRestaurante = r.Id AND IdRestriccion = @idRestriccion))
-            ) t
-            ORDER BY t.Afinidad + (ABS(CHECKSUM(NEWID())) % 1000) / 1000.0 * 3 DESC";
+        List<TarjetaRestaurante> candidatos;
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            return conexion.Query<TarjetaRestaurante>(consulta, new { cantidad, idUsuario, soloApto, idRestriccion }).ToList();
+            candidatos = conexion.Query<TarjetaRestaurante>("ListarRecomendables",
+                new { idUsuario, soloApto, idRestriccion },
+                commandType: CommandType.StoredProcedure).ToList();
         }
+
+        Random azar = new Random();
+        return candidatos
+            .OrderByDescending(tarjeta => tarjeta.Afinidad + azar.NextDouble() * 3)
+            .Take(cantidad)
+            .ToList();
     }
 
     // ---------- 05 · Descubrir ----------
@@ -947,230 +817,150 @@ public static class BD
     // Las palabras que no sirven para buscar ("parrilla en Palermo" -> "parrilla", "Palermo")
     private static readonly List<string> PalabrasVacias = new List<string> { "en", "de", "la", "el", "los", "las", "del", "con", "y" };
 
-    // Arma el WHERE de la búsqueda. Cada palabra tiene que aparecer en el nombre, el barrio o la categoría.
-    // Si termina en "s" también se prueba sin la "s" ("Parrillas" encuentra "Parrilla").
-    // COLLATE ..._CI_AI hace que no importen mayúsculas ni tildes ("nunez" encuentra "Núñez").
+    // Arma los parámetros de los procedimientos de búsqueda (todos reciben los mismos). El procedimiento compara cada palabra
+    // con el nombre, el barrio y la categoría: en @p1..@p5 va la palabra con % y en @s1..@s5 la misma sin la "s" final
+    // ("Parrillas" encuentra "Parrilla"). Se usan hasta 5 palabras; las vacías ("en", "de"...) se ignoran.
+    // El procedimiento ignora tildes y mayúsculas ("nunez" encuentra "Núñez").
     // soloApto: igual que en Inicio, solo los que cumplen al menos una restricción del usuario.
     // idBarrio: el desplegable "Barrio". null = todos los barrios.
-    private static string ArmarFiltroBusqueda(FiltroBusqueda f, DynamicParameters parametros)
+    // Si hay zona, solo lo que cae dentro de lo que se ve en el mapa. Si hay Limite, solo los Limite lugares de mejor puntaje.
+    private static DynamicParameters ArmarParametrosBusqueda(FiltroBusqueda f)
     {
-        string texto = f.Texto;
-        int idUsuario = f.IdUsuario;
-        bool soloApto = f.SoloApto;
-        int? idBarrio = f.IdBarrio;
-        string filtro = @"
-            WHERE (@soloApto = 0
-               OR NOT EXISTS (SELECT 1 FROM RestriccionesUsuarios WHERE IdUsuario = @idUsuario)
-               OR EXISTS (SELECT 1 FROM RestriccionesRestaurantes rr
-                          JOIN RestriccionesUsuarios ru ON ru.IdRestricciones = rr.IdRestriccion
-                          WHERE rr.IdRestaurante = r.Id AND ru.IdUsuario = @idUsuario))
-              AND (@idBarrio IS NULL OR r.IdBarrio = @idBarrio)
-              AND (@idCategoria IS NULL OR r.IdCategoria = @idCategoria)";
-        parametros.Add("idCategoria", f.IdCategoria);
-        parametros.Add("idUsuario", idUsuario);
-        parametros.Add("soloApto", soloApto);
-        parametros.Add("idBarrio", idBarrio);
+        DynamicParameters parametros = new DynamicParameters();
+        parametros.Add("idUsuario", f.IdUsuario);
+        parametros.Add("soloApto", f.SoloApto);
+        parametros.Add("idBarrio", f.IdBarrio, DbType.Int32);
+        parametros.Add("idCategoria", f.IdCategoria, DbType.Int32);
+        parametros.Add("tieneZona", f.TieneZona);
+        parametros.Add("norte", f.Norte, DbType.Double);
+        parametros.Add("sur", f.Sur, DbType.Double);
+        parametros.Add("este", f.Este, DbType.Double);
+        parametros.Add("oeste", f.Oeste, DbType.Double);
+        parametros.Add("limite", f.Limite, DbType.Int32);
 
-        int numero = 0;
-        foreach (string palabra in texto.Split(' ', StringSplitOptions.RemoveEmptyEntries))
+        List<string> palabras = new List<string>();
+        foreach (string palabra in f.Texto.Split(' ', StringSplitOptions.RemoveEmptyEntries))
         {
-            if (PalabrasVacias.Contains(palabra.ToLower())) continue;
-
-            string sinS = palabra.Length > 3 && palabra.EndsWith("s") ? palabra.Substring(0, palabra.Length - 1) : palabra;
-            parametros.Add("palabra" + numero, "%" + palabra + "%");
-            parametros.Add("sinS" + numero, "%" + sinS + "%");
-
-            filtro += $@"
-              AND (r.Nombre COLLATE Latin1_General_CI_AI LIKE @palabra{numero}
-                OR b.Nombre COLLATE Latin1_General_CI_AI LIKE @palabra{numero}
-                OR c.Nombre COLLATE Latin1_General_CI_AI LIKE @palabra{numero}
-                OR c.Nombre COLLATE Latin1_General_CI_AI LIKE @sinS{numero})";
-            numero++;
-        }
-        // Solo lo que cae dentro de lo que se ve en el mapa (el pin sale de las coordenadas del lugar o, si no tiene, de su barrio)
-        if (f.TieneZona)
-        {
-            filtro += @"
-              AND ISNULL(r.Latitud, b.Latitud) BETWEEN @sur AND @norte
-              AND ISNULL(r.Longitud, b.Longitud) BETWEEN @oeste AND @este";
-            parametros.Add("norte", f.Norte);
-            parametros.Add("sur", f.Sur);
-            parametros.Add("este", f.Este);
-            parametros.Add("oeste", f.Oeste);
+            if (!PalabrasVacias.Contains(palabra.ToLower())) palabras.Add(palabra);
         }
 
-        // Cuanto más lejos está el mapa, menos lugares y los mejores: se quedan los Limite lugares de mejor puntaje.
-        // El puntaje se "suaviza" (como si todos tuvieran 3 reseñas de 3,5) para que un solo 5 no le gane a un 4,8 con muchas reseñas.
-        // Los que no tienen reseñas valen 3,5: quedan detrás de los bien puntuados y delante de los mal puntuados.
-        // Los empates: primero los Pro y después por Id. La lista y los pins usan este mismo filtro, así que muestran lo mismo.
-        if (f.Limite != null)
+        for (int numero = 1; numero <= 5; numero++)
         {
-            filtro += @"
-              AND r.Id IN (SELECT TOP (@limite) r.Id
-                           FROM Restaurantes r
-                           LEFT JOIN Categorias c ON c.Id = r.IdCategoria
-                           LEFT JOIN Barrios b ON b.Id = r.IdBarrio" + filtro + @"
-                           ORDER BY (SELECT (ISNULL(SUM(CAST(Puntaje AS float)), 0) + 10.5) / (COUNT(*) + 3)
-                                     FROM Reseñas WHERE IdRestaurante = r.Id AND Fecha <= DATEADD(hour, -24, GETDATE())) DESC,
-                                    r.EsPro DESC, r.Id)";
-            parametros.Add("limite", f.Limite);
+            string? conPorcentaje = null;
+            string? sinS = null;
+            if (numero <= palabras.Count)
+            {
+                string palabra = palabras[numero - 1];
+                string palabraSinS = palabra.Length > 3 && palabra.EndsWith("s") ? palabra.Substring(0, palabra.Length - 1) : palabra;
+                conPorcentaje = "%" + palabra + "%";
+                sinS = "%" + palabraSinS + "%";
+            }
+            parametros.Add("p" + numero, conPorcentaje, DbType.String);
+            parametros.Add("s" + numero, sinS, DbType.String);
         }
-        return filtro;
+        return parametros;
     }
 
-    // El Pro que sale destacado ("Recomendado") arriba de todo en la página 1 cuando no hay barrio elegido:
+    // Procedimiento ObtenerProDestacado: el Pro que sale destacado ("Recomendado") arriba de todo en la página 1 cuando no hay barrio elegido:
     // el más cercano al usuario entre los que coinciden con la búsqueda. null si no hay ningún Pro.
     public static int? ObtenerProDestacado(FiltroBusqueda filtroBusqueda, double? latitud, double? longitud)
     {
-        DynamicParameters parametros = new DynamicParameters();
-        string filtro = ArmarFiltroBusqueda(filtroBusqueda, parametros);
-        parametros.Add("latitudUsuario", latitud);
-        parametros.Add("longitudUsuario", longitud);
+        DynamicParameters parametros = ArmarParametrosBusqueda(filtroBusqueda);
+        parametros.Add("latitudUsuario", latitud, DbType.Double);
+        parametros.Add("longitudUsuario", longitud, DbType.Double);
 
-        string consulta = @"
-            SELECT TOP 1 r.Id
-            FROM Restaurantes r
-            LEFT JOIN Categorias c ON c.Id = r.IdCategoria
-            LEFT JOIN Barrios b ON b.Id = r.IdBarrio" + filtro + @"
-              AND r.EsPro = 1
-            ORDER BY CASE WHEN dbo.DistanciaKm(@latitudUsuario, @longitudUsuario, ISNULL(r.Latitud, b.Latitud), ISNULL(r.Longitud, b.Longitud)) IS NULL THEN 1 ELSE 0 END,
-                     dbo.DistanciaKm(@latitudUsuario, @longitudUsuario, ISNULL(r.Latitud, b.Latitud), ISNULL(r.Longitud, b.Longitud)),
-                     r.Id";
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            return conexion.QueryFirstOrDefault<int?>(consulta, parametros);
+            return conexion.QueryFirstOrDefault<int?>("ObtenerProDestacado", parametros,
+                commandType: CommandType.StoredProcedure);
         }
     }
 
-    // Una página de resultados.
+    // Una página de resultados (procedimiento BuscarRestaurantesPagina).
     // idDestacado: el Pro de ObtenerProDestacado. Va primero (o sea, arriba de la página 1) y no se repite más abajo.
     // orden: "cerca" (del más cerca al más lejos) o "puntaje" (mejor puntuados primero; los empates, por distancia).
     // latitud y longitud: desde dónde se mide (la ubicación del navegador o el centro del barrio del perfil).
     // Llegan como parámetros y no se guardan. Si son null, no hay distancia.
     // Los que no tienen distancia (sin ubicación o el lugar sin coordenadas) o sin reseñas van al final.
-    // CROSS APPLY calcula la distancia y el puntaje una sola vez para usarlos en el SELECT y en el ORDER BY.
+    // El procedimiento trae los primeros desde + cantidad resultados y acá se saltan los de las páginas anteriores.
     // El pin del mapa sale de las coordenadas del lugar o, si no tiene, de las de su barrio.
     public static List<TarjetaRestaurante> BuscarRestaurantes(FiltroBusqueda filtroBusqueda,
         double? latitud, double? longitud, string orden, int? idDestacado, int desde, int cantidad)
     {
-        DynamicParameters parametros = new DynamicParameters();
-        string filtro = ArmarFiltroBusqueda(filtroBusqueda, parametros);
-        parametros.Add("latitudUsuario", latitud);
-        parametros.Add("longitudUsuario", longitud);
+        DynamicParameters parametros = ArmarParametrosBusqueda(filtroBusqueda);
+        parametros.Add("latitudUsuario", latitud, DbType.Double);
+        parametros.Add("longitudUsuario", longitud, DbType.Double);
         parametros.Add("orden", orden);
-        parametros.Add("idDestacado", idDestacado);
-        parametros.Add("desde", desde);
-        parametros.Add("cantidad", cantidad);
+        parametros.Add("idDestacado", idDestacado, DbType.Int32);
+        parametros.Add("hasta", desde + cantidad);
 
-        string consulta = @"
-            SELECT r.Id, r.Nombre, r.Foto, c.Nombre AS Categoria, b.Nombre AS Barrio, r.EsPro, r.Origen,
-                   ISNULL(r.Latitud, b.Latitud) AS Latitud, ISNULL(r.Longitud, b.Longitud) AS Longitud,
-                   calculo.DistanciaKm, calculo.Puntaje,
-                   CAST(CASE WHEN EXISTS (SELECT 1 FROM Favoritos WHERE IdUsuario = @idUsuario AND IdRestaurante = r.Id)
-                        THEN 1 ELSE 0 END AS bit) AS EsFavorito
-            FROM Restaurantes r
-            LEFT JOIN Categorias c ON c.Id = r.IdCategoria
-            LEFT JOIN Barrios b ON b.Id = r.IdBarrio
-            CROSS APPLY (SELECT
-                dbo.DistanciaKm(@latitudUsuario, @longitudUsuario, ISNULL(r.Latitud, b.Latitud), ISNULL(r.Longitud, b.Longitud)) AS DistanciaKm,
-                (SELECT AVG(CAST(Puntaje AS float)) FROM Reseñas WHERE IdRestaurante = r.Id AND Fecha <= DATEADD(hour, -24, GETDATE())) AS Puntaje
-            ) calculo" + filtro + @"
-            ORDER BY CASE WHEN r.Id = @idDestacado THEN 0 ELSE 1 END,
-                     CASE WHEN @orden = 'puntaje' AND calculo.Puntaje IS NULL THEN 1 ELSE 0 END,
-                     CASE WHEN @orden = 'puntaje' THEN calculo.Puntaje END DESC,
-                     CASE WHEN calculo.DistanciaKm IS NULL THEN 1 ELSE 0 END,
-                     calculo.DistanciaKm,
-                     CASE WHEN calculo.Puntaje IS NULL THEN 1 ELSE 0 END,
-                     calculo.Puntaje DESC, r.Id
-            OFFSET @desde ROWS FETCH NEXT @cantidad ROWS ONLY";
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            return conexion.Query<TarjetaRestaurante>(consulta, parametros).ToList();
+            return conexion.Query<TarjetaRestaurante>("BuscarRestaurantesPagina", parametros,
+                commandType: CommandType.StoredProcedure).Skip(desde).ToList();
         }
     }
 
-    // Los lugares de la búsqueda para dibujar sus pins en el mapa: los mismos que la lista (la lista va de a páginas, el mapa los muestra juntos).
+    // Procedimiento ListarPinesMapa: los lugares de la búsqueda para dibujar sus pins en el mapa: los mismos que la lista
+    // (la lista va de a páginas, el mapa los muestra juntos).
     // Trae solo lo que necesita un pin y su tarjetita; los que no tienen coordenadas (ni propias ni de su barrio) no van.
     public static List<TarjetaRestaurante> ObtenerPinesMapa(FiltroBusqueda filtroBusqueda)
     {
-        DynamicParameters parametros = new DynamicParameters();
-        string filtro = ArmarFiltroBusqueda(filtroBusqueda, parametros);
+        DynamicParameters parametros = ArmarParametrosBusqueda(filtroBusqueda);
 
-        string consulta = @"
-            SELECT r.Id, r.Nombre, r.Foto, c.Nombre AS Categoria, b.Nombre AS Barrio,
-                   ISNULL(r.Latitud, b.Latitud) AS Latitud, ISNULL(r.Longitud, b.Longitud) AS Longitud,
-                   (SELECT AVG(CAST(Puntaje AS float)) FROM Reseñas WHERE IdRestaurante = r.Id AND Fecha <= DATEADD(hour, -24, GETDATE())) AS Puntaje
-            FROM Restaurantes r
-            LEFT JOIN Categorias c ON c.Id = r.IdCategoria
-            LEFT JOIN Barrios b ON b.Id = r.IdBarrio" + filtro + @"
-              AND ISNULL(r.Latitud, b.Latitud) IS NOT NULL AND ISNULL(r.Longitud, b.Longitud) IS NOT NULL
-            ORDER BY r.Id";
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            return conexion.Query<TarjetaRestaurante>(consulta, parametros).ToList();
+            return conexion.Query<TarjetaRestaurante>("ListarPinesMapa", parametros,
+                commandType: CommandType.StoredProcedure).ToList();
         }
     }
 
-    // Cuántos resultados hay en total (para la paginación)
+    // Procedimiento ContarRestaurantesBusqueda: cuántos resultados hay en total (para la paginación)
     public static int ContarRestaurantes(FiltroBusqueda filtroBusqueda)
     {
-        DynamicParameters parametros = new DynamicParameters();
-        string filtro = ArmarFiltroBusqueda(filtroBusqueda, parametros);
+        DynamicParameters parametros = ArmarParametrosBusqueda(filtroBusqueda);
 
-        string consulta = @"
-            SELECT COUNT(*)
-            FROM Restaurantes r
-            LEFT JOIN Categorias c ON c.Id = r.IdCategoria
-            LEFT JOIN Barrios b ON b.Id = r.IdBarrio" + filtro;
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            return conexion.QueryFirst<int>(consulta, parametros);
+            return conexion.QueryFirst<int>("ContarRestaurantesBusqueda", parametros,
+                commandType: CommandType.StoredProcedure);
         }
     }
 
-    // Cuando la búsqueda no da nada en el barrio elegido: el otro barrio donde el texto tiene más resultados
+    // Procedimiento ObtenerBarrioConMasResultados: cuando la búsqueda no da nada en el barrio elegido,
+    // el otro barrio donde el texto tiene más resultados
     // (para "No encontramos sushi en Palermo. Hay 3 en Belgrano"). null si no aparece en ningún otro.
     public static BarrioConResultados? ObtenerBarrioConMasResultados(FiltroBusqueda filtroBusqueda, int idBarrioElegido)
     {
-        DynamicParameters parametros = new DynamicParameters();
-        string filtro = ArmarFiltroBusqueda(filtroBusqueda, parametros);
+        DynamicParameters parametros = ArmarParametrosBusqueda(filtroBusqueda);
         parametros.Add("idBarrioElegido", idBarrioElegido);
 
-        string consulta = @"
-            SELECT TOP 1 b.Id, b.Nombre, COUNT(*) AS Cantidad
-            FROM Restaurantes r
-            LEFT JOIN Categorias c ON c.Id = r.IdCategoria
-            JOIN Barrios b ON b.Id = r.IdBarrio" + filtro + @"
-              AND r.IdBarrio <> @idBarrioElegido
-            GROUP BY b.Id, b.Nombre
-            ORDER BY COUNT(*) DESC, b.Nombre";
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            return conexion.QueryFirstOrDefault<BarrioConResultados>(consulta, parametros);
+            return conexion.QueryFirstOrDefault<BarrioConResultados>("ObtenerBarrioConMasResultados", parametros,
+                commandType: CommandType.StoredProcedure);
         }
     }
 
+    // Procedimiento GuardarBusqueda
     public static void GuardarBusqueda(int idUsuario, string texto)
     {
-        string consulta = "INSERT INTO Busquedas (IdUsuario, Texto, Fecha) VALUES (@idUsuario, @texto, GETDATE())";
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            conexion.Execute(consulta, new { idUsuario, texto });
+            conexion.Execute("GuardarBusqueda",
+                new { idUsuario, texto },
+                commandType: CommandType.StoredProcedure);
         }
     }
 
-    // Las últimas búsquedas del usuario, sin repetir, la más nueva primero
+    // Procedimiento ListarBusquedasRecientes: las últimas búsquedas del usuario, sin repetir, la más nueva primero
     public static List<string> ObtenerBusquedasRecientes(int idUsuario, int cantidad)
     {
-        string consulta = @"
-            SELECT TOP (@cantidad) Texto
-            FROM Busquedas
-            WHERE IdUsuario = @idUsuario
-            GROUP BY Texto
-            ORDER BY MAX(Fecha) DESC, MAX(Id) DESC";
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            return conexion.Query<string>(consulta, new { idUsuario, cantidad }).ToList();
+            return conexion.Query<string>("ListarBusquedasRecientes",
+                new { idUsuario, cantidad },
+                commandType: CommandType.StoredProcedure).ToList();
         }
     }
 
@@ -1256,10 +1046,11 @@ public static class BD
     // Si el usuario ya dejó una reseña de ese lugar (publicada o no). Se deja una sola por lugar.
     public static bool YaReseno(int idUsuario, int idRestaurante)
     {
-        string consulta = "SELECT COUNT(*) FROM Reseñas WHERE IdUsuario = @idUsuario AND IdRestaurante = @idRestaurante";
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            return conexion.QueryFirst<int>(consulta, new { idUsuario, idRestaurante }) > 0;
+            return conexion.QueryFirst<bool>("ComprobarYaReseno",
+                new { idUsuario, idRestaurante },
+                commandType: CommandType.StoredProcedure);
         }
     }
 
@@ -1267,15 +1058,11 @@ public static class BD
     // que ya pasó. Devuelve null si no hay ninguno.
     public static Planes? ObtenerVisitaVerificada(int idUsuario, int idRestaurante)
     {
-        string consulta = @"
-            SELECT TOP 1 p.*
-            FROM Planes p
-            JOIN UsuariosGrupos ug ON ug.IdGrupo = p.IdGrupo AND ug.IdUsuario = @idUsuario
-            WHERE p.Estado = 1 AND p.IdRestauranteElegido = @idRestaurante AND p.FechaSalida <= GETDATE()
-            ORDER BY p.FechaSalida DESC";
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            return conexion.QueryFirstOrDefault<Planes>(consulta, new { idUsuario, idRestaurante });
+            return conexion.QueryFirstOrDefault<Planes>("ObtenerVisitaVerificada",
+                new { idUsuario, idRestaurante },
+                commandType: CommandType.StoredProcedure);
         }
     }
 
@@ -1327,10 +1114,11 @@ public static class BD
     // Los lugares que ofrecen una restricción: con esto el chip de Inicio filtra "Tus favoritos"
     public static List<int> ObtenerRestaurantesConRestriccion(int idRestriccion)
     {
-        string consulta = "SELECT IdRestaurante FROM RestriccionesRestaurantes WHERE IdRestriccion = @idRestriccion";
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            return conexion.Query<int>(consulta, new { idRestriccion }).ToList();
+            return conexion.Query<int>("ListarRestaurantesConRestriccion",
+                new { idRestriccion },
+                commandType: CommandType.StoredProcedure).ToList();
         }
     }
 

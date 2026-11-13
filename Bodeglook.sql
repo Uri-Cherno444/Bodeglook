@@ -1717,6 +1717,1848 @@ BEGIN
     END
 END
 GO
+/* ============================================================================
+   PROCEDIMIENTOS NUEVOS: reemplazan las consultas SQL que estaban escritas en Models/BD.cs.
+   Cada uno dice arriba qué método de BD.cs reemplaza.
+   ============================================================================ */
+
+/****** Object:  StoredProcedure [dbo].[ProbarConexion]  -- BD.ProbarConexion ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[ProbarConexion]
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT 1;
+END
+GO
+/****** Object:  StoredProcedure [dbo].[ContarResenasUsuario]  -- BD.ContarResenasDeUsuario: todas las reseñas que escribió, publicadas o no ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[ContarResenasUsuario]
+    @idUsuario INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT COUNT(*) FROM Reseñas WHERE idUsuario = @idUsuario;
+END
+GO
+/****** Object:  StoredProcedure [dbo].[ListarRestricciones]  -- BD.ObtenerRestricciones ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[ListarRestricciones]
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT ID, Nombre FROM Restricciones ORDER BY ID;
+END
+GO
+/****** Object:  StoredProcedure [dbo].[ListarBarriosConCoordenadas]  -- BD.ObtenerBarriosConCoordenadas ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[ListarBarriosConCoordenadas]
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT ID, Nombre, Latitud, Longitud FROM Barrios ORDER BY ID;
+END
+GO
+/****** Object:  StoredProcedure [dbo].[ObtenerBarrioUsuario]  -- BD.ObtenerBarrioDeUsuario ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[ObtenerBarrioUsuario]
+    @idUsuario INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT b.ID, b.Nombre, b.Latitud, b.Longitud
+    FROM Usuarios u
+    INNER JOIN Barrios b ON b.ID = u.idBarrio
+    WHERE u.ID = @idUsuario;
+END
+GO
+/****** Object:  StoredProcedure [dbo].[ListarRestriccionesUsuario]  -- BD.ObtenerRestriccionesDeUsuario ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[ListarRestriccionesUsuario]
+    @idUsuario INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT re.ID, re.Nombre
+    FROM RestriccionesUsuarios ru
+    INNER JOIN Restricciones re ON re.ID = ru.idRestricciones
+    WHERE ru.idUsuario = @idUsuario
+    ORDER BY re.ID;
+END
+GO
+/****** Object:  StoredProcedure [dbo].[ObtenerDatosEdicionUsuario]  -- BD.ObtenerDatosEdicion: lo que carga el modal Editar perfil ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[ObtenerDatosEdicionUsuario]
+    @idUsuario INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT ID, NombreCompleto, NombreUsuario, FotoPerfil, idBarrio, Frecuencia, SoloApto
+    FROM Usuarios
+    WHERE ID = @idUsuario;
+END
+GO
+/****** Object:  StoredProcedure [dbo].[ListarZonasUsuario]  -- BD.ObtenerZonasDeUsuario ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[ListarZonasUsuario]
+    @idUsuario INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT idBarrio FROM ZonasUsuarios WHERE idUsuario = @idUsuario ORDER BY idBarrio;
+END
+GO
+/****** Object:  StoredProcedure [dbo].[ListarCompaniasUsuario]  -- BD.ObtenerCompaniasDeUsuario ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[ListarCompaniasUsuario]
+    @idUsuario INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT Compania FROM CompaniasUsuarios WHERE idUsuario = @idUsuario ORDER BY ID;
+END
+GO
+/****** Object:  StoredProcedure [dbo].[ObtenerSoloAptoUsuario]  -- BD.ObtenerSoloApto (NULL si todavía no eligió) ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[ObtenerSoloAptoUsuario]
+    @idUsuario INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT SoloApto FROM Usuarios WHERE ID = @idUsuario;
+END
+GO
+/****** Object:  StoredProcedure [dbo].[GuardarSoloApto]  -- BD.GuardarSoloApto ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[GuardarSoloApto]
+    @idUsuario INT,
+    @soloApto BIT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    UPDATE Usuarios SET SoloApto = @soloApto WHERE ID = @idUsuario;
+END
+GO
+/****** Object:  StoredProcedure [dbo].[ExisteNombreUsuario]  -- BD.ExisteNombreUsuario: 1 si OTRO usuario ya tiene ese nombre de usuario ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[ExisteNombreUsuario]
+    @nombreUsuario VARCHAR(50),
+    @idUsuario INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF EXISTS (SELECT 1 FROM Usuarios WHERE NombreUsuario = @nombreUsuario AND ID <> @idUsuario)
+    BEGIN
+        SELECT CAST(1 AS BIT);
+    END
+    ELSE
+    BEGIN
+        SELECT CAST(0 AS BIT);
+    END
+END
+GO
+/****** Object:  StoredProcedure [dbo].[GuardarFrecuenciaUsuario]  -- BD.GuardarGustos (1 de 7) ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[GuardarFrecuenciaUsuario]
+    @idUsuario INT,
+    @frecuencia VARCHAR(30) = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    UPDATE Usuarios SET Frecuencia = @frecuencia WHERE ID = @idUsuario;
+END
+GO
+/****** Object:  StoredProcedure [dbo].[BorrarRestriccionesUsuario]  -- BD.GuardarGustos (2 de 7) ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[BorrarRestriccionesUsuario]
+    @idUsuario INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    DELETE FROM RestriccionesUsuarios WHERE idUsuario = @idUsuario;
+END
+GO
+/****** Object:  StoredProcedure [dbo].[AgregarRestriccionUsuario]  -- BD.GuardarGustos (3 de 7) ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[AgregarRestriccionUsuario]
+    @idUsuario INT,
+    @idRestriccion INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    INSERT INTO RestriccionesUsuarios (idUsuario, idRestricciones) VALUES (@idUsuario, @idRestriccion);
+END
+GO
+/****** Object:  StoredProcedure [dbo].[BorrarZonasUsuario]  -- BD.GuardarGustos (4 de 7) ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[BorrarZonasUsuario]
+    @idUsuario INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    DELETE FROM ZonasUsuarios WHERE idUsuario = @idUsuario;
+END
+GO
+/****** Object:  StoredProcedure [dbo].[AgregarZonaUsuario]  -- BD.GuardarGustos (5 de 7) ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[AgregarZonaUsuario]
+    @idUsuario INT,
+    @idBarrio INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    INSERT INTO ZonasUsuarios (idUsuario, idBarrio) VALUES (@idUsuario, @idBarrio);
+END
+GO
+/****** Object:  StoredProcedure [dbo].[BorrarCompaniasUsuario]  -- BD.GuardarGustos (6 de 7) ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[BorrarCompaniasUsuario]
+    @idUsuario INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    DELETE FROM CompaniasUsuarios WHERE idUsuario = @idUsuario;
+END
+GO
+/****** Object:  StoredProcedure [dbo].[AgregarCompaniaUsuario]  -- BD.GuardarGustos (7 de 7) ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[AgregarCompaniaUsuario]
+    @idUsuario INT,
+    @compania VARCHAR(30)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    INSERT INTO CompaniasUsuarios (idUsuario, Compania) VALUES (@idUsuario, @compania);
+END
+GO
+/****** Object:  StoredProcedure [dbo].[GuardarDatosPerfilUsuario]  -- BD.GuardarPerfil: datos del modal Editar perfil (la foto solo se cambia si llega una nueva) ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[GuardarDatosPerfilUsuario]
+    @idUsuario INT,
+    @nombreCompleto VARCHAR(100),
+    @nombreUsuario VARCHAR(50),
+    @idBarrio INT,
+    @fotoNueva VARCHAR(100) = NULL,
+    @soloApto BIT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    UPDATE Usuarios
+    SET NombreCompleto = @nombreCompleto, NombreUsuario = @nombreUsuario, idBarrio = @idBarrio,
+        FotoPerfil = ISNULL(@fotoNueva, FotoPerfil), SoloApto = @soloApto
+    WHERE ID = @idUsuario;
+END
+GO
+/****** Object:  StoredProcedure [dbo].[GuardarLugarGeoapify]  -- BD.GuardarLugarGeoapify: si ya existe (mismo IdGeoapify) lo actualiza sin pisar lo cargado a mano; si no, lo inserta.
+   Devuelve 1 si era nuevo y 0 si se actualizó. ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[GuardarLugarGeoapify]
+    @IdGeoapify VARCHAR(50),
+    @Nombre VARCHAR(100),
+    @Calle VARCHAR(50),
+    @Numero INT,
+    @CodigoPostal INT,
+    @Latitud DECIMAL(9, 6),
+    @Longitud DECIMAL(9, 6),
+    @idBarrio INT,
+    @idCategoria INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF EXISTS (SELECT 1 FROM Restaurantes WHERE IdGeoapify = @IdGeoapify)
+    BEGIN
+        UPDATE Restaurantes
+        SET Nombre = @Nombre, DireccionCalle = @Calle, DireccionNumero = @Numero, DireccionCodigoPostal = @CodigoPostal,
+            Latitud = @Latitud, Longitud = @Longitud, idBarrio = @idBarrio, idCategoria = @idCategoria
+        WHERE IdGeoapify = @IdGeoapify;
+
+        SELECT CAST(0 AS BIT);
+    END
+    ELSE
+    BEGIN
+        INSERT INTO Restaurantes (Nombre, DireccionCalle, DireccionNumero, DireccionCodigoPostal, Descripcion, Telefono,
+                                  HorarioApertura, HorarioCerrado, RangoPrecio, Foto, idBarrio, idCategoria, EsPro,
+                                  SitioWeb, IdGeoapify, Latitud, Longitud, Origen)
+        VALUES (@Nombre, @Calle, @Numero, @CodigoPostal, '', '',
+                '19000101', '19000101', 0, NULL, @idBarrio, @idCategoria, 0,
+                NULL, @IdGeoapify, @Latitud, @Longitud, 'Geoapify');
+
+        SELECT CAST(1 AS BIT);
+    END
+END
+GO
+/****** Object:  StoredProcedure [dbo].[ObtenerOrigenRestaurante]  -- BD.ObtenerOrigenRestaurante ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[ObtenerOrigenRestaurante]
+    @idRestaurante INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT Origen FROM Restaurantes WHERE ID = @idRestaurante;
+END
+GO
+/****** Object:  StoredProcedure [dbo].[ListarRestaurantesConRestriccion]  -- BD.ObtenerRestaurantesConRestriccion ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[ListarRestaurantesConRestriccion]
+    @idRestriccion INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT idRestaurante FROM RestriccionesRestaurantes WHERE idRestriccion = @idRestriccion;
+END
+GO
+/****** Object:  StoredProcedure [dbo].[ObtenerLugar]  -- BD.ObtenerLugar ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[ObtenerLugar]
+    @idRestaurante INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT r.ID, r.Nombre, r.Foto, c.Nombre AS Categoria, b.Nombre AS Barrio
+    FROM Restaurantes r
+    LEFT JOIN Categorias c ON c.ID = r.idCategoria
+    LEFT JOIN Barrios b ON b.ID = r.idBarrio
+    WHERE r.ID = @idRestaurante;
+END
+GO
+/****** Object:  StoredProcedure [dbo].[ListarChatsUsuario]  -- BD.ObtenerChatsDeUsuario: los grupos con la fecha del último mensaje y los no leídos ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[ListarChatsUsuario]
+    @idUsuario INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT g.ID AS IdGrupo, g.Nombre, g.Foto,
+           (SELECT MAX(FechaHora) FROM Mensajes WHERE idGrupo = g.ID) AS UltimaFecha,
+           (SELECT COUNT(*) FROM Mensajes m
+            WHERE m.idGrupo = g.ID AND m.idUsuario <> @idUsuario
+              AND (ug.UltimaLectura IS NULL OR m.FechaHora > ug.UltimaLectura)) AS NoLeidos,
+           ISNULL((SELECT MAX(FechaHora) FROM Mensajes WHERE idGrupo = g.ID), g.FechaCreacion) AS FechaOrden
+    FROM Grupos g
+    INNER JOIN UsuariosGrupos ug ON ug.idGrupo = g.ID
+    WHERE ug.idUsuario = @idUsuario
+    ORDER BY FechaOrden DESC;
+END
+GO
+/****** Object:  StoredProcedure [dbo].[ObtenerGrupo]  -- BD.ObtenerGrupo ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[ObtenerGrupo]
+    @idGrupo INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT ID, Nombre, Foto, FechaCreacion FROM Grupos WHERE ID = @idGrupo;
+END
+GO
+/****** Object:  StoredProcedure [dbo].[ListarMensajesGrupo]  -- BD.ObtenerMensajes: los mensajes con Id mayor a @desdeId, del más viejo al más nuevo ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[ListarMensajesGrupo]
+    @idGrupo INT,
+    @desdeId INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT m.ID, m.Contenido, m.FechaHora, m.idUsuario, u.NombreCompleto, u.FotoPerfil, m.idPlan
+    FROM Mensajes m
+    INNER JOIN Usuarios u ON u.ID = m.idUsuario
+    WHERE m.idGrupo = @idGrupo AND m.ID > @desdeId
+    ORDER BY m.ID;
+END
+GO
+/****** Object:  StoredProcedure [dbo].[GuardarMensaje]  -- BD.GuardarMensaje ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[GuardarMensaje]
+    @idGrupo INT,
+    @idUsuario INT,
+    @contenido VARCHAR(MAX)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    INSERT INTO Mensajes (Contenido, FechaHora, idGrupo, idUsuario)
+    VALUES (@contenido, GETDATE(), @idGrupo, @idUsuario);
+END
+GO
+/****** Object:  StoredProcedure [dbo].[GuardarMensajePlan]  -- BD.CrearPlan (último paso): publica el plan en el chat como mensaje encuesta ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[GuardarMensajePlan]
+    @titulo VARCHAR(MAX),
+    @idGrupo INT,
+    @idCreador INT,
+    @idPlan INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    INSERT INTO Mensajes (Contenido, FechaHora, idGrupo, idUsuario, idPlan)
+    VALUES (@titulo, GETDATE(), @idGrupo, @idCreador, @idPlan);
+END
+GO
+/****** Object:  StoredProcedure [dbo].[MarcarGrupoLeido]  -- BD.MarcarComoLeido ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[MarcarGrupoLeido]
+    @idUsuario INT,
+    @idGrupo INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    UPDATE UsuariosGrupos SET UltimaLectura = GETDATE() WHERE idUsuario = @idUsuario AND idGrupo = @idGrupo;
+END
+GO
+/****** Object:  StoredProcedure [dbo].[CrearGrupo]  -- BD.CrearGrupo: crea el grupo y devuelve el Id nuevo (los integrantes se suman con AgregarUsuarioAGrupo) ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[CrearGrupo]
+    @nombre VARCHAR(50)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    INSERT INTO Grupos (Nombre, FechaCreacion) VALUES (@nombre, GETDATE());
+
+    SELECT SCOPE_IDENTITY() AS idGrupoNuevo;
+END
+GO
+/****** Object:  StoredProcedure [dbo].[ActualizarFotoGrupo]  -- BD.ActualizarFotoGrupo ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[ActualizarFotoGrupo]
+    @idGrupo INT,
+    @foto VARCHAR(100)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    UPDATE Grupos SET Foto = @foto WHERE ID = @idGrupo;
+END
+GO
+/****** Object:  StoredProcedure [dbo].[ListarOtrosUsuarios]  -- BD.ObtenerOtrosUsuarios: "Sumá amigos" (todavía no hay tabla de amistades) ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[ListarOtrosUsuarios]
+    @idUsuario INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT ID, NombreCompleto, NombreUsuario
+    FROM Usuarios
+    WHERE ID <> @idUsuario
+    ORDER BY NombreCompleto;
+END
+GO
+/****** Object:  StoredProcedure [dbo].[ContarAmigosUsuario]  -- BD.ContarAmigos: personas distintas que comparten algún grupo con el usuario ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[ContarAmigosUsuario]
+    @idUsuario INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT COUNT(DISTINCT otros.idUsuario)
+    FROM UsuariosGrupos mios
+    INNER JOIN UsuariosGrupos otros ON otros.idGrupo = mios.idGrupo AND otros.idUsuario <> mios.idUsuario
+    WHERE mios.idUsuario = @idUsuario;
+END
+GO
+/****** Object:  StoredProcedure [dbo].[ListarRestriccionesGrupo]  -- BD.ObtenerRestriccionesDeGrupo: las restricciones de los integrantes, sin repetir ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[ListarRestriccionesGrupo]
+    @idGrupo INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT DISTINCT re.Nombre
+    FROM RestriccionesUsuarios ru
+    INNER JOIN UsuariosGrupos ug ON ug.idUsuario = ru.idUsuario
+    INNER JOIN Restricciones re ON re.ID = ru.idRestricciones
+    WHERE ug.idGrupo = @idGrupo;
+END
+GO
+/****** Object:  StoredProcedure [dbo].[ListarPlanesUsuario]  -- BD.ObtenerPlanesDeUsuario: planes de todos los grupos del usuario, sin los cancelados.
+   Estado: 0 = En votación, 1 = Confirmado, 2 = Cancelado. @confirmado = NULL trae votación y confirmados. ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[ListarPlanesUsuario]
+    @idUsuario INT,
+    @confirmado BIT = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT p.ID, p.Titulo, p.idGrupo, p.idRestauranteElegido, r.Nombre AS LugarElegido,
+           CASE WHEN p.Estado = 1 THEN 'Confirmado' ELSE 'En votación' END AS Estado,
+           (SELECT COUNT(*) FROM PlanesRestaurantes WHERE idPlan = p.ID) AS CantidadLugares
+    FROM Planes p
+    INNER JOIN UsuariosGrupos ug ON ug.idGrupo = p.idGrupo
+    LEFT JOIN Restaurantes r ON r.ID = p.idRestauranteElegido
+    WHERE ug.idUsuario = @idUsuario AND p.Estado <> 2 AND (@confirmado IS NULL OR p.Estado = @confirmado)
+    ORDER BY p.ID DESC;
+END
+GO
+/****** Object:  StoredProcedure [dbo].[ContarPlanesVotacionUsuario]  -- BD.ContarPlanesEnVotacion ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[ContarPlanesVotacionUsuario]
+    @idUsuario INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT COUNT(*)
+    FROM Planes p
+    INNER JOIN UsuariosGrupos ug ON ug.idGrupo = p.idGrupo
+    WHERE ug.idUsuario = @idUsuario AND p.Estado = 0;
+END
+GO
+/****** Object:  StoredProcedure [dbo].[ObtenerPlan]  -- BD.ObtenerPlan ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[ObtenerPlan]
+    @idPlan INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT * FROM Planes WHERE ID = @idPlan;
+END
+GO
+/****** Object:  StoredProcedure [dbo].[ObtenerEncuestaPlan]  -- BD.ObtenerEncuesta (1 de 4): los datos del plan como los ve @idUsuario, con su voto de lugar y de horario ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[ObtenerEncuestaPlan]
+    @idPlan INT,
+    @idUsuario INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT p.ID, p.Titulo, p.Estado, p.FechaSalida, p.idGrupo, g.Nombre AS NombreGrupo,
+           p.idUsuarioCreador AS IdCreador, u.NombreCompleto AS NombreCreador, p.idRestauranteElegido,
+           (SELECT COUNT(*) FROM UsuariosGrupos WHERE idGrupo = p.idGrupo) AS CantidadIntegrantes,
+           (SELECT idRestaurante FROM Votos WHERE idPlan = p.ID AND idUsuario = @idUsuario) AS MiVoto,
+           (SELECT MIN(ph.ID) FROM Votos v
+            INNER JOIN PlanesHorarios votado ON votado.ID = v.idHorarioVotado
+            INNER JOIN PlanesHorarios ph ON ph.idPlan = v.idPlan AND ph.FechaHoraPropuesta = votado.FechaHoraPropuesta
+            WHERE v.idPlan = p.ID AND v.idUsuario = @idUsuario) AS MiVotoHorario
+    FROM Planes p
+    INNER JOIN Grupos g ON g.ID = p.idGrupo
+    LEFT JOIN Usuarios u ON u.ID = p.idUsuarioCreador
+    WHERE p.ID = @idPlan;
+END
+GO
+/****** Object:  StoredProcedure [dbo].[ListarOpcionesPlan]  -- BD.ObtenerEncuesta (2 de 4): los lugares en el orden en que se propusieron, con sus votos ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[ListarOpcionesPlan]
+    @idPlan INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT r.ID AS IdRestaurante, r.Nombre, r.Foto, c.Nombre AS Categoria, b.Nombre AS Barrio, r.SitioWeb,
+           (SELECT COUNT(*) FROM Votos WHERE idPlan = pr.idPlan AND idRestaurante = r.ID) AS Votos
+    FROM PlanesRestaurantes pr
+    INNER JOIN Restaurantes r ON r.ID = pr.idRestaurante
+    LEFT JOIN Categorias c ON c.ID = r.idCategoria
+    LEFT JOIN Barrios b ON b.ID = r.idBarrio
+    WHERE pr.idPlan = @idPlan
+    ORDER BY pr.ID;
+END
+GO
+/****** Object:  StoredProcedure [dbo].[ListarHorariosPlan]  -- BD.ObtenerEncuesta (3 de 4): los horarios de más temprano a más tarde.
+   PlanesHorarios tiene una fila por lugar y por hora: cada horario se identifica con la primera fila (MIN(ID)). ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[ListarHorariosPlan]
+    @idPlan INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT MIN(ph.ID) AS IdHorario, ph.FechaHoraPropuesta,
+           (SELECT COUNT(*) FROM Votos v
+            INNER JOIN PlanesHorarios votado ON votado.ID = v.idHorarioVotado
+            WHERE v.idPlan = @idPlan AND votado.FechaHoraPropuesta = ph.FechaHoraPropuesta) AS Votos
+    FROM PlanesHorarios ph
+    WHERE ph.idPlan = @idPlan
+    GROUP BY ph.FechaHoraPropuesta
+    ORDER BY ph.FechaHoraPropuesta;
+END
+GO
+/****** Object:  StoredProcedure [dbo].[ListarParticipantesPlan]  -- BD.ObtenerEncuesta (4 de 4): todos los integrantes del grupo con su voto (NULL si no votaron). Primero el que organiza. ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[ListarParticipantesPlan]
+    @idPlan INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT u.ID AS IdUsuario, u.NombreCompleto,
+           v.idRestaurante AS IdLugarVotado, r.Nombre AS LugarVotado,
+           (SELECT MIN(ph.ID) FROM PlanesHorarios ph
+            WHERE ph.idPlan = p.ID AND ph.FechaHoraPropuesta = votado.FechaHoraPropuesta) AS IdHorarioVotado,
+           votado.FechaHoraPropuesta AS HorarioVotado
+    FROM Planes p
+    INNER JOIN UsuariosGrupos ug ON ug.idGrupo = p.idGrupo
+    INNER JOIN Usuarios u ON u.ID = ug.idUsuario
+    LEFT JOIN Votos v ON v.idPlan = p.ID AND v.idUsuario = u.ID
+    LEFT JOIN Restaurantes r ON r.ID = v.idRestaurante
+    LEFT JOIN PlanesHorarios votado ON votado.ID = v.idHorarioVotado
+    WHERE p.ID = @idPlan
+    ORDER BY CASE WHEN u.ID = p.idUsuarioCreador THEN 0 ELSE 1 END, u.NombreCompleto;
+END
+GO
+/****** Object:  StoredProcedure [dbo].[ListarPlanesPublicadosGrupo]  -- BD.ObtenerEncuestasDeGrupo: los planes que se publicaron en el chat del grupo ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[ListarPlanesPublicadosGrupo]
+    @idGrupo INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT idPlan FROM Mensajes WHERE idGrupo = @idGrupo AND idPlan IS NOT NULL ORDER BY ID;
+END
+GO
+/****** Object:  StoredProcedure [dbo].[BuscarLugaresParaGrupo]  -- BD.BuscarLugaresParaGrupo: busca lugares por nombre para el modal Crear plan.
+   Primero van los aptos para todo el grupo (cumplen todas las restricciones de sus integrantes). ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[BuscarLugaresParaGrupo]
+    @idGrupo INT,
+    @texto VARCHAR(100)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT TOP 6 r.ID, r.Nombre, r.Foto, c.Nombre AS Categoria, b.Nombre AS Barrio,
+           CAST(CASE WHEN NOT EXISTS (
+                    SELECT 1 FROM RestriccionesUsuarios ru
+                    INNER JOIN UsuariosGrupos ug ON ug.idUsuario = ru.idUsuario
+                    WHERE ug.idGrupo = @idGrupo
+                      AND NOT EXISTS (SELECT 1 FROM RestriccionesRestaurantes rr
+                                      WHERE rr.idRestaurante = r.ID AND rr.idRestriccion = ru.idRestricciones))
+                THEN 1 ELSE 0 END AS BIT) AS AptoParaTodos
+    FROM Restaurantes r
+    LEFT JOIN Categorias c ON c.ID = r.idCategoria
+    LEFT JOIN Barrios b ON b.ID = r.idBarrio
+    WHERE r.Nombre LIKE '%' + @texto + '%'
+    ORDER BY AptoParaTodos DESC, r.Nombre;
+END
+GO
+/****** Object:  StoredProcedure [dbo].[EsLugarDelPlan]  -- BD.EsLugarDelPlan ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[EsLugarDelPlan]
+    @idPlan INT,
+    @idRestaurante INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF EXISTS (SELECT 1 FROM PlanesRestaurantes WHERE idPlan = @idPlan AND idRestaurante = @idRestaurante)
+    BEGIN
+        SELECT CAST(1 AS BIT);
+    END
+    ELSE
+    BEGIN
+        SELECT CAST(0 AS BIT);
+    END
+END
+GO
+/****** Object:  StoredProcedure [dbo].[EsHorarioDelPlan]  -- BD.EsHorarioDelPlan ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[EsHorarioDelPlan]
+    @idPlan INT,
+    @idHorario INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF EXISTS (SELECT 1 FROM PlanesHorarios WHERE idPlan = @idPlan AND ID = @idHorario)
+    BEGIN
+        SELECT CAST(1 AS BIT);
+    END
+    ELSE
+    BEGIN
+        SELECT CAST(0 AS BIT);
+    END
+END
+GO
+/****** Object:  StoredProcedure [dbo].[ObtenerLugarVotado]  -- BD.ObtenerLugarVotado (sin filas si todavía no votó) ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[ObtenerLugarVotado]
+    @idPlan INT,
+    @idUsuario INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT idRestaurante FROM Votos WHERE idPlan = @idPlan AND idUsuario = @idUsuario;
+END
+GO
+/****** Object:  StoredProcedure [dbo].[ObtenerHorarioVotadoEnLugar]  -- BD.Votar: la fila de PlanesHorarios con la misma hora que ya había votado, pero en el lugar nuevo (sin filas si no votó horario) ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[ObtenerHorarioVotadoEnLugar]
+    @idPlan INT,
+    @idUsuario INT,
+    @idRestaurante INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT ph.ID FROM Votos v
+    INNER JOIN PlanesHorarios votado ON votado.ID = v.idHorarioVotado
+    INNER JOIN PlanesHorarios ph ON ph.idPlan = v.idPlan AND ph.FechaHoraPropuesta = votado.FechaHoraPropuesta
+    WHERE v.idPlan = @idPlan AND v.idUsuario = @idUsuario AND ph.idRestaurante = @idRestaurante;
+END
+GO
+/****** Object:  StoredProcedure [dbo].[ObtenerHorarioDeLugar]  -- BD.VotarHorario: dada cualquier fila de una hora (@idHorario), la fila de esa hora en el lugar votado ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[ObtenerHorarioDeLugar]
+    @idPlan INT,
+    @idRestaurante INT,
+    @idHorario INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT ph.ID FROM PlanesHorarios ph
+    INNER JOIN PlanesHorarios elegido ON elegido.ID = @idHorario AND elegido.FechaHoraPropuesta = ph.FechaHoraPropuesta
+    WHERE ph.idPlan = @idPlan AND ph.idRestaurante = @idRestaurante;
+END
+GO
+/****** Object:  StoredProcedure [dbo].[ConfirmarPlan]  -- BD.ConfirmarPlan: queda Confirmado con el lugar ganador; FechaSalida pasa a ser el día y la hora ganadora ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[ConfirmarPlan]
+    @idPlan INT,
+    @idRestaurante INT,
+    @fechaSalida DATETIME
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    UPDATE Planes
+    SET Estado = 1, idRestauranteElegido = @idRestaurante,
+        FechaSalida = @fechaSalida, FechaCierreVotacion = @fechaSalida
+    WHERE ID = @idPlan;
+END
+GO
+/****** Object:  StoredProcedure [dbo].[CancelarPlan]  -- BD.CancelarPlan ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[CancelarPlan]
+    @idPlan INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    UPDATE Planes SET Estado = 2 WHERE ID = @idPlan;
+END
+GO
+/****** Object:  StoredProcedure [dbo].[ListarMejorPuntuados]  -- BD.ObtenerMejorPuntuados (con solo apto o con chip de restricción). El puntaje solo cuenta reseñas de más de 24 horas. ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[ListarMejorPuntuados]
+    @cantidad INT,
+    @idUsuario INT,
+    @soloApto BIT = 0,
+    @idRestriccion INT = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT TOP (@cantidad) r.ID, r.Nombre, r.Foto, c.Nombre AS Categoria, b.Nombre AS Barrio,
+           (SELECT AVG(CAST(Puntaje AS FLOAT)) FROM Reseñas WHERE idRestaurante = r.ID AND Fecha <= DATEADD(hour, -24, GETDATE())) AS Puntaje,
+           CAST(CASE WHEN EXISTS (SELECT 1 FROM Favoritos WHERE idUsuario = @idUsuario AND idRestaurante = r.ID)
+                THEN 1 ELSE 0 END AS BIT) AS EsFavorito
+    FROM Restaurantes r
+    LEFT JOIN Categorias c ON c.ID = r.idCategoria
+    LEFT JOIN Barrios b ON b.ID = r.idBarrio
+    WHERE (@soloApto = 0
+       OR NOT EXISTS (SELECT 1 FROM RestriccionesUsuarios WHERE idUsuario = @idUsuario)
+       OR EXISTS (SELECT 1 FROM RestriccionesRestaurantes rr
+                  INNER JOIN RestriccionesUsuarios ru ON ru.idRestricciones = rr.idRestriccion
+                  WHERE rr.idRestaurante = r.ID AND ru.idUsuario = @idUsuario))
+      AND (@idRestriccion IS NULL
+       OR EXISTS (SELECT 1 FROM RestriccionesRestaurantes
+                  WHERE idRestaurante = r.ID AND idRestriccion = @idRestriccion))
+    ORDER BY CASE WHEN (SELECT AVG(CAST(Puntaje AS FLOAT)) FROM Reseñas WHERE idRestaurante = r.ID AND Fecha <= DATEADD(hour, -24, GETDATE())) IS NULL THEN 1 ELSE 0 END,
+             Puntaje DESC, r.ID;
+END
+GO
+/****** Object:  StoredProcedure [dbo].[ListarRecomendables]  -- BD.ObtenerRecomendados: los lugares con su afinidad con el usuario, de mayor a menor (sin sus favoritos).
+   Afinidad: +2 si está en un barrio que le interesa (ZonasUsuarios o su barrio del perfil),
+             +2 si es de una categoría que ya marcó como favorita o reseñó con 4 o 5,
+             +1 si tiene buen puntaje (4 o más).
+   El número al azar que hace que no sean siempre los mismos se suma en C#. ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[ListarRecomendables]
+    @idUsuario INT,
+    @soloApto BIT = 0,
+    @idRestriccion INT = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT r.ID, r.Nombre, r.Foto, c.Nombre AS Categoria, b.Nombre AS Barrio,
+           (SELECT AVG(CAST(Puntaje AS FLOAT)) FROM Reseñas WHERE idRestaurante = r.ID AND Fecha <= DATEADD(hour, -24, GETDATE())) AS Puntaje,
+           CAST(0 AS BIT) AS EsFavorito,
+           (CASE WHEN r.idBarrio IN (SELECT idBarrio FROM ZonasUsuarios WHERE idUsuario = @idUsuario)
+                   OR r.idBarrio = (SELECT idBarrio FROM Usuarios WHERE ID = @idUsuario) THEN 2 ELSE 0 END)
+         + (CASE WHEN r.idCategoria IN (SELECT x.idCategoria FROM Favoritos f INNER JOIN Restaurantes x ON x.ID = f.idRestaurante WHERE f.idUsuario = @idUsuario
+                                        UNION
+                                        SELECT x.idCategoria FROM Reseñas rs INNER JOIN Restaurantes x ON x.ID = rs.idRestaurante WHERE rs.idUsuario = @idUsuario AND rs.Puntaje >= 4) THEN 2 ELSE 0 END)
+         + (CASE WHEN (SELECT AVG(CAST(Puntaje AS FLOAT)) FROM Reseñas WHERE idRestaurante = r.ID) >= 4 THEN 1 ELSE 0 END) AS Afinidad
+    FROM Restaurantes r
+    LEFT JOIN Categorias c ON c.ID = r.idCategoria
+    LEFT JOIN Barrios b ON b.ID = r.idBarrio
+    WHERE NOT EXISTS (SELECT 1 FROM Favoritos WHERE idUsuario = @idUsuario AND idRestaurante = r.ID)
+      AND (@soloApto = 0
+       OR NOT EXISTS (SELECT 1 FROM RestriccionesUsuarios WHERE idUsuario = @idUsuario)
+       OR EXISTS (SELECT 1 FROM RestriccionesRestaurantes rr
+                  INNER JOIN RestriccionesUsuarios ru ON ru.idRestricciones = rr.idRestriccion
+                  WHERE rr.idRestaurante = r.ID AND ru.idUsuario = @idUsuario))
+      AND (@idRestriccion IS NULL
+       OR EXISTS (SELECT 1 FROM RestriccionesRestaurantes
+                  WHERE idRestaurante = r.ID AND idRestriccion = @idRestriccion))
+    ORDER BY Afinidad DESC;
+END
+GO
+/****** Object:  StoredProcedure [dbo].[ObtenerProDestacado]  -- BD.ObtenerProDestacado: el Pro más cercano al usuario entre los que coinciden con la búsqueda (sin filas si no hay ninguno).
+   Filtro de Descubrir (igual en todos los procedimientos de búsqueda):
+   @soloApto: solo los que cumplen al menos una restricción del usuario (si no marcó ninguna, todos).
+   @idBarrio / @idCategoria: los desplegables (NULL = todos).
+   @p1..@p5: las palabras del buscador con % (NULL = sin palabra). @s1..@s5: la misma palabra sin la "s" final.
+   Cada palabra tiene que estar en el nombre, el barrio o la categoría. COLLATE ..._CI_AI: no importan tildes ni mayúsculas.
+   @tieneZona = 1: solo lo que cae dentro de @norte, @sur, @este, @oeste (lo que se ve en el mapa).
+   @limite: solo los @limite lugares de mejor puntaje (el puntaje se "suaviza" como si todos tuvieran 3 reseñas de 3,5). ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[ObtenerProDestacado]
+    @idUsuario INT,
+    @soloApto BIT = 0,
+    @idBarrio INT = NULL,
+    @idCategoria INT = NULL,
+    @p1 VARCHAR(100) = NULL, @s1 VARCHAR(100) = NULL,
+    @p2 VARCHAR(100) = NULL, @s2 VARCHAR(100) = NULL,
+    @p3 VARCHAR(100) = NULL, @s3 VARCHAR(100) = NULL,
+    @p4 VARCHAR(100) = NULL, @s4 VARCHAR(100) = NULL,
+    @p5 VARCHAR(100) = NULL, @s5 VARCHAR(100) = NULL,
+    @tieneZona BIT = 0,
+    @norte FLOAT = NULL,
+    @sur FLOAT = NULL,
+    @este FLOAT = NULL,
+    @oeste FLOAT = NULL,
+    @limite INT = NULL,
+    @latitudUsuario FLOAT = NULL,
+    @longitudUsuario FLOAT = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT TOP 1 r.ID
+    FROM Restaurantes r
+    LEFT JOIN Categorias c ON c.ID = r.idCategoria
+    LEFT JOIN Barrios b ON b.ID = r.idBarrio
+    WHERE r.EsPro = 1
+      AND (@soloApto = 0
+           OR NOT EXISTS (SELECT 1 FROM RestriccionesUsuarios WHERE idUsuario = @idUsuario)
+           OR EXISTS (SELECT 1 FROM RestriccionesRestaurantes rr
+                      JOIN RestriccionesUsuarios ru ON ru.idRestricciones = rr.idRestriccion
+                      WHERE rr.idRestaurante = r.ID AND ru.idUsuario = @idUsuario))
+          AND (@idBarrio IS NULL OR r.idBarrio = @idBarrio)
+          AND (@idCategoria IS NULL OR r.idCategoria = @idCategoria)
+          AND (@p1 IS NULL
+               OR r.Nombre COLLATE Latin1_General_CI_AI LIKE @p1
+               OR b.Nombre COLLATE Latin1_General_CI_AI LIKE @p1
+               OR c.Nombre COLLATE Latin1_General_CI_AI LIKE @p1
+               OR r.Nombre COLLATE Latin1_General_CI_AI LIKE @s1
+               OR b.Nombre COLLATE Latin1_General_CI_AI LIKE @s1
+               OR c.Nombre COLLATE Latin1_General_CI_AI LIKE @s1)
+          AND (@p2 IS NULL
+               OR r.Nombre COLLATE Latin1_General_CI_AI LIKE @p2
+               OR b.Nombre COLLATE Latin1_General_CI_AI LIKE @p2
+               OR c.Nombre COLLATE Latin1_General_CI_AI LIKE @p2
+               OR r.Nombre COLLATE Latin1_General_CI_AI LIKE @s2
+               OR b.Nombre COLLATE Latin1_General_CI_AI LIKE @s2
+               OR c.Nombre COLLATE Latin1_General_CI_AI LIKE @s2)
+          AND (@p3 IS NULL
+               OR r.Nombre COLLATE Latin1_General_CI_AI LIKE @p3
+               OR b.Nombre COLLATE Latin1_General_CI_AI LIKE @p3
+               OR c.Nombre COLLATE Latin1_General_CI_AI LIKE @p3
+               OR r.Nombre COLLATE Latin1_General_CI_AI LIKE @s3
+               OR b.Nombre COLLATE Latin1_General_CI_AI LIKE @s3
+               OR c.Nombre COLLATE Latin1_General_CI_AI LIKE @s3)
+          AND (@p4 IS NULL
+               OR r.Nombre COLLATE Latin1_General_CI_AI LIKE @p4
+               OR b.Nombre COLLATE Latin1_General_CI_AI LIKE @p4
+               OR c.Nombre COLLATE Latin1_General_CI_AI LIKE @p4
+               OR r.Nombre COLLATE Latin1_General_CI_AI LIKE @s4
+               OR b.Nombre COLLATE Latin1_General_CI_AI LIKE @s4
+               OR c.Nombre COLLATE Latin1_General_CI_AI LIKE @s4)
+          AND (@p5 IS NULL
+               OR r.Nombre COLLATE Latin1_General_CI_AI LIKE @p5
+               OR b.Nombre COLLATE Latin1_General_CI_AI LIKE @p5
+               OR c.Nombre COLLATE Latin1_General_CI_AI LIKE @p5
+               OR r.Nombre COLLATE Latin1_General_CI_AI LIKE @s5
+               OR b.Nombre COLLATE Latin1_General_CI_AI LIKE @s5
+               OR c.Nombre COLLATE Latin1_General_CI_AI LIKE @s5)
+          AND (@tieneZona = 0
+               OR (ISNULL(r.Latitud, b.Latitud) BETWEEN @sur AND @norte
+                   AND ISNULL(r.Longitud, b.Longitud) BETWEEN @oeste AND @este))
+          AND (@limite IS NULL
+               OR r.ID IN (SELECT TOP (@limite) r2.ID
+                           FROM Restaurantes r2
+                           LEFT JOIN Categorias c2 ON c2.ID = r2.idCategoria
+                           LEFT JOIN Barrios b2 ON b2.ID = r2.idBarrio
+                           WHERE (@soloApto = 0
+           OR NOT EXISTS (SELECT 1 FROM RestriccionesUsuarios WHERE idUsuario = @idUsuario)
+           OR EXISTS (SELECT 1 FROM RestriccionesRestaurantes rr
+                      JOIN RestriccionesUsuarios ru ON ru.idRestricciones = rr.idRestriccion
+                      WHERE rr.idRestaurante = r2.ID AND ru.idUsuario = @idUsuario))
+          AND (@idBarrio IS NULL OR r2.idBarrio = @idBarrio)
+          AND (@idCategoria IS NULL OR r2.idCategoria = @idCategoria)
+          AND (@p1 IS NULL
+               OR r2.Nombre COLLATE Latin1_General_CI_AI LIKE @p1
+               OR b2.Nombre COLLATE Latin1_General_CI_AI LIKE @p1
+               OR c2.Nombre COLLATE Latin1_General_CI_AI LIKE @p1
+               OR r2.Nombre COLLATE Latin1_General_CI_AI LIKE @s1
+               OR b2.Nombre COLLATE Latin1_General_CI_AI LIKE @s1
+               OR c2.Nombre COLLATE Latin1_General_CI_AI LIKE @s1)
+          AND (@p2 IS NULL
+               OR r2.Nombre COLLATE Latin1_General_CI_AI LIKE @p2
+               OR b2.Nombre COLLATE Latin1_General_CI_AI LIKE @p2
+               OR c2.Nombre COLLATE Latin1_General_CI_AI LIKE @p2
+               OR r2.Nombre COLLATE Latin1_General_CI_AI LIKE @s2
+               OR b2.Nombre COLLATE Latin1_General_CI_AI LIKE @s2
+               OR c2.Nombre COLLATE Latin1_General_CI_AI LIKE @s2)
+          AND (@p3 IS NULL
+               OR r2.Nombre COLLATE Latin1_General_CI_AI LIKE @p3
+               OR b2.Nombre COLLATE Latin1_General_CI_AI LIKE @p3
+               OR c2.Nombre COLLATE Latin1_General_CI_AI LIKE @p3
+               OR r2.Nombre COLLATE Latin1_General_CI_AI LIKE @s3
+               OR b2.Nombre COLLATE Latin1_General_CI_AI LIKE @s3
+               OR c2.Nombre COLLATE Latin1_General_CI_AI LIKE @s3)
+          AND (@p4 IS NULL
+               OR r2.Nombre COLLATE Latin1_General_CI_AI LIKE @p4
+               OR b2.Nombre COLLATE Latin1_General_CI_AI LIKE @p4
+               OR c2.Nombre COLLATE Latin1_General_CI_AI LIKE @p4
+               OR r2.Nombre COLLATE Latin1_General_CI_AI LIKE @s4
+               OR b2.Nombre COLLATE Latin1_General_CI_AI LIKE @s4
+               OR c2.Nombre COLLATE Latin1_General_CI_AI LIKE @s4)
+          AND (@p5 IS NULL
+               OR r2.Nombre COLLATE Latin1_General_CI_AI LIKE @p5
+               OR b2.Nombre COLLATE Latin1_General_CI_AI LIKE @p5
+               OR c2.Nombre COLLATE Latin1_General_CI_AI LIKE @p5
+               OR r2.Nombre COLLATE Latin1_General_CI_AI LIKE @s5
+               OR b2.Nombre COLLATE Latin1_General_CI_AI LIKE @s5
+               OR c2.Nombre COLLATE Latin1_General_CI_AI LIKE @s5)
+          AND (@tieneZona = 0
+               OR (ISNULL(r2.Latitud, b2.Latitud) BETWEEN @sur AND @norte
+                   AND ISNULL(r2.Longitud, b2.Longitud) BETWEEN @oeste AND @este))
+                           ORDER BY (SELECT (ISNULL(SUM(CAST(Puntaje AS FLOAT)), 0) + 10.5) / (COUNT(*) + 3)
+                                     FROM Reseñas
+                                     WHERE idRestaurante = r2.ID AND Fecha <= DATEADD(hour, -24, GETDATE())) DESC,
+                                    r2.EsPro DESC, r2.ID))
+    ORDER BY CASE WHEN dbo.DistanciaKm(@latitudUsuario, @longitudUsuario, ISNULL(r.Latitud, b.Latitud), ISNULL(r.Longitud, b.Longitud)) IS NULL THEN 1 ELSE 0 END,
+             dbo.DistanciaKm(@latitudUsuario, @longitudUsuario, ISNULL(r.Latitud, b.Latitud), ISNULL(r.Longitud, b.Longitud)),
+             r.ID;
+END
+GO
+/****** Object:  StoredProcedure [dbo].[BuscarRestaurantesPagina]  -- BD.BuscarRestaurantes: los primeros @hasta resultados de Descubrir (C# se salta los de las páginas anteriores).
+   @idDestacado: el Pro de ObtenerProDestacado. Va primero.
+   @orden: 'cerca' (del más cerca al más lejos) o 'puntaje' (mejor puntuados primero; los empates, por distancia).
+   Los que no tienen distancia o no tienen reseñas van al final.
+   (Se llama BuscarRestaurantesPagina porque BuscarRestaurantes ya existía con otros parámetros.)
+   Filtro de Descubrir (igual en todos los procedimientos de búsqueda):
+   @soloApto: solo los que cumplen al menos una restricción del usuario (si no marcó ninguna, todos).
+   @idBarrio / @idCategoria: los desplegables (NULL = todos).
+   @p1..@p5: las palabras del buscador con % (NULL = sin palabra). @s1..@s5: la misma palabra sin la "s" final.
+   Cada palabra tiene que estar en el nombre, el barrio o la categoría. COLLATE ..._CI_AI: no importan tildes ni mayúsculas.
+   @tieneZona = 1: solo lo que cae dentro de @norte, @sur, @este, @oeste (lo que se ve en el mapa).
+   @limite: solo los @limite lugares de mejor puntaje (el puntaje se "suaviza" como si todos tuvieran 3 reseñas de 3,5). ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[BuscarRestaurantesPagina]
+    @idUsuario INT,
+    @soloApto BIT = 0,
+    @idBarrio INT = NULL,
+    @idCategoria INT = NULL,
+    @p1 VARCHAR(100) = NULL, @s1 VARCHAR(100) = NULL,
+    @p2 VARCHAR(100) = NULL, @s2 VARCHAR(100) = NULL,
+    @p3 VARCHAR(100) = NULL, @s3 VARCHAR(100) = NULL,
+    @p4 VARCHAR(100) = NULL, @s4 VARCHAR(100) = NULL,
+    @p5 VARCHAR(100) = NULL, @s5 VARCHAR(100) = NULL,
+    @tieneZona BIT = 0,
+    @norte FLOAT = NULL,
+    @sur FLOAT = NULL,
+    @este FLOAT = NULL,
+    @oeste FLOAT = NULL,
+    @limite INT = NULL,
+    @latitudUsuario FLOAT = NULL,
+    @longitudUsuario FLOAT = NULL,
+    @orden VARCHAR(10) = 'cerca',
+    @idDestacado INT = NULL,
+    @hasta INT = 10
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT TOP (@hasta) t.*
+    FROM (SELECT r.ID, r.Nombre, r.Foto, c.Nombre AS Categoria, b.Nombre AS Barrio, r.EsPro, r.Origen,
+                 ISNULL(r.Latitud, b.Latitud) AS Latitud, ISNULL(r.Longitud, b.Longitud) AS Longitud,
+                 dbo.DistanciaKm(@latitudUsuario, @longitudUsuario, ISNULL(r.Latitud, b.Latitud), ISNULL(r.Longitud, b.Longitud)) AS DistanciaKm,
+                 (SELECT AVG(CAST(Puntaje AS FLOAT)) FROM Reseñas WHERE idRestaurante = r.ID AND Fecha <= DATEADD(hour, -24, GETDATE())) AS Puntaje,
+                 CAST(CASE WHEN EXISTS (SELECT 1 FROM Favoritos WHERE idUsuario = @idUsuario AND idRestaurante = r.ID)
+                      THEN 1 ELSE 0 END AS BIT) AS EsFavorito
+          FROM Restaurantes r
+          LEFT JOIN Categorias c ON c.ID = r.idCategoria
+          LEFT JOIN Barrios b ON b.ID = r.idBarrio
+          WHERE (@soloApto = 0
+           OR NOT EXISTS (SELECT 1 FROM RestriccionesUsuarios WHERE idUsuario = @idUsuario)
+           OR EXISTS (SELECT 1 FROM RestriccionesRestaurantes rr
+                      JOIN RestriccionesUsuarios ru ON ru.idRestricciones = rr.idRestriccion
+                      WHERE rr.idRestaurante = r.ID AND ru.idUsuario = @idUsuario))
+          AND (@idBarrio IS NULL OR r.idBarrio = @idBarrio)
+          AND (@idCategoria IS NULL OR r.idCategoria = @idCategoria)
+          AND (@p1 IS NULL
+               OR r.Nombre COLLATE Latin1_General_CI_AI LIKE @p1
+               OR b.Nombre COLLATE Latin1_General_CI_AI LIKE @p1
+               OR c.Nombre COLLATE Latin1_General_CI_AI LIKE @p1
+               OR r.Nombre COLLATE Latin1_General_CI_AI LIKE @s1
+               OR b.Nombre COLLATE Latin1_General_CI_AI LIKE @s1
+               OR c.Nombre COLLATE Latin1_General_CI_AI LIKE @s1)
+          AND (@p2 IS NULL
+               OR r.Nombre COLLATE Latin1_General_CI_AI LIKE @p2
+               OR b.Nombre COLLATE Latin1_General_CI_AI LIKE @p2
+               OR c.Nombre COLLATE Latin1_General_CI_AI LIKE @p2
+               OR r.Nombre COLLATE Latin1_General_CI_AI LIKE @s2
+               OR b.Nombre COLLATE Latin1_General_CI_AI LIKE @s2
+               OR c.Nombre COLLATE Latin1_General_CI_AI LIKE @s2)
+          AND (@p3 IS NULL
+               OR r.Nombre COLLATE Latin1_General_CI_AI LIKE @p3
+               OR b.Nombre COLLATE Latin1_General_CI_AI LIKE @p3
+               OR c.Nombre COLLATE Latin1_General_CI_AI LIKE @p3
+               OR r.Nombre COLLATE Latin1_General_CI_AI LIKE @s3
+               OR b.Nombre COLLATE Latin1_General_CI_AI LIKE @s3
+               OR c.Nombre COLLATE Latin1_General_CI_AI LIKE @s3)
+          AND (@p4 IS NULL
+               OR r.Nombre COLLATE Latin1_General_CI_AI LIKE @p4
+               OR b.Nombre COLLATE Latin1_General_CI_AI LIKE @p4
+               OR c.Nombre COLLATE Latin1_General_CI_AI LIKE @p4
+               OR r.Nombre COLLATE Latin1_General_CI_AI LIKE @s4
+               OR b.Nombre COLLATE Latin1_General_CI_AI LIKE @s4
+               OR c.Nombre COLLATE Latin1_General_CI_AI LIKE @s4)
+          AND (@p5 IS NULL
+               OR r.Nombre COLLATE Latin1_General_CI_AI LIKE @p5
+               OR b.Nombre COLLATE Latin1_General_CI_AI LIKE @p5
+               OR c.Nombre COLLATE Latin1_General_CI_AI LIKE @p5
+               OR r.Nombre COLLATE Latin1_General_CI_AI LIKE @s5
+               OR b.Nombre COLLATE Latin1_General_CI_AI LIKE @s5
+               OR c.Nombre COLLATE Latin1_General_CI_AI LIKE @s5)
+          AND (@tieneZona = 0
+               OR (ISNULL(r.Latitud, b.Latitud) BETWEEN @sur AND @norte
+                   AND ISNULL(r.Longitud, b.Longitud) BETWEEN @oeste AND @este))
+          AND (@limite IS NULL
+               OR r.ID IN (SELECT TOP (@limite) r2.ID
+                           FROM Restaurantes r2
+                           LEFT JOIN Categorias c2 ON c2.ID = r2.idCategoria
+                           LEFT JOIN Barrios b2 ON b2.ID = r2.idBarrio
+                           WHERE (@soloApto = 0
+           OR NOT EXISTS (SELECT 1 FROM RestriccionesUsuarios WHERE idUsuario = @idUsuario)
+           OR EXISTS (SELECT 1 FROM RestriccionesRestaurantes rr
+                      JOIN RestriccionesUsuarios ru ON ru.idRestricciones = rr.idRestriccion
+                      WHERE rr.idRestaurante = r2.ID AND ru.idUsuario = @idUsuario))
+          AND (@idBarrio IS NULL OR r2.idBarrio = @idBarrio)
+          AND (@idCategoria IS NULL OR r2.idCategoria = @idCategoria)
+          AND (@p1 IS NULL
+               OR r2.Nombre COLLATE Latin1_General_CI_AI LIKE @p1
+               OR b2.Nombre COLLATE Latin1_General_CI_AI LIKE @p1
+               OR c2.Nombre COLLATE Latin1_General_CI_AI LIKE @p1
+               OR r2.Nombre COLLATE Latin1_General_CI_AI LIKE @s1
+               OR b2.Nombre COLLATE Latin1_General_CI_AI LIKE @s1
+               OR c2.Nombre COLLATE Latin1_General_CI_AI LIKE @s1)
+          AND (@p2 IS NULL
+               OR r2.Nombre COLLATE Latin1_General_CI_AI LIKE @p2
+               OR b2.Nombre COLLATE Latin1_General_CI_AI LIKE @p2
+               OR c2.Nombre COLLATE Latin1_General_CI_AI LIKE @p2
+               OR r2.Nombre COLLATE Latin1_General_CI_AI LIKE @s2
+               OR b2.Nombre COLLATE Latin1_General_CI_AI LIKE @s2
+               OR c2.Nombre COLLATE Latin1_General_CI_AI LIKE @s2)
+          AND (@p3 IS NULL
+               OR r2.Nombre COLLATE Latin1_General_CI_AI LIKE @p3
+               OR b2.Nombre COLLATE Latin1_General_CI_AI LIKE @p3
+               OR c2.Nombre COLLATE Latin1_General_CI_AI LIKE @p3
+               OR r2.Nombre COLLATE Latin1_General_CI_AI LIKE @s3
+               OR b2.Nombre COLLATE Latin1_General_CI_AI LIKE @s3
+               OR c2.Nombre COLLATE Latin1_General_CI_AI LIKE @s3)
+          AND (@p4 IS NULL
+               OR r2.Nombre COLLATE Latin1_General_CI_AI LIKE @p4
+               OR b2.Nombre COLLATE Latin1_General_CI_AI LIKE @p4
+               OR c2.Nombre COLLATE Latin1_General_CI_AI LIKE @p4
+               OR r2.Nombre COLLATE Latin1_General_CI_AI LIKE @s4
+               OR b2.Nombre COLLATE Latin1_General_CI_AI LIKE @s4
+               OR c2.Nombre COLLATE Latin1_General_CI_AI LIKE @s4)
+          AND (@p5 IS NULL
+               OR r2.Nombre COLLATE Latin1_General_CI_AI LIKE @p5
+               OR b2.Nombre COLLATE Latin1_General_CI_AI LIKE @p5
+               OR c2.Nombre COLLATE Latin1_General_CI_AI LIKE @p5
+               OR r2.Nombre COLLATE Latin1_General_CI_AI LIKE @s5
+               OR b2.Nombre COLLATE Latin1_General_CI_AI LIKE @s5
+               OR c2.Nombre COLLATE Latin1_General_CI_AI LIKE @s5)
+          AND (@tieneZona = 0
+               OR (ISNULL(r2.Latitud, b2.Latitud) BETWEEN @sur AND @norte
+                   AND ISNULL(r2.Longitud, b2.Longitud) BETWEEN @oeste AND @este))
+                           ORDER BY (SELECT (ISNULL(SUM(CAST(Puntaje AS FLOAT)), 0) + 10.5) / (COUNT(*) + 3)
+                                     FROM Reseñas
+                                     WHERE idRestaurante = r2.ID AND Fecha <= DATEADD(hour, -24, GETDATE())) DESC,
+                                    r2.EsPro DESC, r2.ID))) t
+    ORDER BY CASE WHEN t.ID = @idDestacado THEN 0 ELSE 1 END,
+             CASE WHEN @orden = 'puntaje' AND t.Puntaje IS NULL THEN 1 ELSE 0 END,
+             CASE WHEN @orden = 'puntaje' THEN t.Puntaje END DESC,
+             CASE WHEN t.DistanciaKm IS NULL THEN 1 ELSE 0 END,
+             t.DistanciaKm,
+             CASE WHEN t.Puntaje IS NULL THEN 1 ELSE 0 END,
+             t.Puntaje DESC, t.ID;
+END
+GO
+/****** Object:  StoredProcedure [dbo].[ListarPinesMapa]  -- BD.ObtenerPinesMapa: los mismos lugares que la lista, juntos, para los pins del mapa (los que no tienen coordenadas no van).
+   Filtro de Descubrir (igual en todos los procedimientos de búsqueda):
+   @soloApto: solo los que cumplen al menos una restricción del usuario (si no marcó ninguna, todos).
+   @idBarrio / @idCategoria: los desplegables (NULL = todos).
+   @p1..@p5: las palabras del buscador con % (NULL = sin palabra). @s1..@s5: la misma palabra sin la "s" final.
+   Cada palabra tiene que estar en el nombre, el barrio o la categoría. COLLATE ..._CI_AI: no importan tildes ni mayúsculas.
+   @tieneZona = 1: solo lo que cae dentro de @norte, @sur, @este, @oeste (lo que se ve en el mapa).
+   @limite: solo los @limite lugares de mejor puntaje (el puntaje se "suaviza" como si todos tuvieran 3 reseñas de 3,5). ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[ListarPinesMapa]
+    @idUsuario INT,
+    @soloApto BIT = 0,
+    @idBarrio INT = NULL,
+    @idCategoria INT = NULL,
+    @p1 VARCHAR(100) = NULL, @s1 VARCHAR(100) = NULL,
+    @p2 VARCHAR(100) = NULL, @s2 VARCHAR(100) = NULL,
+    @p3 VARCHAR(100) = NULL, @s3 VARCHAR(100) = NULL,
+    @p4 VARCHAR(100) = NULL, @s4 VARCHAR(100) = NULL,
+    @p5 VARCHAR(100) = NULL, @s5 VARCHAR(100) = NULL,
+    @tieneZona BIT = 0,
+    @norte FLOAT = NULL,
+    @sur FLOAT = NULL,
+    @este FLOAT = NULL,
+    @oeste FLOAT = NULL,
+    @limite INT = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT r.ID, r.Nombre, r.Foto, c.Nombre AS Categoria, b.Nombre AS Barrio,
+           ISNULL(r.Latitud, b.Latitud) AS Latitud, ISNULL(r.Longitud, b.Longitud) AS Longitud,
+           (SELECT AVG(CAST(Puntaje AS FLOAT)) FROM Reseñas WHERE idRestaurante = r.ID AND Fecha <= DATEADD(hour, -24, GETDATE())) AS Puntaje
+    FROM Restaurantes r
+    LEFT JOIN Categorias c ON c.ID = r.idCategoria
+    LEFT JOIN Barrios b ON b.ID = r.idBarrio
+    WHERE ISNULL(r.Latitud, b.Latitud) IS NOT NULL AND ISNULL(r.Longitud, b.Longitud) IS NOT NULL
+      AND (@soloApto = 0
+           OR NOT EXISTS (SELECT 1 FROM RestriccionesUsuarios WHERE idUsuario = @idUsuario)
+           OR EXISTS (SELECT 1 FROM RestriccionesRestaurantes rr
+                      JOIN RestriccionesUsuarios ru ON ru.idRestricciones = rr.idRestriccion
+                      WHERE rr.idRestaurante = r.ID AND ru.idUsuario = @idUsuario))
+          AND (@idBarrio IS NULL OR r.idBarrio = @idBarrio)
+          AND (@idCategoria IS NULL OR r.idCategoria = @idCategoria)
+          AND (@p1 IS NULL
+               OR r.Nombre COLLATE Latin1_General_CI_AI LIKE @p1
+               OR b.Nombre COLLATE Latin1_General_CI_AI LIKE @p1
+               OR c.Nombre COLLATE Latin1_General_CI_AI LIKE @p1
+               OR r.Nombre COLLATE Latin1_General_CI_AI LIKE @s1
+               OR b.Nombre COLLATE Latin1_General_CI_AI LIKE @s1
+               OR c.Nombre COLLATE Latin1_General_CI_AI LIKE @s1)
+          AND (@p2 IS NULL
+               OR r.Nombre COLLATE Latin1_General_CI_AI LIKE @p2
+               OR b.Nombre COLLATE Latin1_General_CI_AI LIKE @p2
+               OR c.Nombre COLLATE Latin1_General_CI_AI LIKE @p2
+               OR r.Nombre COLLATE Latin1_General_CI_AI LIKE @s2
+               OR b.Nombre COLLATE Latin1_General_CI_AI LIKE @s2
+               OR c.Nombre COLLATE Latin1_General_CI_AI LIKE @s2)
+          AND (@p3 IS NULL
+               OR r.Nombre COLLATE Latin1_General_CI_AI LIKE @p3
+               OR b.Nombre COLLATE Latin1_General_CI_AI LIKE @p3
+               OR c.Nombre COLLATE Latin1_General_CI_AI LIKE @p3
+               OR r.Nombre COLLATE Latin1_General_CI_AI LIKE @s3
+               OR b.Nombre COLLATE Latin1_General_CI_AI LIKE @s3
+               OR c.Nombre COLLATE Latin1_General_CI_AI LIKE @s3)
+          AND (@p4 IS NULL
+               OR r.Nombre COLLATE Latin1_General_CI_AI LIKE @p4
+               OR b.Nombre COLLATE Latin1_General_CI_AI LIKE @p4
+               OR c.Nombre COLLATE Latin1_General_CI_AI LIKE @p4
+               OR r.Nombre COLLATE Latin1_General_CI_AI LIKE @s4
+               OR b.Nombre COLLATE Latin1_General_CI_AI LIKE @s4
+               OR c.Nombre COLLATE Latin1_General_CI_AI LIKE @s4)
+          AND (@p5 IS NULL
+               OR r.Nombre COLLATE Latin1_General_CI_AI LIKE @p5
+               OR b.Nombre COLLATE Latin1_General_CI_AI LIKE @p5
+               OR c.Nombre COLLATE Latin1_General_CI_AI LIKE @p5
+               OR r.Nombre COLLATE Latin1_General_CI_AI LIKE @s5
+               OR b.Nombre COLLATE Latin1_General_CI_AI LIKE @s5
+               OR c.Nombre COLLATE Latin1_General_CI_AI LIKE @s5)
+          AND (@tieneZona = 0
+               OR (ISNULL(r.Latitud, b.Latitud) BETWEEN @sur AND @norte
+                   AND ISNULL(r.Longitud, b.Longitud) BETWEEN @oeste AND @este))
+          AND (@limite IS NULL
+               OR r.ID IN (SELECT TOP (@limite) r2.ID
+                           FROM Restaurantes r2
+                           LEFT JOIN Categorias c2 ON c2.ID = r2.idCategoria
+                           LEFT JOIN Barrios b2 ON b2.ID = r2.idBarrio
+                           WHERE (@soloApto = 0
+           OR NOT EXISTS (SELECT 1 FROM RestriccionesUsuarios WHERE idUsuario = @idUsuario)
+           OR EXISTS (SELECT 1 FROM RestriccionesRestaurantes rr
+                      JOIN RestriccionesUsuarios ru ON ru.idRestricciones = rr.idRestriccion
+                      WHERE rr.idRestaurante = r2.ID AND ru.idUsuario = @idUsuario))
+          AND (@idBarrio IS NULL OR r2.idBarrio = @idBarrio)
+          AND (@idCategoria IS NULL OR r2.idCategoria = @idCategoria)
+          AND (@p1 IS NULL
+               OR r2.Nombre COLLATE Latin1_General_CI_AI LIKE @p1
+               OR b2.Nombre COLLATE Latin1_General_CI_AI LIKE @p1
+               OR c2.Nombre COLLATE Latin1_General_CI_AI LIKE @p1
+               OR r2.Nombre COLLATE Latin1_General_CI_AI LIKE @s1
+               OR b2.Nombre COLLATE Latin1_General_CI_AI LIKE @s1
+               OR c2.Nombre COLLATE Latin1_General_CI_AI LIKE @s1)
+          AND (@p2 IS NULL
+               OR r2.Nombre COLLATE Latin1_General_CI_AI LIKE @p2
+               OR b2.Nombre COLLATE Latin1_General_CI_AI LIKE @p2
+               OR c2.Nombre COLLATE Latin1_General_CI_AI LIKE @p2
+               OR r2.Nombre COLLATE Latin1_General_CI_AI LIKE @s2
+               OR b2.Nombre COLLATE Latin1_General_CI_AI LIKE @s2
+               OR c2.Nombre COLLATE Latin1_General_CI_AI LIKE @s2)
+          AND (@p3 IS NULL
+               OR r2.Nombre COLLATE Latin1_General_CI_AI LIKE @p3
+               OR b2.Nombre COLLATE Latin1_General_CI_AI LIKE @p3
+               OR c2.Nombre COLLATE Latin1_General_CI_AI LIKE @p3
+               OR r2.Nombre COLLATE Latin1_General_CI_AI LIKE @s3
+               OR b2.Nombre COLLATE Latin1_General_CI_AI LIKE @s3
+               OR c2.Nombre COLLATE Latin1_General_CI_AI LIKE @s3)
+          AND (@p4 IS NULL
+               OR r2.Nombre COLLATE Latin1_General_CI_AI LIKE @p4
+               OR b2.Nombre COLLATE Latin1_General_CI_AI LIKE @p4
+               OR c2.Nombre COLLATE Latin1_General_CI_AI LIKE @p4
+               OR r2.Nombre COLLATE Latin1_General_CI_AI LIKE @s4
+               OR b2.Nombre COLLATE Latin1_General_CI_AI LIKE @s4
+               OR c2.Nombre COLLATE Latin1_General_CI_AI LIKE @s4)
+          AND (@p5 IS NULL
+               OR r2.Nombre COLLATE Latin1_General_CI_AI LIKE @p5
+               OR b2.Nombre COLLATE Latin1_General_CI_AI LIKE @p5
+               OR c2.Nombre COLLATE Latin1_General_CI_AI LIKE @p5
+               OR r2.Nombre COLLATE Latin1_General_CI_AI LIKE @s5
+               OR b2.Nombre COLLATE Latin1_General_CI_AI LIKE @s5
+               OR c2.Nombre COLLATE Latin1_General_CI_AI LIKE @s5)
+          AND (@tieneZona = 0
+               OR (ISNULL(r2.Latitud, b2.Latitud) BETWEEN @sur AND @norte
+                   AND ISNULL(r2.Longitud, b2.Longitud) BETWEEN @oeste AND @este))
+                           ORDER BY (SELECT (ISNULL(SUM(CAST(Puntaje AS FLOAT)), 0) + 10.5) / (COUNT(*) + 3)
+                                     FROM Reseñas
+                                     WHERE idRestaurante = r2.ID AND Fecha <= DATEADD(hour, -24, GETDATE())) DESC,
+                                    r2.EsPro DESC, r2.ID))
+    ORDER BY r.ID;
+END
+GO
+/****** Object:  StoredProcedure [dbo].[ContarRestaurantesBusqueda]  -- BD.ContarRestaurantes: cuántos resultados hay en total (para la paginación).
+   Filtro de Descubrir (igual en todos los procedimientos de búsqueda):
+   @soloApto: solo los que cumplen al menos una restricción del usuario (si no marcó ninguna, todos).
+   @idBarrio / @idCategoria: los desplegables (NULL = todos).
+   @p1..@p5: las palabras del buscador con % (NULL = sin palabra). @s1..@s5: la misma palabra sin la "s" final.
+   Cada palabra tiene que estar en el nombre, el barrio o la categoría. COLLATE ..._CI_AI: no importan tildes ni mayúsculas.
+   @tieneZona = 1: solo lo que cae dentro de @norte, @sur, @este, @oeste (lo que se ve en el mapa).
+   @limite: solo los @limite lugares de mejor puntaje (el puntaje se "suaviza" como si todos tuvieran 3 reseñas de 3,5). ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[ContarRestaurantesBusqueda]
+    @idUsuario INT,
+    @soloApto BIT = 0,
+    @idBarrio INT = NULL,
+    @idCategoria INT = NULL,
+    @p1 VARCHAR(100) = NULL, @s1 VARCHAR(100) = NULL,
+    @p2 VARCHAR(100) = NULL, @s2 VARCHAR(100) = NULL,
+    @p3 VARCHAR(100) = NULL, @s3 VARCHAR(100) = NULL,
+    @p4 VARCHAR(100) = NULL, @s4 VARCHAR(100) = NULL,
+    @p5 VARCHAR(100) = NULL, @s5 VARCHAR(100) = NULL,
+    @tieneZona BIT = 0,
+    @norte FLOAT = NULL,
+    @sur FLOAT = NULL,
+    @este FLOAT = NULL,
+    @oeste FLOAT = NULL,
+    @limite INT = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT COUNT(*)
+    FROM Restaurantes r
+    LEFT JOIN Categorias c ON c.ID = r.idCategoria
+    LEFT JOIN Barrios b ON b.ID = r.idBarrio
+    WHERE (@soloApto = 0
+           OR NOT EXISTS (SELECT 1 FROM RestriccionesUsuarios WHERE idUsuario = @idUsuario)
+           OR EXISTS (SELECT 1 FROM RestriccionesRestaurantes rr
+                      JOIN RestriccionesUsuarios ru ON ru.idRestricciones = rr.idRestriccion
+                      WHERE rr.idRestaurante = r.ID AND ru.idUsuario = @idUsuario))
+          AND (@idBarrio IS NULL OR r.idBarrio = @idBarrio)
+          AND (@idCategoria IS NULL OR r.idCategoria = @idCategoria)
+          AND (@p1 IS NULL
+               OR r.Nombre COLLATE Latin1_General_CI_AI LIKE @p1
+               OR b.Nombre COLLATE Latin1_General_CI_AI LIKE @p1
+               OR c.Nombre COLLATE Latin1_General_CI_AI LIKE @p1
+               OR r.Nombre COLLATE Latin1_General_CI_AI LIKE @s1
+               OR b.Nombre COLLATE Latin1_General_CI_AI LIKE @s1
+               OR c.Nombre COLLATE Latin1_General_CI_AI LIKE @s1)
+          AND (@p2 IS NULL
+               OR r.Nombre COLLATE Latin1_General_CI_AI LIKE @p2
+               OR b.Nombre COLLATE Latin1_General_CI_AI LIKE @p2
+               OR c.Nombre COLLATE Latin1_General_CI_AI LIKE @p2
+               OR r.Nombre COLLATE Latin1_General_CI_AI LIKE @s2
+               OR b.Nombre COLLATE Latin1_General_CI_AI LIKE @s2
+               OR c.Nombre COLLATE Latin1_General_CI_AI LIKE @s2)
+          AND (@p3 IS NULL
+               OR r.Nombre COLLATE Latin1_General_CI_AI LIKE @p3
+               OR b.Nombre COLLATE Latin1_General_CI_AI LIKE @p3
+               OR c.Nombre COLLATE Latin1_General_CI_AI LIKE @p3
+               OR r.Nombre COLLATE Latin1_General_CI_AI LIKE @s3
+               OR b.Nombre COLLATE Latin1_General_CI_AI LIKE @s3
+               OR c.Nombre COLLATE Latin1_General_CI_AI LIKE @s3)
+          AND (@p4 IS NULL
+               OR r.Nombre COLLATE Latin1_General_CI_AI LIKE @p4
+               OR b.Nombre COLLATE Latin1_General_CI_AI LIKE @p4
+               OR c.Nombre COLLATE Latin1_General_CI_AI LIKE @p4
+               OR r.Nombre COLLATE Latin1_General_CI_AI LIKE @s4
+               OR b.Nombre COLLATE Latin1_General_CI_AI LIKE @s4
+               OR c.Nombre COLLATE Latin1_General_CI_AI LIKE @s4)
+          AND (@p5 IS NULL
+               OR r.Nombre COLLATE Latin1_General_CI_AI LIKE @p5
+               OR b.Nombre COLLATE Latin1_General_CI_AI LIKE @p5
+               OR c.Nombre COLLATE Latin1_General_CI_AI LIKE @p5
+               OR r.Nombre COLLATE Latin1_General_CI_AI LIKE @s5
+               OR b.Nombre COLLATE Latin1_General_CI_AI LIKE @s5
+               OR c.Nombre COLLATE Latin1_General_CI_AI LIKE @s5)
+          AND (@tieneZona = 0
+               OR (ISNULL(r.Latitud, b.Latitud) BETWEEN @sur AND @norte
+                   AND ISNULL(r.Longitud, b.Longitud) BETWEEN @oeste AND @este))
+          AND (@limite IS NULL
+               OR r.ID IN (SELECT TOP (@limite) r2.ID
+                           FROM Restaurantes r2
+                           LEFT JOIN Categorias c2 ON c2.ID = r2.idCategoria
+                           LEFT JOIN Barrios b2 ON b2.ID = r2.idBarrio
+                           WHERE (@soloApto = 0
+           OR NOT EXISTS (SELECT 1 FROM RestriccionesUsuarios WHERE idUsuario = @idUsuario)
+           OR EXISTS (SELECT 1 FROM RestriccionesRestaurantes rr
+                      JOIN RestriccionesUsuarios ru ON ru.idRestricciones = rr.idRestriccion
+                      WHERE rr.idRestaurante = r2.ID AND ru.idUsuario = @idUsuario))
+          AND (@idBarrio IS NULL OR r2.idBarrio = @idBarrio)
+          AND (@idCategoria IS NULL OR r2.idCategoria = @idCategoria)
+          AND (@p1 IS NULL
+               OR r2.Nombre COLLATE Latin1_General_CI_AI LIKE @p1
+               OR b2.Nombre COLLATE Latin1_General_CI_AI LIKE @p1
+               OR c2.Nombre COLLATE Latin1_General_CI_AI LIKE @p1
+               OR r2.Nombre COLLATE Latin1_General_CI_AI LIKE @s1
+               OR b2.Nombre COLLATE Latin1_General_CI_AI LIKE @s1
+               OR c2.Nombre COLLATE Latin1_General_CI_AI LIKE @s1)
+          AND (@p2 IS NULL
+               OR r2.Nombre COLLATE Latin1_General_CI_AI LIKE @p2
+               OR b2.Nombre COLLATE Latin1_General_CI_AI LIKE @p2
+               OR c2.Nombre COLLATE Latin1_General_CI_AI LIKE @p2
+               OR r2.Nombre COLLATE Latin1_General_CI_AI LIKE @s2
+               OR b2.Nombre COLLATE Latin1_General_CI_AI LIKE @s2
+               OR c2.Nombre COLLATE Latin1_General_CI_AI LIKE @s2)
+          AND (@p3 IS NULL
+               OR r2.Nombre COLLATE Latin1_General_CI_AI LIKE @p3
+               OR b2.Nombre COLLATE Latin1_General_CI_AI LIKE @p3
+               OR c2.Nombre COLLATE Latin1_General_CI_AI LIKE @p3
+               OR r2.Nombre COLLATE Latin1_General_CI_AI LIKE @s3
+               OR b2.Nombre COLLATE Latin1_General_CI_AI LIKE @s3
+               OR c2.Nombre COLLATE Latin1_General_CI_AI LIKE @s3)
+          AND (@p4 IS NULL
+               OR r2.Nombre COLLATE Latin1_General_CI_AI LIKE @p4
+               OR b2.Nombre COLLATE Latin1_General_CI_AI LIKE @p4
+               OR c2.Nombre COLLATE Latin1_General_CI_AI LIKE @p4
+               OR r2.Nombre COLLATE Latin1_General_CI_AI LIKE @s4
+               OR b2.Nombre COLLATE Latin1_General_CI_AI LIKE @s4
+               OR c2.Nombre COLLATE Latin1_General_CI_AI LIKE @s4)
+          AND (@p5 IS NULL
+               OR r2.Nombre COLLATE Latin1_General_CI_AI LIKE @p5
+               OR b2.Nombre COLLATE Latin1_General_CI_AI LIKE @p5
+               OR c2.Nombre COLLATE Latin1_General_CI_AI LIKE @p5
+               OR r2.Nombre COLLATE Latin1_General_CI_AI LIKE @s5
+               OR b2.Nombre COLLATE Latin1_General_CI_AI LIKE @s5
+               OR c2.Nombre COLLATE Latin1_General_CI_AI LIKE @s5)
+          AND (@tieneZona = 0
+               OR (ISNULL(r2.Latitud, b2.Latitud) BETWEEN @sur AND @norte
+                   AND ISNULL(r2.Longitud, b2.Longitud) BETWEEN @oeste AND @este))
+                           ORDER BY (SELECT (ISNULL(SUM(CAST(Puntaje AS FLOAT)), 0) + 10.5) / (COUNT(*) + 3)
+                                     FROM Reseñas
+                                     WHERE idRestaurante = r2.ID AND Fecha <= DATEADD(hour, -24, GETDATE())) DESC,
+                                    r2.EsPro DESC, r2.ID));
+END
+GO
+/****** Object:  StoredProcedure [dbo].[ObtenerBarrioConMasResultados]  -- BD.ObtenerBarrioConMasResultados: cuando la búsqueda no da nada en el barrio elegido, el otro barrio donde el texto tiene
+   más resultados (sin filas si no hay). Se llama con @idBarrio = NULL y el barrio elegido en @idBarrioElegido.
+   Filtro de Descubrir (igual en todos los procedimientos de búsqueda):
+   @soloApto: solo los que cumplen al menos una restricción del usuario (si no marcó ninguna, todos).
+   @idBarrio / @idCategoria: los desplegables (NULL = todos).
+   @p1..@p5: las palabras del buscador con % (NULL = sin palabra). @s1..@s5: la misma palabra sin la "s" final.
+   Cada palabra tiene que estar en el nombre, el barrio o la categoría. COLLATE ..._CI_AI: no importan tildes ni mayúsculas.
+   @tieneZona = 1: solo lo que cae dentro de @norte, @sur, @este, @oeste (lo que se ve en el mapa).
+   @limite: solo los @limite lugares de mejor puntaje (el puntaje se "suaviza" como si todos tuvieran 3 reseñas de 3,5). ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[ObtenerBarrioConMasResultados]
+    @idBarrioElegido INT,
+    @idUsuario INT,
+    @soloApto BIT = 0,
+    @idBarrio INT = NULL,
+    @idCategoria INT = NULL,
+    @p1 VARCHAR(100) = NULL, @s1 VARCHAR(100) = NULL,
+    @p2 VARCHAR(100) = NULL, @s2 VARCHAR(100) = NULL,
+    @p3 VARCHAR(100) = NULL, @s3 VARCHAR(100) = NULL,
+    @p4 VARCHAR(100) = NULL, @s4 VARCHAR(100) = NULL,
+    @p5 VARCHAR(100) = NULL, @s5 VARCHAR(100) = NULL,
+    @tieneZona BIT = 0,
+    @norte FLOAT = NULL,
+    @sur FLOAT = NULL,
+    @este FLOAT = NULL,
+    @oeste FLOAT = NULL,
+    @limite INT = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT TOP 1 b.ID, b.Nombre, COUNT(*) AS Cantidad
+    FROM Restaurantes r
+    LEFT JOIN Categorias c ON c.ID = r.idCategoria
+    INNER JOIN Barrios b ON b.ID = r.idBarrio
+    WHERE r.idBarrio <> @idBarrioElegido
+      AND (@soloApto = 0
+           OR NOT EXISTS (SELECT 1 FROM RestriccionesUsuarios WHERE idUsuario = @idUsuario)
+           OR EXISTS (SELECT 1 FROM RestriccionesRestaurantes rr
+                      JOIN RestriccionesUsuarios ru ON ru.idRestricciones = rr.idRestriccion
+                      WHERE rr.idRestaurante = r.ID AND ru.idUsuario = @idUsuario))
+          AND (@idBarrio IS NULL OR r.idBarrio = @idBarrio)
+          AND (@idCategoria IS NULL OR r.idCategoria = @idCategoria)
+          AND (@p1 IS NULL
+               OR r.Nombre COLLATE Latin1_General_CI_AI LIKE @p1
+               OR b.Nombre COLLATE Latin1_General_CI_AI LIKE @p1
+               OR c.Nombre COLLATE Latin1_General_CI_AI LIKE @p1
+               OR r.Nombre COLLATE Latin1_General_CI_AI LIKE @s1
+               OR b.Nombre COLLATE Latin1_General_CI_AI LIKE @s1
+               OR c.Nombre COLLATE Latin1_General_CI_AI LIKE @s1)
+          AND (@p2 IS NULL
+               OR r.Nombre COLLATE Latin1_General_CI_AI LIKE @p2
+               OR b.Nombre COLLATE Latin1_General_CI_AI LIKE @p2
+               OR c.Nombre COLLATE Latin1_General_CI_AI LIKE @p2
+               OR r.Nombre COLLATE Latin1_General_CI_AI LIKE @s2
+               OR b.Nombre COLLATE Latin1_General_CI_AI LIKE @s2
+               OR c.Nombre COLLATE Latin1_General_CI_AI LIKE @s2)
+          AND (@p3 IS NULL
+               OR r.Nombre COLLATE Latin1_General_CI_AI LIKE @p3
+               OR b.Nombre COLLATE Latin1_General_CI_AI LIKE @p3
+               OR c.Nombre COLLATE Latin1_General_CI_AI LIKE @p3
+               OR r.Nombre COLLATE Latin1_General_CI_AI LIKE @s3
+               OR b.Nombre COLLATE Latin1_General_CI_AI LIKE @s3
+               OR c.Nombre COLLATE Latin1_General_CI_AI LIKE @s3)
+          AND (@p4 IS NULL
+               OR r.Nombre COLLATE Latin1_General_CI_AI LIKE @p4
+               OR b.Nombre COLLATE Latin1_General_CI_AI LIKE @p4
+               OR c.Nombre COLLATE Latin1_General_CI_AI LIKE @p4
+               OR r.Nombre COLLATE Latin1_General_CI_AI LIKE @s4
+               OR b.Nombre COLLATE Latin1_General_CI_AI LIKE @s4
+               OR c.Nombre COLLATE Latin1_General_CI_AI LIKE @s4)
+          AND (@p5 IS NULL
+               OR r.Nombre COLLATE Latin1_General_CI_AI LIKE @p5
+               OR b.Nombre COLLATE Latin1_General_CI_AI LIKE @p5
+               OR c.Nombre COLLATE Latin1_General_CI_AI LIKE @p5
+               OR r.Nombre COLLATE Latin1_General_CI_AI LIKE @s5
+               OR b.Nombre COLLATE Latin1_General_CI_AI LIKE @s5
+               OR c.Nombre COLLATE Latin1_General_CI_AI LIKE @s5)
+          AND (@tieneZona = 0
+               OR (ISNULL(r.Latitud, b.Latitud) BETWEEN @sur AND @norte
+                   AND ISNULL(r.Longitud, b.Longitud) BETWEEN @oeste AND @este))
+          AND (@limite IS NULL
+               OR r.ID IN (SELECT TOP (@limite) r2.ID
+                           FROM Restaurantes r2
+                           LEFT JOIN Categorias c2 ON c2.ID = r2.idCategoria
+                           LEFT JOIN Barrios b2 ON b2.ID = r2.idBarrio
+                           WHERE (@soloApto = 0
+           OR NOT EXISTS (SELECT 1 FROM RestriccionesUsuarios WHERE idUsuario = @idUsuario)
+           OR EXISTS (SELECT 1 FROM RestriccionesRestaurantes rr
+                      JOIN RestriccionesUsuarios ru ON ru.idRestricciones = rr.idRestriccion
+                      WHERE rr.idRestaurante = r2.ID AND ru.idUsuario = @idUsuario))
+          AND (@idBarrio IS NULL OR r2.idBarrio = @idBarrio)
+          AND (@idCategoria IS NULL OR r2.idCategoria = @idCategoria)
+          AND (@p1 IS NULL
+               OR r2.Nombre COLLATE Latin1_General_CI_AI LIKE @p1
+               OR b2.Nombre COLLATE Latin1_General_CI_AI LIKE @p1
+               OR c2.Nombre COLLATE Latin1_General_CI_AI LIKE @p1
+               OR r2.Nombre COLLATE Latin1_General_CI_AI LIKE @s1
+               OR b2.Nombre COLLATE Latin1_General_CI_AI LIKE @s1
+               OR c2.Nombre COLLATE Latin1_General_CI_AI LIKE @s1)
+          AND (@p2 IS NULL
+               OR r2.Nombre COLLATE Latin1_General_CI_AI LIKE @p2
+               OR b2.Nombre COLLATE Latin1_General_CI_AI LIKE @p2
+               OR c2.Nombre COLLATE Latin1_General_CI_AI LIKE @p2
+               OR r2.Nombre COLLATE Latin1_General_CI_AI LIKE @s2
+               OR b2.Nombre COLLATE Latin1_General_CI_AI LIKE @s2
+               OR c2.Nombre COLLATE Latin1_General_CI_AI LIKE @s2)
+          AND (@p3 IS NULL
+               OR r2.Nombre COLLATE Latin1_General_CI_AI LIKE @p3
+               OR b2.Nombre COLLATE Latin1_General_CI_AI LIKE @p3
+               OR c2.Nombre COLLATE Latin1_General_CI_AI LIKE @p3
+               OR r2.Nombre COLLATE Latin1_General_CI_AI LIKE @s3
+               OR b2.Nombre COLLATE Latin1_General_CI_AI LIKE @s3
+               OR c2.Nombre COLLATE Latin1_General_CI_AI LIKE @s3)
+          AND (@p4 IS NULL
+               OR r2.Nombre COLLATE Latin1_General_CI_AI LIKE @p4
+               OR b2.Nombre COLLATE Latin1_General_CI_AI LIKE @p4
+               OR c2.Nombre COLLATE Latin1_General_CI_AI LIKE @p4
+               OR r2.Nombre COLLATE Latin1_General_CI_AI LIKE @s4
+               OR b2.Nombre COLLATE Latin1_General_CI_AI LIKE @s4
+               OR c2.Nombre COLLATE Latin1_General_CI_AI LIKE @s4)
+          AND (@p5 IS NULL
+               OR r2.Nombre COLLATE Latin1_General_CI_AI LIKE @p5
+               OR b2.Nombre COLLATE Latin1_General_CI_AI LIKE @p5
+               OR c2.Nombre COLLATE Latin1_General_CI_AI LIKE @p5
+               OR r2.Nombre COLLATE Latin1_General_CI_AI LIKE @s5
+               OR b2.Nombre COLLATE Latin1_General_CI_AI LIKE @s5
+               OR c2.Nombre COLLATE Latin1_General_CI_AI LIKE @s5)
+          AND (@tieneZona = 0
+               OR (ISNULL(r2.Latitud, b2.Latitud) BETWEEN @sur AND @norte
+                   AND ISNULL(r2.Longitud, b2.Longitud) BETWEEN @oeste AND @este))
+                           ORDER BY (SELECT (ISNULL(SUM(CAST(Puntaje AS FLOAT)), 0) + 10.5) / (COUNT(*) + 3)
+                                     FROM Reseñas
+                                     WHERE idRestaurante = r2.ID AND Fecha <= DATEADD(hour, -24, GETDATE())) DESC,
+                                    r2.EsPro DESC, r2.ID))
+    GROUP BY b.ID, b.Nombre
+    ORDER BY COUNT(*) DESC, b.Nombre;
+END
+GO
+/****** Object:  StoredProcedure [dbo].[GuardarBusqueda]  -- BD.GuardarBusqueda ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[GuardarBusqueda]
+    @idUsuario INT,
+    @texto VARCHAR(100)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    INSERT INTO Busquedas (idUsuario, Texto, Fecha) VALUES (@idUsuario, @texto, GETDATE());
+END
+GO
+/****** Object:  StoredProcedure [dbo].[ListarBusquedasRecientes]  -- BD.ObtenerBusquedasRecientes: las últimas búsquedas del usuario, sin repetir, la más nueva primero ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[ListarBusquedasRecientes]
+    @idUsuario INT,
+    @cantidad INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT TOP (@cantidad) Texto
+    FROM Busquedas
+    WHERE idUsuario = @idUsuario
+    GROUP BY Texto
+    ORDER BY MAX(Fecha) DESC, MAX(ID) DESC;
+END
+GO
+/****** Object:  StoredProcedure [dbo].[ComprobarYaReseno]  -- BD.YaReseno: 1 si el usuario ya dejó una reseña de ese lugar (publicada o no) ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[ComprobarYaReseno]
+    @idUsuario INT,
+    @idRestaurante INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF EXISTS (SELECT 1 FROM Reseñas WHERE idUsuario = @idUsuario AND idRestaurante = @idRestaurante)
+    BEGIN
+        SELECT CAST(1 AS BIT);
+    END
+    ELSE
+    BEGIN
+        SELECT CAST(0 AS BIT);
+    END
+END
+GO
+/****** Object:  StoredProcedure [dbo].[ObtenerVisitaVerificada]  -- BD.ObtenerVisitaVerificada: el último plan confirmado de un grupo del usuario en ese lugar que ya pasó (sin filas si no hay) ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[ObtenerVisitaVerificada]
+    @idUsuario INT,
+    @idRestaurante INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT TOP 1 p.*
+    FROM Planes p
+    INNER JOIN UsuariosGrupos ug ON ug.idGrupo = p.idGrupo
+    WHERE ug.idUsuario = @idUsuario AND p.Estado = 1 AND p.idRestauranteElegido = @idRestaurante AND p.FechaSalida <= GETDATE()
+    ORDER BY p.FechaSalida DESC;
+END
+GO
 USE [master]
 GO
 ALTER DATABASE [Bodeglook] SET  READ_WRITE 
