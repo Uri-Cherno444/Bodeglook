@@ -1454,10 +1454,17 @@ CREATE PROCEDURE [dbo].[CrearPlan]
     @idUsuarioCreador INT
 AS
 BEGIN
+    DECLARE @idPlanNuevo INT;
+
     INSERT INTO Planes (Titulo, FechaCierreVotacion, FechaSalida, Estado, idGrupo, idRestauranteElegido, idUsuarioCreador)
     VALUES (@Titulo, @FechaCierreVotacion, @FechaSalida, 0, @idGrupo, NULL, @idUsuarioCreador);
-    
-    SELECT SCOPE_IDENTITY() AS idPlanNuevo;
+
+    -- El plan recién guardado es el último que creó ese usuario en ese grupo
+    SELECT @idPlanNuevo = P.ID FROM Planes P
+    WHERE P.idUsuarioCreador = @idUsuarioCreador AND P.idGrupo = @idGrupo
+      AND NOT EXISTS (SELECT * FROM Planes Posterior WHERE Posterior.idUsuarioCreador = P.idUsuarioCreador AND Posterior.idGrupo = P.idGrupo AND Posterior.ID > P.ID);
+
+    SELECT @idPlanNuevo AS idPlanNuevo;
 END
 GO
 /****** Object:  StoredProcedure [dbo].[CrearResena]    Script Date: 4/11/2026 10:27:23 ******/
@@ -1542,7 +1549,9 @@ BEGIN
             WHERE UG.idGrupo = @idGrupo AND V.idPlan = @idPlan AND V.idRestaurante = @idElegido AND V.idHorarioVotado IS NOT NULL
             GROUP BY V.idHorarioVotado;
 
-            SELECT @VotosHorario = SUM(Votos), @MaximoVotos = MAX(Votos) FROM @Conteo;
+            SELECT @VotosHorario = SUM(Votos) FROM @Conteo;
+            -- El máximo es el horario al que ningún otro le gana en votos
+            SELECT @MaximoVotos = C.Votos FROM @Conteo C WHERE NOT EXISTS (SELECT * FROM @Conteo Otro WHERE Otro.Votos > C.Votos);
 
             IF (@VotosHorario IS NULL)
             BEGIN
@@ -1770,7 +1779,7 @@ CREATE PROCEDURE [dbo].[Mostrar4Restaurantes]
 AS
 BEGIN
 
-	SELECT TOP 4 * FROM Restaurantes ORDER BY ID ASC;
+	SELECT * FROM Restaurantes ORDER BY ID ASC;
 END
 GO
 /****** Object:  StoredProcedure [dbo].[MostrarFavoritos]    Script Date: 4/11/2026 10:27:23 ******/
@@ -1996,7 +2005,8 @@ BEGIN
     ELSE IF EXISTS (SELECT idRestaurante FROM Votos GROUP BY idRestaurante HAVING COUNT(*) >= @MinimoVotos)
     BEGIN
             SELECT R.Nombre AS Restaurante, C.Nombre AS Categoria, COUNT(*) AS VotosTotales,
-                   COUNT(DISTINCT V.idPlan) AS PlanesDiferentes, COUNT(DISTINCT V.idUsuario) AS UsuariosVotantes,
+                   (SELECT COUNT(*) FROM (SELECT idPlan FROM Votos WHERE idRestaurante = R.ID GROUP BY idPlan) AS P) AS PlanesDiferentes,
+                   (SELECT COUNT(*) FROM (SELECT idUsuario FROM Votos WHERE idRestaurante = R.ID GROUP BY idUsuario) AS U) AS UsuariosVotantes,
                    (SELECT AVG([Reseñas].Puntaje * 1.0) FROM [Reseñas] WHERE idRestaurante = R.ID) AS PromedioResenas
             FROM Votos V
             INNER JOIN Restaurantes R ON R.ID = V.idRestaurante
@@ -2006,7 +2016,8 @@ BEGIN
             HAVING COUNT(*) >= @MinimoVotos;
 
             SELECT R.Nombre AS Restaurante, C.Nombre AS Categoria, COUNT(*) AS VotosTotales,
-                   COUNT(DISTINCT V.idPlan) AS PlanesDiferentes, COUNT(DISTINCT V.idUsuario) AS UsuariosVotantes,
+                   (SELECT COUNT(*) FROM (SELECT idPlan FROM Votos WHERE idRestaurante = R.ID GROUP BY idPlan) AS P) AS PlanesDiferentes,
+                   (SELECT COUNT(*) FROM (SELECT idUsuario FROM Votos WHERE idRestaurante = R.ID GROUP BY idUsuario) AS U) AS UsuariosVotantes,
                    'Sin calificaciones' AS PromedioResenas
             FROM Votos V
             INNER JOIN Restaurantes R ON R.ID = V.idRestaurante
@@ -2093,8 +2104,8 @@ CREATE   PROCEDURE [dbo].[RegistrarRestaurante]
 AS
 BEGIN
     SET NOCOUNT ON;
-    SET XACT_ABORT ON;
     DECLARE @Error INT = 0;
+    DECLARE @idRestauranteNuevo INT;
 
     IF EXISTS (SELECT 1 FROM CuentasRestaurantes WHERE Email = @Email)
        OR EXISTS (SELECT 1 FROM Usuarios WHERE Email = @Email)
@@ -2111,17 +2122,17 @@ BEGIN
     END
     ELSE
     BEGIN
-        -- El restaurante y su cuenta se guardan juntos: si falla uno, no queda ninguno
-        BEGIN TRANSACTION;
-
         INSERT INTO Restaurantes (Nombre, DireccionCalle, DireccionNumero, DireccionCodigoPostal, Descripcion,
                                   Telefono, HorarioApertura, HorarioCerrado, RangoPrecio, Foto, idBarrio, idCategoria, EsPro)
         VALUES (@Nombre, '', 0, 0, '', '', '19000101', '19000101', 0, NULL, @idBarrio, @idCategoria, @EsPro);
 
-        INSERT INTO CuentasRestaurantes (Email, Contraseña, idRestaurante)
-        VALUES (@Email, @Contraseña, SCOPE_IDENTITY());
+        -- El restaurante recién guardado es el último con ese nombre y barrio
+        SELECT @idRestauranteNuevo = R.ID FROM Restaurantes R
+        WHERE R.Nombre = @Nombre AND R.idBarrio = @idBarrio
+          AND NOT EXISTS (SELECT * FROM Restaurantes Posterior WHERE Posterior.Nombre = R.Nombre AND Posterior.idBarrio = R.idBarrio AND Posterior.ID > R.ID);
 
-        COMMIT TRANSACTION;
+        INSERT INTO CuentasRestaurantes (Email, Contraseña, idRestaurante)
+        VALUES (@Email, @Contraseña, @idRestauranteNuevo);
     END
 
     SELECT @Error;
@@ -2634,13 +2645,16 @@ BEGIN
     SET NOCOUNT ON;
 
     SELECT g.ID AS IdGrupo, g.Nombre, g.Foto,
-           (SELECT MAX(FechaHora) FROM Mensajes WHERE idGrupo = g.ID) AS UltimaFecha,
+           ultimo.FechaHora AS UltimaFecha,
            (SELECT COUNT(*) FROM Mensajes m
             WHERE m.idGrupo = g.ID AND m.idUsuario <> @idUsuario
               AND (ug.UltimaLectura IS NULL OR m.FechaHora > ug.UltimaLectura)) AS NoLeidos,
-           ISNULL((SELECT MAX(FechaHora) FROM Mensajes WHERE idGrupo = g.ID), g.FechaCreacion) AS FechaOrden
+           ISNULL(ultimo.FechaHora, g.FechaCreacion) AS FechaOrden
     FROM Grupos g
     INNER JOIN UsuariosGrupos ug ON ug.idGrupo = g.ID
+    LEFT JOIN Mensajes ultimo ON ultimo.idGrupo = g.ID
+         AND NOT EXISTS (SELECT * FROM Mensajes posterior WHERE posterior.idGrupo = ultimo.idGrupo
+                         AND (posterior.FechaHora > ultimo.FechaHora OR (posterior.FechaHora = ultimo.FechaHora AND posterior.ID > ultimo.ID)))
     WHERE ug.idUsuario = @idUsuario
     ORDER BY FechaOrden DESC;
 END
@@ -2744,10 +2758,16 @@ CREATE PROCEDURE [dbo].[CrearGrupo]
 AS
 BEGIN
     SET NOCOUNT ON;
+    DECLARE @idGrupoNuevo INT;
 
     INSERT INTO Grupos (Nombre, FechaCreacion) VALUES (@nombre, GETDATE());
 
-    SELECT SCOPE_IDENTITY() AS idGrupoNuevo;
+    -- El grupo recién guardado es el último con ese nombre
+    SELECT @idGrupoNuevo = G.ID FROM Grupos G
+    WHERE G.Nombre = @nombre
+      AND NOT EXISTS (SELECT * FROM Grupos Posterior WHERE Posterior.Nombre = G.Nombre AND Posterior.ID > G.ID);
+
+    SELECT @idGrupoNuevo AS idGrupoNuevo;
 END
 GO
 /****** Object:  StoredProcedure [dbo].[ActualizarFotoGrupo]  -- BD.ActualizarFotoGrupo ******/
@@ -2796,10 +2816,12 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    SELECT COUNT(DISTINCT otros.idUsuario)
-    FROM UsuariosGrupos mios
-    INNER JOIN UsuariosGrupos otros ON otros.idGrupo = mios.idGrupo AND otros.idUsuario <> mios.idUsuario
-    WHERE mios.idUsuario = @idUsuario;
+    SELECT COUNT(*)
+    FROM (SELECT otros.idUsuario
+          FROM UsuariosGrupos mios
+          INNER JOIN UsuariosGrupos otros ON otros.idGrupo = mios.idGrupo AND otros.idUsuario <> mios.idUsuario
+          WHERE mios.idUsuario = @idUsuario
+          GROUP BY otros.idUsuario) AS Amigos;
 END
 GO
 /****** Object:  StoredProcedure [dbo].[ListarRestriccionesGrupo]  -- BD.ObtenerRestriccionesDeGrupo: las restricciones de los integrantes, sin repetir ******/
@@ -2814,11 +2836,12 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    SELECT DISTINCT re.Nombre
+    SELECT re.Nombre
     FROM RestriccionesUsuarios ru
     INNER JOIN UsuariosGrupos ug ON ug.idUsuario = ru.idUsuario
     INNER JOIN Restricciones re ON re.ID = ru.idRestricciones
-    WHERE ug.idGrupo = @idGrupo;
+    WHERE ug.idGrupo = @idGrupo
+    GROUP BY re.Nombre;
 END
 GO
 /****** Object:  StoredProcedure [dbo].[ListarPlanesUsuario]    Script Date: 18/11/2026 12:00:00 ******/
@@ -2908,10 +2931,11 @@ BEGIN
            p.idUsuarioCreador AS IdCreador, u.NombreCompleto AS NombreCreador, p.idRestauranteElegido,
            (SELECT COUNT(*) FROM UsuariosGrupos WHERE idGrupo = p.idGrupo) AS CantidadIntegrantes,
            (SELECT idRestaurante FROM Votos WHERE idPlan = p.ID AND idUsuario = @idUsuario) AS MiVoto,
-           (SELECT MIN(ph.ID) FROM Votos v
+           (SELECT ph.ID FROM Votos v
             INNER JOIN PlanesHorarios votado ON votado.ID = v.idHorarioVotado
             INNER JOIN PlanesHorarios ph ON ph.idPlan = v.idPlan AND ph.FechaHoraPropuesta = votado.FechaHoraPropuesta
-            WHERE v.idPlan = p.ID AND v.idUsuario = @idUsuario) AS MiVotoHorario
+            WHERE v.idPlan = p.ID AND v.idUsuario = @idUsuario
+              AND NOT EXISTS (SELECT * FROM PlanesHorarios anterior WHERE anterior.idPlan = ph.idPlan AND anterior.FechaHoraPropuesta = ph.FechaHoraPropuesta AND anterior.ID < ph.ID)) AS MiVotoHorario
     FROM Planes p
     INNER JOIN Grupos g ON g.ID = p.idGrupo
     LEFT JOIN Usuarios u ON u.ID = p.idUsuarioCreador
@@ -2941,7 +2965,7 @@ BEGIN
 END
 GO
 /****** Object:  StoredProcedure [dbo].[ListarHorariosPlan]  -- BD.ObtenerEncuesta (3 de 4): los horarios de más temprano a más tarde.
-   PlanesHorarios tiene una fila por lugar y por hora: cada horario se identifica con la primera fila (MIN(ID)). ******/
+   PlanesHorarios tiene una fila por lugar y por hora: cada horario se identifica con la primera fila (la que no tiene otra anterior con la misma hora). ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2953,13 +2977,13 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    SELECT MIN(ph.ID) AS IdHorario, ph.FechaHoraPropuesta,
+    SELECT ph.ID AS IdHorario, ph.FechaHoraPropuesta,
            (SELECT COUNT(*) FROM Votos v
             INNER JOIN PlanesHorarios votado ON votado.ID = v.idHorarioVotado
             WHERE v.idPlan = @idPlan AND votado.FechaHoraPropuesta = ph.FechaHoraPropuesta) AS Votos
     FROM PlanesHorarios ph
     WHERE ph.idPlan = @idPlan
-    GROUP BY ph.FechaHoraPropuesta
+      AND NOT EXISTS (SELECT * FROM PlanesHorarios anterior WHERE anterior.idPlan = ph.idPlan AND anterior.FechaHoraPropuesta = ph.FechaHoraPropuesta AND anterior.ID < ph.ID)
     ORDER BY ph.FechaHoraPropuesta;
 END
 GO
@@ -2978,8 +3002,9 @@ BEGIN
 
 	SELECT u.ID AS IdUsuario, u.NombreCompleto,
 		v.idRestaurante AS IdLugarVotado, r.Nombre AS LugarVotado,
-		(SELECT MIN(ph.ID) FROM PlanesHorarios ph
-		 WHERE ph.idPlan = p.ID AND ph.FechaHoraPropuesta = votado.FechaHoraPropuesta) AS IdHorarioVotado,
+		(SELECT ph.ID FROM PlanesHorarios ph
+		 WHERE ph.idPlan = p.ID AND ph.FechaHoraPropuesta = votado.FechaHoraPropuesta
+		   AND NOT EXISTS (SELECT * FROM PlanesHorarios anterior WHERE anterior.idPlan = ph.idPlan AND anterior.FechaHoraPropuesta = ph.FechaHoraPropuesta AND anterior.ID < ph.ID)) AS IdHorarioVotado,
 		votado.FechaHoraPropuesta AS HorarioVotado
 	FROM Planes p
 	INNER JOIN UsuariosGrupos ug ON ug.idGrupo = p.idGrupo
@@ -3024,7 +3049,7 @@ BEGIN
 	FROM Restaurantes r
 	LEFT JOIN Categorias c ON c.ID = r.idCategoria
 	LEFT JOIN Barrios b ON b.ID = r.idBarrio
-	WHERE r.Nombre LIKE '%' + @texto + '%'
+	WHERE CHARINDEX(@texto, r.Nombre) > 0
 	ORDER BY r.Nombre;
 END
 GO
@@ -3187,17 +3212,16 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 CREATE PROCEDURE [dbo].[ListarBusquedasRecientes]
-    @idUsuario INT,
-    @cantidad INT
+    @idUsuario INT
 AS
 BEGIN
     SET NOCOUNT ON;
 
-    SELECT TOP (@cantidad) Texto
-    FROM Busquedas
-    WHERE idUsuario = @idUsuario
-    GROUP BY Texto
-    ORDER BY MAX(Fecha) DESC, MAX(ID) DESC;
+    SELECT b.Texto
+    FROM Busquedas b
+    WHERE b.idUsuario = @idUsuario
+      AND NOT EXISTS (SELECT * FROM Busquedas posterior WHERE posterior.idUsuario = b.idUsuario AND posterior.Texto = b.Texto AND posterior.ID > b.ID)
+    ORDER BY b.Fecha DESC, b.ID DESC;
 END
 GO
 /****** Object:  StoredProcedure [dbo].[ComprobarYaReseno]    Script Date: 18/11/2026 12:00:00 ******/
@@ -3236,7 +3260,7 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    SELECT TOP 1 p.*
+    SELECT p.*
     FROM Planes p
     INNER JOIN UsuariosGrupos ug ON ug.idGrupo = p.idGrupo
     WHERE ug.idUsuario = @idUsuario AND p.Estado = 1 AND p.idRestauranteElegido = @idRestaurante AND p.FechaSalida <= GETDATE()

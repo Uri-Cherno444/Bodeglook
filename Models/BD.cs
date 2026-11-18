@@ -438,9 +438,9 @@ public static class BD
     {
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            int idGrupo = Convert.ToInt32(conexion.QueryFirst<decimal>("CrearGrupo",
+            int idGrupo = conexion.QueryFirst<int>("CrearGrupo",
                 new { nombre },
-                commandType: CommandType.StoredProcedure));
+                commandType: CommandType.StoredProcedure);
 
             // Procedimiento AgregarUsuarioAGrupo: el creador y cada integrante
             conexion.Execute("AgregarUsuarioAGrupo",
@@ -830,8 +830,8 @@ public static class BD
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
             return conexion.Query<string>("ListarBusquedasRecientes",
-                new { idUsuario, cantidad },
-                commandType: CommandType.StoredProcedure).ToList();
+                new { idUsuario },
+                commandType: CommandType.StoredProcedure).Take(cantidad).ToList();
         }
     }
 
