@@ -76,14 +76,5 @@
 
 @section Scripts {
     <script src="~/js/cuenta.js" asp-append-version="true"></script>
-    <script>
-        prepararFormulario("formRegistro", "/Cuenta/Registrar", function () {
-            return {
-                nombreCompleto: document.getElementById("nombre").value,
-                nombreUsuario: document.getElementById("usuario").value,
-                email: document.getElementById("email").value,
-                contraseña: document.getElementById("contrasena").value
-            };
-        });
-    </script>
+    <script src="~/js/registro.js" asp-append-version="true"></script>
 }

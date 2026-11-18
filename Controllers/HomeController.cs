@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Bodeglook.Models;
 
@@ -11,7 +10,7 @@ public class HomeController : Controller
     public IActionResult Index()
     {
         // Las tarjetas de "Lugares que recomienda la comunidad" (sin usuario: ninguna es favorita)
-        ViewBag.Lugares = BD.ObtenerMejorPuntuados(4, 0, false);
+        ViewBag.Lugares = BD.ObtenerMejorPuntuados(4, 0);
         return View();
     }
 
@@ -19,46 +18,49 @@ public class HomeController : Controller
     // restriccion: el chip elegido (/Home/Inicio?restriccion=2). Sin él se muestra "Todos".
     public IActionResult Inicio(int? restriccion)
     {
-        if (HttpContext.Session.GetString("usuario") == null) return RedirectToAction("IniciarSesion", "Cuenta");
+        if (!Sesion.HayUsuario(HttpContext.Session)) return RedirectToAction("IniciarSesion", "Cuenta");
 
-        Usuarios usuario = JsonSerializer.Deserialize<Usuarios>(HttpContext.Session.GetString("usuario")!)!;
+        Usuarios usuario = Sesion.Leer(HttpContext.Session)!;
 
         // En el banner va solo el primer nombre ("Hola, Camila")
         ViewBag.PrimerNombre = usuario.ObtenerPrimerNombre();
         ViewBag.PlanesEnVotacion = BD.ContarPlanesEnVotacion(usuario.Id);
         ViewBag.Amigos = BD.ContarAmigos(usuario.Id);
 
-        // Los chips salen de la tabla Restricciones. Un id que no existe se toma como "Todos".
+        // Los chips salen de la tabla Restricciones
         List<Restricciones> restricciones = BD.ObtenerRestricciones();
-        if (!restricciones.Any(r => r.Id == restriccion)) restriccion = null;
         ViewBag.Restricciones = restricciones;
-        ViewBag.RestriccionElegida = restriccion;
-
-        // "Solo lo apto para mí": se elige en el onboarding o en Editar perfil y queda en Usuarios.SoloApto
-        bool soloApto = BD.ObtenerSoloApto(usuario.Id);
-        ViewBag.Recomendados = BD.ObtenerRecomendados(4, usuario.Id, soloApto, restriccion);
-
-        List<TarjetaRestaurante> favoritos = BD.ObtenerFavoritos(usuario.Id);
-        if (restriccion != null)
-        {
-            List<int> conRestriccion = BD.ObtenerRestaurantesConRestriccion(restriccion.Value);
-            favoritos = favoritos.Where(f => conRestriccion.Contains(f.Id)).ToList();
-        }
-        ViewBag.Favoritos = favoritos;
+        CargarLugares(usuario.Id, Restricciones.ValidarElegida(restriccion, restricciones));
         return View();
+    }
+
+    // La llaman los chips de restricción de Inicio con fetch: devuelve "Recomendado para vos" y "Tus favoritos"
+    // ya armados con ese filtro, así se cambian sin recargar la página.
+    public IActionResult LugaresInicio(int? restriccion)
+    {
+        if (!Sesion.HayUsuario(HttpContext.Session)) return Unauthorized();
+
+        Usuarios usuario = Sesion.Leer(HttpContext.Session)!;
+        CargarLugares(usuario.Id, Restricciones.ValidarElegida(restriccion, BD.ObtenerRestricciones()));
+        return PartialView("_LugaresInicio");
+    }
+
+    // Las dos grillas de Inicio. "Solo lo apto para mí" se elige en el onboarding o en Editar perfil (Usuarios.SoloApto).
+    private void CargarLugares(int idUsuario, int? restriccion)
+    {
+        ViewBag.RestriccionElegida = restriccion;
+        ViewBag.Recomendados = TarjetaRestaurante.Recomendados(4, idUsuario, BD.ObtenerSoloApto(idUsuario), restriccion);
+        ViewBag.Favoritos = TarjetaRestaurante.FavoritosConRestriccion(idUsuario, restriccion);
     }
 
     // La llama el corazón de cada tarjeta con fetch. Recibe { idRestaurante } y devuelve { ok, esFavorito }
     [HttpPost]
     public IActionResult AlternarFavorito([FromBody] Favoritos datos)
     {
-        if (HttpContext.Session.GetString("usuario") == null) return Unauthorized();
-        if (datos.IdRestaurante == null || !BD.ExisteRestaurante(datos.IdRestaurante.Value))
-            return Json(new { ok = false });
+        if (!Sesion.HayUsuario(HttpContext.Session)) return Unauthorized();
 
-        Usuarios usuario = JsonSerializer.Deserialize<Usuarios>(HttpContext.Session.GetString("usuario")!)!;
-        bool esFavorito = BD.AlternarFavorito(usuario.Id, datos.IdRestaurante.Value);
-        return Json(new { ok = true, esFavorito });
+        Usuarios usuario = Sesion.Leer(HttpContext.Session)!;
+        return Json(datos.Alternar(usuario.Id));
     }
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

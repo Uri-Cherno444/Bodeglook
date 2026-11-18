@@ -66,17 +66,5 @@
 
 @section Scripts {
     <script src="~/js/cuenta.js" asp-append-version="true"></script>
-    <script>
-        // Si viene de registrar un restaurante se avisa que se guardó
-        if (new URLSearchParams(window.location.search).get("restaurante") === "1") {
-            mostrarAviso("Registramos tu restaurante.");
-        }
-
-        prepararFormulario("formIniciarSesion", "/Cuenta/Ingresar", function () {
-            return {
-                nombreUsuario: document.getElementById("usuario").value,
-                contraseña: document.getElementById("contrasena").value
-            };
-        });
-    </script>
+    <script src="~/js/iniciar-sesion.js" asp-append-version="true"></script>
 }

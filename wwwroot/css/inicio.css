@@ -84,6 +84,13 @@
 
 /* ---------- Secciones de tarjetas ---------- */
 
+/* Las dos grillas (las cambia inicio.js al tocar un chip): mismo espacio entre secciones que .inicio */
+#lugaresInicio {
+    display: flex;
+    flex-direction: column;
+    gap: 48px;
+}
+
 .seccion-lugares {
     display: flex;
     flex-direction: column;

@@ -2,8 +2,6 @@
 @{
     ViewData["Title"] = "Inicio";
     ViewData["Pestaña"] = "Inicio";
-    List<TarjetaRestaurante> recomendados = ViewBag.Recomendados;
-    List<TarjetaRestaurante> favoritos = ViewBag.Favoritos;
     List<Restricciones> restricciones = ViewBag.Restricciones;
     int? restriccionElegida = ViewBag.RestriccionElegida;
 }
@@ -43,55 +41,18 @@
     @* Cada chip es una restricción de la base: muestra los lugares que ofrecen esa opción *@
     <nav class="filtros-rapidos" aria-label="Filtrar por restricción">
         <a class="chip chip-filtro @(restriccionElegida == null ? "chip-activo" : "chip-crema")"
-           href="/Home/Inicio" aria-current="@(restriccionElegida == null ? "true" : null)">Todos</a>
+           href="/Home/Inicio" data-restriccion="" aria-current="@(restriccionElegida == null ? "true" : null)">Todos</a>
         @foreach (Restricciones opcion in restricciones)
         {
             <a class="chip chip-filtro @(restriccionElegida == opcion.Id ? "chip-activo" : "chip-crema")"
-               href="/Home/Inicio?restriccion=@opcion.Id" aria-current="@(restriccionElegida == opcion.Id ? "true" : null)">@opcion.Nombre</a>
+               href="/Home/Inicio?restriccion=@opcion.Id" data-restriccion="@opcion.Id" aria-current="@(restriccionElegida == opcion.Id ? "true" : null)">@opcion.Nombre</a>
         }
     </nav>
 
-    <!-- Recomendado para vos: según sus zonas, favoritos y reseñas; cambia en cada visita -->
-    <section class="seccion-lugares">
-        <div class="seccion-lugares-encabezado">
-            <h2>Recomendado para vos</h2>
-            <a class="ver-todo" href="/Restaurantes/Descubrir">Ver todo</a>
-        </div>
-        <div class="grilla-lugares">
-            @foreach (TarjetaRestaurante lugar in recomendados)
-            {
-                @await Html.PartialAsync("_TarjetaLugar", lugar)
-            }
-        </div>
-        @if (recomendados.Count == 0)
-        {
-            <p class="sin-favoritos">No hay lugares con esta opción.</p>
-        }
-    </section>
-
-    <!-- Tus favoritos: los de la tabla Favoritos del usuario de la sesión -->
-    <section class="seccion-lugares">
-        <div class="seccion-lugares-encabezado">
-            <h2>Tus favoritos</h2>
-            <a class="ver-todo" href="/Restaurantes/Descubrir">Ver todo</a>
-        </div>
-        <div class="grilla-lugares" id="grillaFavoritos" aria-live="polite">
-            @foreach (TarjetaRestaurante lugar in favoritos)
-            {
-                @await Html.PartialAsync("_TarjetaLugar", lugar)
-            }
-        </div>
-        <p class="sin-favoritos" id="sinFavoritos" hidden="@(favoritos.Count > 0)">
-            @if (restriccionElegida == null)
-            {
-                <text>Todavía no guardaste favoritos. <a href="/Restaurantes/Descubrir">Ir a Descubrir</a></text>
-            }
-            else
-            {
-                <text>No tenés favoritos con esta opción.</text>
-            }
-        </p>
-    </section>
+    @* Las dos grillas cambian con el chip elegido: inicio.js las vuelve a pedir a /Home/LugaresInicio sin recargar *@
+    <div id="lugaresInicio">
+        @await Html.PartialAsync("_LugaresInicio")
+    </div>
 </div>
 
 @section Scripts {

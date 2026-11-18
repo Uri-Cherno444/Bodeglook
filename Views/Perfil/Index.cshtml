@@ -8,16 +8,15 @@
     List<TarjetaRestaurante> restaurantes = ViewBag.Restaurantes;
     List<TarjetaPlan> planes = ViewBag.Planes;
     // "Mis Planes" muestra 6 (tres filas); "Ver todos" muestra el resto
-    int planesIniciales = 6;
+    int planesIniciales = ViewBag.PlanesIniciales;
 
     // 08c · Editar perfil: las opciones y lo que el usuario ya eligió
     List<Barrios> barrios = ViewBag.Barrios;
     List<Restricciones> todasRestricciones = ViewBag.TodasRestricciones;
-    List<int> restriccionesMarcadas = restricciones.Select(r => r.Id).ToList();
+    List<int> restriccionesMarcadas = ViewBag.RestriccionesMarcadas;
     List<int> zonasMarcadas = ViewBag.ZonasMarcadas;
     List<string> companiasMarcadas = ViewBag.CompaniasMarcadas;
-    // "Solo lo apto" solo tiene sentido si hay restricciones marcadas
-    bool soloApto = Model.SoloApto == true && restriccionesMarcadas.Count > 0;
+    bool soloApto = ViewBag.SoloApto;
 }
 
 @section Estilos {
@@ -119,10 +118,7 @@
                 @for (int i = 0; i < planes.Count; i++)
                 {
                     TarjetaPlan plan = planes[i];
-                    bool confirmado = plan.Estado == "Confirmado";
-                    string detalle = confirmado
-                        ? "Confirmado en " + plan.LugarElegido
-                        : plan.CantidadLugares + (plan.CantidadLugares == 1 ? " lugar propuesto" : " lugares propuestos");
+                    bool confirmado = plan.EsConfirmado();
 
                     @* El Detalle del plan todavía no tiene pantalla: lleva a la votación *@
                     <a class="tarjeta-plan @(confirmado ? "tarjeta-plan-confirmado" : "tarjeta-plan-votacion")" href="/Planes/Detalle/@plan.Id" hidden="@(i >= planesIniciales)">
@@ -133,7 +129,7 @@
                                 <span class="chip chip-estado @(confirmado ? "chip-confirmado" : "chip-naranja")">@plan.Estado</span>
                             </span>
                             <span class="tarjeta-plan-pie">
-                                <span class="tarjeta-plan-detalle">@detalle</span>
+                                <span class="tarjeta-plan-detalle">@plan.TextoDetalle()</span>
                                 <span class="avatares">
                                     @foreach (string inicial in plan.Iniciales)
                                     {
@@ -341,13 +337,4 @@
 @section Scripts {
     <script src="~/js/cuenta.js" asp-append-version="true"></script>
     <script src="~/js/perfil.js" asp-append-version="true"></script>
-    <script>
-        // "Ver todos" muestra los planes que quedaron ocultos
-        document.getElementById("verTodosPlanes").addEventListener("click", function () {
-            document.querySelectorAll(".grilla-planes-perfil .tarjeta-plan[hidden]").forEach(function (tarjeta) {
-                tarjeta.hidden = false;
-            });
-            this.hidden = true;
-        });
-    </script>
 }

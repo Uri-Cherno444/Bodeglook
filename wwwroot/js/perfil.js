@@ -413,3 +413,11 @@ function ocultarAvisoExito() {
 }
 
 document.getElementById("cerrarAvisoExito").addEventListener("click", ocultarAvisoExito);
+
+// "Ver todos" muestra los planes que quedaron ocultos
+document.getElementById("verTodosPlanes").addEventListener("click", function () {
+    document.querySelectorAll(".grilla-planes-perfil .tarjeta-plan[hidden]").forEach(function (tarjeta) {
+        tarjeta.hidden = false;
+    });
+    this.hidden = true;
+});

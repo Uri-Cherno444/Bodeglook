@@ -73,4 +73,11 @@ public class DetalleRestaurante
         if (DireccionNumero <= 0) return DireccionCalle;
         return DireccionCalle + " " + DireccionNumero;
     }
+
+    // Debajo del título del modal de reseña: "Bodega Los Alamos · Cañuelas" (del barrio va solo lo de antes de la coma)
+    public string TextoLugarModal()
+    {
+        if (Barrio == null) return Nombre ?? "";
+        return Nombre + " · " + Barrio.Split(',')[0];
+    }
 }

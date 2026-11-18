@@ -482,7 +482,7 @@ public static class BD
 
     // Los planes de todos los grupos del usuario, sin los cancelados.
     // Planes.Estado: 0 = En votación, 1 = Confirmado, 2 = Cancelado. confirmado = null trae votación y confirmados.
-    // La tarjeta muestra el texto del chip, por eso la consulta lo devuelve ya escrito.
+    // El texto del chip ("Confirmado" / "En votación") lo arma TarjetaPlan.Estado.
     public static List<TarjetaPlan> ObtenerPlanesDeUsuario(int idUsuario, bool? confirmado)
     {
         // Procedimiento ListarPlanesUsuario
@@ -560,9 +560,13 @@ public static class BD
             encuesta.Horarios = conexion.Query<OpcionHorario>("ListarHorariosPlan",
                 new { idPlan },
                 commandType: CommandType.StoredProcedure).ToList();
-            encuesta.Participantes = conexion.Query<Participante>("ListarParticipantesPlan",
+            List<Participante> participantes = conexion.Query<Participante>("ListarParticipantesPlan",
                 new { idPlan },
                 commandType: CommandType.StoredProcedure).ToList();
+            // El que organiza va primero; el resto, por nombre (como los trae el procedimiento)
+            encuesta.Participantes = participantes.Where(p => p.IdUsuario == encuesta.IdCreador)
+                .Concat(participantes.Where(p => p.IdUsuario != encuesta.IdCreador))
+                .ToList();
             return encuesta;
         }
     }
@@ -587,24 +591,16 @@ public static class BD
         return encuestas;
     }
 
-    // Busca lugares por nombre para el modal Crear plan.
-    // Primero van los aptos para todo el grupo: los que cumplen todas las restricciones de sus integrantes.
+    // Procedimiento BuscarLugaresParaGrupo: los lugares cuyo nombre tiene el texto, por nombre (modal Crear plan).
+    // Cuáles son aptos para todo el grupo y cuáles se muestran lo decide LugarBuscado.BuscarParaGrupo.
     public static List<LugarBuscado> BuscarLugaresParaGrupo(int idGrupo, string texto)
     {
-        // Procedimiento BuscarLugaresParaGrupo
-        List<LugarBuscado> lugares;
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            lugares = conexion.Query<LugarBuscado>("BuscarLugaresParaGrupo",
+            return conexion.Query<LugarBuscado>("BuscarLugaresParaGrupo",
                 new { idGrupo, texto },
                 commandType: CommandType.StoredProcedure).ToList();
         }
-
-        foreach (LugarBuscado lugar in lugares)
-        {
-            lugar.Restricciones = ObtenerRestriccionesDeRestaurante(lugar.Id);
-        }
-        return lugares;
     }
 
     // Procedimiento ObtenerLugar: un lugar suelto, el que viene ya cargado desde el Detalle del restaurante
@@ -754,191 +750,66 @@ public static class BD
 
     // ---------- Restaurantes ----------
 
-    // Los restaurantes de las tarjetas "Recomendados". EsFavorito dice si el usuario ya lo guardó
-    // (para pintar el corazón; con idUsuario 0 ninguno es favorito).
-    // Sin soloApto se usa el procedimiento Mostrar4Restaurantes (los 4 primeros) y se completan
-    // categoría, barrio, puntaje y favorito con ObtenerRestaurante y ComprobarEsFavorito.
-    // soloApto = true deja solo los que cumplen al menos una restricción del usuario
-    // (si el usuario no marcó ninguna, trae todos): para eso no hay procedimiento, queda la consulta.
-    // idRestriccion (el chip elegido en Inicio) deja solo los lugares que ofrecen esa opción.
-    public static List<TarjetaRestaurante> ObtenerMejorPuntuados(int cantidad, int idUsuario, bool soloApto, int? idRestriccion = null)
+    // Procedimiento Mostrar4Restaurantes: las tarjetas de "Lugares que recomienda la comunidad" de la Landing
+    // (los primeros restaurantes cargados). Se completan categoría, barrio, puntaje y favorito con ObtenerRestaurante
+    // y ComprobarEsFavorito (con idUsuario 0 ninguno es favorito).
+    public static List<TarjetaRestaurante> ObtenerMejorPuntuados(int cantidad, int idUsuario)
     {
-        if (!soloApto && idRestriccion == null)
-        {
-            List<TarjetaRestaurante> tarjetas;
-            using (SqlConnection conexion = new SqlConnection(CadenaConexion))
-            {
-                tarjetas = conexion.Query<TarjetaRestaurante>("Mostrar4Restaurantes",
-                    commandType: CommandType.StoredProcedure).Take(cantidad).ToList();
-            }
-            foreach (TarjetaRestaurante tarjeta in tarjetas)
-            {
-                CompletarTarjeta(tarjeta, idUsuario);
-            }
-            return tarjetas;
-        }
-
-        // Procedimiento ListarMejorPuntuados
+        List<TarjetaRestaurante> tarjetas;
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            return conexion.Query<TarjetaRestaurante>("ListarMejorPuntuados",
-                new { cantidad, idUsuario, soloApto, idRestriccion },
+            tarjetas = conexion.Query<TarjetaRestaurante>("Mostrar4Restaurantes",
+                commandType: CommandType.StoredProcedure).Take(cantidad).ToList();
+        }
+        foreach (TarjetaRestaurante tarjeta in tarjetas)
+        {
+            CompletarTarjeta(tarjeta, idUsuario);
+        }
+        return tarjetas;
+    }
+
+    // ---------- 05 · Descubrir y "Recomendado para vos" ----------
+    // Las consultas traen los datos tal cual; buscar, filtrar, ordenar y recomendar lo hacen
+    // BuscadorRestaurantes y TarjetaRestaurante.
+
+    // Procedimiento ListarRestaurantesBuscador: todos los restaurantes con su categoría, su barrio y sus coordenadas
+    public static List<TarjetaRestaurante> ObtenerRestaurantesParaBuscar()
+    {
+        using (SqlConnection conexion = new SqlConnection(CadenaConexion))
+        {
+            return conexion.Query<TarjetaRestaurante>("ListarRestaurantesBuscador",
                 commandType: CommandType.StoredProcedure).ToList();
         }
     }
 
-    // Las tarjetas "Recomendado para vos" de Inicio: lugares que se parecen a los gustos del usuario y que cambian en cada visita.
-    // El procedimiento ListarRecomendables trae los lugares con sus puntos de afinidad:
-    //   +2 si está en un barrio que le interesa (ZonasUsuarios o su barrio del perfil)
-    //   +2 si es de una categoría que ya marcó como favorita o reseñó con 4 o 5
-    //   +1 si tiene buen puntaje (4 o más)
-    // Acá se le suma un número al azar (0 a 3) a cada uno y se toman los de arriba: los que más le gustan salen seguido,
-    // pero no son siempre los mismos. No muestra lo que ya tiene en favoritos (eso va en "Tus favoritos").
-    // soloApto e idRestriccion funcionan igual que en ObtenerMejorPuntuados.
-    public static List<TarjetaRestaurante> ObtenerRecomendados(int cantidad, int idUsuario, bool soloApto, int? idRestriccion = null)
+    // Procedimiento ListarPuntajesResenas: el puntaje, la fecha, el autor y el lugar de todas las reseñas
+    public static List<Reseñas> ObtenerPuntajesDeResenas()
     {
-        List<TarjetaRestaurante> candidatos;
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            candidatos = conexion.Query<TarjetaRestaurante>("ListarRecomendables",
-                new { idUsuario, soloApto, idRestriccion },
-                commandType: CommandType.StoredProcedure).ToList();
-        }
-
-        Random azar = new Random();
-        return candidatos
-            .OrderByDescending(tarjeta => tarjeta.Afinidad + azar.NextDouble() * 3)
-            .Take(cantidad)
-            .ToList();
-    }
-
-    // ---------- 05 · Descubrir ----------
-
-    // Las palabras que no sirven para buscar ("parrilla en Palermo" -> "parrilla", "Palermo")
-    private static readonly List<string> PalabrasVacias = new List<string> { "en", "de", "la", "el", "los", "las", "del", "con", "y" };
-
-    // Arma los parámetros de los procedimientos de búsqueda (todos reciben los mismos). El procedimiento compara cada palabra
-    // con el nombre, el barrio y la categoría: en @p1..@p5 va la palabra con % y en @s1..@s5 la misma sin la "s" final
-    // ("Parrillas" encuentra "Parrilla"). Se usan hasta 5 palabras; las vacías ("en", "de"...) se ignoran.
-    // El procedimiento ignora tildes y mayúsculas ("nunez" encuentra "Núñez").
-    // soloApto: igual que en Inicio, solo los que cumplen al menos una restricción del usuario.
-    // idBarrio: el desplegable "Barrio". null = todos los barrios.
-    // Si hay zona, solo lo que cae dentro de lo que se ve en el mapa. Si hay Limite, solo los Limite lugares de mejor puntaje.
-    private static DynamicParameters ArmarParametrosBusqueda(FiltroBusqueda f)
-    {
-        DynamicParameters parametros = new DynamicParameters();
-        parametros.Add("idUsuario", f.IdUsuario);
-        parametros.Add("soloApto", f.SoloApto);
-        parametros.Add("idBarrio", f.IdBarrio, DbType.Int32);
-        parametros.Add("idCategoria", f.IdCategoria, DbType.Int32);
-        parametros.Add("tieneZona", f.TieneZona);
-        parametros.Add("norte", f.Norte, DbType.Double);
-        parametros.Add("sur", f.Sur, DbType.Double);
-        parametros.Add("este", f.Este, DbType.Double);
-        parametros.Add("oeste", f.Oeste, DbType.Double);
-        parametros.Add("limite", f.Limite, DbType.Int32);
-
-        List<string> palabras = new List<string>();
-        foreach (string palabra in f.Texto.Split(' ', StringSplitOptions.RemoveEmptyEntries))
-        {
-            if (!PalabrasVacias.Contains(palabra.ToLower())) palabras.Add(palabra);
-        }
-
-        for (int numero = 1; numero <= 5; numero++)
-        {
-            string? conPorcentaje = null;
-            string? sinS = null;
-            if (numero <= palabras.Count)
-            {
-                string palabra = palabras[numero - 1];
-                string palabraSinS = palabra.Length > 3 && palabra.EndsWith("s") ? palabra.Substring(0, palabra.Length - 1) : palabra;
-                conPorcentaje = "%" + palabra + "%";
-                sinS = "%" + palabraSinS + "%";
-            }
-            parametros.Add("p" + numero, conPorcentaje, DbType.String);
-            parametros.Add("s" + numero, sinS, DbType.String);
-        }
-        return parametros;
-    }
-
-    // Procedimiento ObtenerProDestacado: el Pro que sale destacado ("Recomendado") arriba de todo en la página 1 cuando no hay barrio elegido:
-    // el más cercano al usuario entre los que coinciden con la búsqueda. null si no hay ningún Pro.
-    public static int? ObtenerProDestacado(FiltroBusqueda filtroBusqueda, double? latitud, double? longitud)
-    {
-        DynamicParameters parametros = ArmarParametrosBusqueda(filtroBusqueda);
-        parametros.Add("latitudUsuario", latitud, DbType.Double);
-        parametros.Add("longitudUsuario", longitud, DbType.Double);
-
-        using (SqlConnection conexion = new SqlConnection(CadenaConexion))
-        {
-            return conexion.QueryFirstOrDefault<int?>("ObtenerProDestacado", parametros,
-                commandType: CommandType.StoredProcedure);
-        }
-    }
-
-    // Una página de resultados (procedimiento BuscarRestaurantesPagina).
-    // idDestacado: el Pro de ObtenerProDestacado. Va primero (o sea, arriba de la página 1) y no se repite más abajo.
-    // orden: "cerca" (del más cerca al más lejos) o "puntaje" (mejor puntuados primero; los empates, por distancia).
-    // latitud y longitud: desde dónde se mide (la ubicación del navegador o el centro del barrio del perfil).
-    // Llegan como parámetros y no se guardan. Si son null, no hay distancia.
-    // Los que no tienen distancia (sin ubicación o el lugar sin coordenadas) o sin reseñas van al final.
-    // El procedimiento trae los primeros desde + cantidad resultados y acá se saltan los de las páginas anteriores.
-    // El pin del mapa sale de las coordenadas del lugar o, si no tiene, de las de su barrio.
-    public static List<TarjetaRestaurante> BuscarRestaurantes(FiltroBusqueda filtroBusqueda,
-        double? latitud, double? longitud, string orden, int? idDestacado, int desde, int cantidad)
-    {
-        DynamicParameters parametros = ArmarParametrosBusqueda(filtroBusqueda);
-        parametros.Add("latitudUsuario", latitud, DbType.Double);
-        parametros.Add("longitudUsuario", longitud, DbType.Double);
-        parametros.Add("orden", orden);
-        parametros.Add("idDestacado", idDestacado, DbType.Int32);
-        parametros.Add("hasta", desde + cantidad);
-
-        using (SqlConnection conexion = new SqlConnection(CadenaConexion))
-        {
-            return conexion.Query<TarjetaRestaurante>("BuscarRestaurantesPagina", parametros,
-                commandType: CommandType.StoredProcedure).Skip(desde).ToList();
-        }
-    }
-
-    // Procedimiento ListarPinesMapa: los lugares de la búsqueda para dibujar sus pins en el mapa: los mismos que la lista
-    // (la lista va de a páginas, el mapa los muestra juntos).
-    // Trae solo lo que necesita un pin y su tarjetita; los que no tienen coordenadas (ni propias ni de su barrio) no van.
-    public static List<TarjetaRestaurante> ObtenerPinesMapa(FiltroBusqueda filtroBusqueda)
-    {
-        DynamicParameters parametros = ArmarParametrosBusqueda(filtroBusqueda);
-
-        using (SqlConnection conexion = new SqlConnection(CadenaConexion))
-        {
-            return conexion.Query<TarjetaRestaurante>("ListarPinesMapa", parametros,
+            return conexion.Query<Reseñas>("ListarPuntajesResenas",
                 commandType: CommandType.StoredProcedure).ToList();
         }
     }
 
-    // Procedimiento ContarRestaurantesBusqueda: cuántos resultados hay en total (para la paginación)
-    public static int ContarRestaurantes(FiltroBusqueda filtroBusqueda)
+    // Procedimiento ListarTodasRestriccionesRestaurantes: qué restricciones cumple cada restaurante
+    public static List<RestriccionesRestaurantes> ObtenerRestriccionesDeTodosLosRestaurantes()
     {
-        DynamicParameters parametros = ArmarParametrosBusqueda(filtroBusqueda);
-
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            return conexion.QueryFirst<int>("ContarRestaurantesBusqueda", parametros,
-                commandType: CommandType.StoredProcedure);
+            return conexion.Query<RestriccionesRestaurantes>("ListarTodasRestriccionesRestaurantes",
+                commandType: CommandType.StoredProcedure).ToList();
         }
     }
 
-    // Procedimiento ObtenerBarrioConMasResultados: cuando la búsqueda no da nada en el barrio elegido,
-    // el otro barrio donde el texto tiene más resultados
-    // (para "No encontramos sushi en Palermo. Hay 3 en Belgrano"). null si no aparece en ningún otro.
-    public static BarrioConResultados? ObtenerBarrioConMasResultados(FiltroBusqueda filtroBusqueda, int idBarrioElegido)
+    // Procedimiento ListarFavoritosUsuario: los Id de los favoritos del usuario
+    public static List<int> ObtenerIdsFavoritos(int idUsuario)
     {
-        DynamicParameters parametros = ArmarParametrosBusqueda(filtroBusqueda);
-        parametros.Add("idBarrioElegido", idBarrioElegido);
-
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            return conexion.QueryFirstOrDefault<BarrioConResultados>("ObtenerBarrioConMasResultados", parametros,
-                commandType: CommandType.StoredProcedure);
+            return conexion.Query<int>("ListarFavoritosUsuario",
+                new { idUsuario },
+                commandType: CommandType.StoredProcedure).ToList();
         }
     }
 
@@ -1176,5 +1047,106 @@ public static class BD
                 commandType: CommandType.StoredProcedure);
             return true;
         }
+    }
+
+    // ---------- Palabras prohibidas (solo para el texto de las reseñas) ----------
+
+    // La lista de la tabla PalabrasProhibidas ya normalizada. Se lee de la base la primera vez y queda en memoria:
+    // si se agrega o se saca una palabra, el cambio se ve al reiniciar la app.
+    private static List<string>? palabrasProhibidas = null;
+
+    // Procedimiento ListarPalabrasProhibidas. true si el texto tiene alguna palabra de la lista.
+    // El texto y la lista se normalizan igual (minúsculas, sin tildes, 4->a 3->e 1->i 0->o @->a $->s)
+    // y se compara palabra por palabra (no partes de palabra: "disputa" no se bloquea por "puta").
+    // Las letras repetidas cuentan como una ("boludooo" = "boludo"), salvo que la palabra de la lista
+    // tenga esa letra doble ("forro" pide rr: "foro" no se bloquea). "b.o.l.u.d.o" se junta y se revisa entera.
+    // También se prueba cada palabra sin la "s" o el "es" del final (plurales).
+    public static bool TieneLenguajeOfensivo(string? texto)
+    {
+        if (string.IsNullOrWhiteSpace(texto)) return false;
+
+        if (palabrasProhibidas == null)
+        {
+            using (SqlConnection conexion = new SqlConnection(CadenaConexion))
+            {
+                palabrasProhibidas = conexion.Query<string>("ListarPalabrasProhibidas", commandType: CommandType.StoredProcedure)
+                    .Select(palabra => NormalizarTexto(palabra).Trim())
+                    .Where(palabra => palabra != "")
+                    .ToList();
+            }
+        }
+
+        // Las palabras del texto: lo que queda entre separadores (espacios, puntos, guiones, etc.)
+        string[] partes = NormalizarTexto(texto).Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        List<string> palabras = new List<string>(partes);
+
+        // Letras sueltas seguidas ("b.o.l.u.d.o" o "b o l u d o") también se revisan juntas
+        string juntas = "";
+        foreach (string parte in partes.Append(""))
+        {
+            if (parte.Length == 1)
+            {
+                juntas += parte;
+            }
+            else
+            {
+                if (juntas.Length >= 2) palabras.Add(juntas);
+                juntas = "";
+            }
+        }
+
+        foreach (string palabra in palabras)
+        {
+            List<string> formas = new List<string> { palabra };
+            if (palabra.Length > 2 && palabra.EndsWith("s")) formas.Add(palabra.Substring(0, palabra.Length - 1));
+            if (palabra.Length > 3 && palabra.EndsWith("es")) formas.Add(palabra.Substring(0, palabra.Length - 2));
+
+            foreach (string forma in formas)
+            {
+                if (palabrasProhibidas.Any(prohibida => EsLaMismaPalabra(forma, prohibida))) return true;
+            }
+        }
+        return false;
+    }
+
+    // Minúsculas, sin tildes ni diéresis (la ñ queda), números y símbolos que reemplazan letras,
+    // y todo lo que no es una letra pasa a ser un espacio
+    private static string NormalizarTexto(string texto)
+    {
+        string resultado = "";
+        foreach (char original in texto.ToLower())
+        {
+            char letra = original;
+            if (letra == '4' || letra == '@') letra = 'a';
+            else if (letra == '3') letra = 'e';
+            else if (letra == '1') letra = 'i';
+            else if (letra == '0') letra = 'o';
+            else if (letra == '$') letra = 's';
+            else if (letra != 'ñ') letra = letra.ToString().Normalize(System.Text.NormalizationForm.FormD)[0];
+
+            resultado += char.IsLetter(letra) ? letra : ' ';
+        }
+        return resultado;
+    }
+
+    // Compara letra por letra, juntando las repetidas: "boludooo" = "boludo".
+    // Si la palabra prohibida tiene una letra doble, el texto la tiene que tener al menos doble: "foro" no es "forro".
+    private static bool EsLaMismaPalabra(string palabra, string prohibida)
+    {
+        int i = 0;
+        int j = 0;
+        while (i < palabra.Length && j < prohibida.Length)
+        {
+            if (palabra[i] != prohibida[j]) return false;
+
+            char letra = palabra[i];
+            int vecesEnPalabra = 0;
+            while (i < palabra.Length && palabra[i] == letra) { vecesEnPalabra++; i++; }
+            int vecesEnProhibida = 0;
+            while (j < prohibida.Length && prohibida[j] == letra) { vecesEnProhibida++; j++; }
+
+            if (vecesEnPalabra < vecesEnProhibida) return false;
+        }
+        return i == palabra.Length && j == prohibida.Length;
     }
 }

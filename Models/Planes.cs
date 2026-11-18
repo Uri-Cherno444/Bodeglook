@@ -13,4 +13,12 @@ public class Planes
     public int? IdRestauranteElegido { get; set; }
     // Quien creó el plan: es el único que lo confirma o lo cancela
     public int? IdUsuarioCreador { get; set; }
+
+    // "Sáb 24/10" (chip "Visita verificada" del modal de reseña). "" si no tiene fecha.
+    public string TextoFechaSalida()
+    {
+        if (FechaSalida == null) return "";
+        string[] dias = { "Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb" };
+        return dias[(int)FechaSalida.Value.DayOfWeek] + " " + FechaSalida.Value.ToString("dd/MM");
+    }
 }

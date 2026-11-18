@@ -1,5 +1,3 @@
-using System.Globalization;
-using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Bodeglook.Models;
 
@@ -10,19 +8,12 @@ public class RestaurantesController : Controller
     // Reseñas que se muestran al entrar; "Ver las N" carga el resto
     private const int ResenasIniciales = 3;
 
-    // La foto de una reseña pesa hasta 5 MB
-    private const long TamanoMaximoFoto = 5 * 1024 * 1024;
-
-    // 05 · Descubrir: 5 resultados por página y las últimas 3 búsquedas
-    private const int ResultadosPorPagina = 5;
-    private const int BusquedasRecientes = 3;
-
     // 04 · Detalle + Reseña (privada)
     public IActionResult Detalle(int id)
     {
-        if (HttpContext.Session.GetString("usuario") == null) return RedirectToAction("IniciarSesion", "Cuenta");
+        if (!Sesion.HayUsuario(HttpContext.Session)) return RedirectToAction("IniciarSesion", "Cuenta");
 
-        Usuarios usuario = UsuarioDeSesion();
+        Usuarios usuario = Sesion.Leer(HttpContext.Session)!;
         DetalleRestaurante? detalle = BD.ObtenerDetalleRestaurante(id, usuario.Id);
         if (detalle == null) return NotFound();
 
@@ -30,386 +21,74 @@ public class RestaurantesController : Controller
         ViewBag.YaReseno = BD.YaReseno(usuario.Id, id);
         ViewBag.Visita = BD.ObtenerVisitaVerificada(usuario.Id, id);
         ViewBag.Origen = BD.ObtenerOrigenRestaurante(id);
+        ViewBag.Dimensiones = NuevaResena.Dimensiones;
         return View(detalle);
     }
 
     // La llama "Ver las N" con fetch. Devuelve las reseñas que todavía no se muestran.
     public IActionResult Resenas(int id, int desde)
     {
-        if (HttpContext.Session.GetString("usuario") == null) return Unauthorized();
+        if (!Sesion.HayUsuario(HttpContext.Session)) return Unauthorized();
 
-        List<object> resenas = new List<object>();
-        foreach (ResenaComunidad resena in BD.ObtenerResenasDeRestaurante(id, desde, null))
-        {
-            resenas.Add(ResenaParaJson(resena));
-        }
-        return Json(resenas);
+        return Json(ResenaComunidad.ListaParaJson(id, desde));
     }
 
     // La llama "Publicar reseña" del modal 04b con fetch. Recibe NuevaResena como formulario (por la foto).
-    // Devuelve { ok, mensaje } si no se puede guardar (campo = "foto" si el error es de la foto),
-    // o { ok, publicada, ... } si se guardó.
-    // La reseña se publica 24 horas después de dejarla.
+    // Lo que devuelve está explicado en NuevaResena.Guardar.
     [HttpPost]
     public IActionResult DejarResena([FromForm] NuevaResena datos)
     {
-        if (HttpContext.Session.GetString("usuario") == null) return Unauthorized();
-        if (!BD.ExisteRestaurante(datos.IdRestaurante)) return Json(new { ok = false, mensaje = "Ese lugar no existe." });
+        if (!Sesion.HayUsuario(HttpContext.Session)) return Unauthorized();
 
-        int[] puntajes = { datos.Comida, datos.Ambiente, datos.Atencion, datos.Precio };
-        if (puntajes.Any(p => p < 1 || p > 5))
-            return Json(new { ok = false, mensaje = "Elegí un puntaje del 1 al 5 en Comida, Ambiente, Atención y Precio y valor." });
-
-        // La base no tiene dónde marcar los canjes: sin esa marca sumarían al puntaje, así que no se publican
-        if (datos.EsCanje)
-            return Json(new { ok = false, mensaje = "Por ahora no se pueden publicar reseñas de invitaciones o canjes." });
-
-        Usuarios usuario = UsuarioDeSesion();
-        if (BD.YaReseno(usuario.Id, datos.IdRestaurante))
-            return Json(new { ok = false, mensaje = "Ya dejaste una reseña de este lugar." });
-
-        // La foto (opcional): se revisa el tamaño y el tipo real del archivo, no solo el nombre
-        string extension = "";
-        if (datos.Foto != null)
-        {
-            if (datos.Foto.Length == 0 || datos.Foto.Length > TamanoMaximoFoto)
-                return Json(new { ok = false, campo = "foto", mensaje = "La foto no puede pesar más de 5 MB." });
-
-            extension = ExtensionDeImagen(datos.Foto);
-            if (extension == "")
-                return Json(new { ok = false, campo = "foto", mensaje = "La foto tiene que ser JPG, PNG o WEBP." });
-        }
-
-        // En la tabla entra un entero: se guarda el promedio de los cuatro, redondeado
-        Reseñas nueva = new Reseñas();
-        nueva.Puntaje = (int)Math.Round(puntajes.Average(), MidpointRounding.AwayFromZero);
-        nueva.Comentario = string.IsNullOrWhiteSpace(datos.Comentario) ? null : datos.Comentario.Trim();
-        nueva.IdUsuario = usuario.Id;
-        nueva.IdRestaurante = datos.IdRestaurante;
-
-        // La foto se guarda en wwwroot/img/resenas con un nombre generado (nunca el que trae el archivo)
-        string rutaArchivo = "";
-        if (datos.Foto != null)
-        {
-            string nombreArchivo = Guid.NewGuid().ToString("N") + extension;
-            string carpeta = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "img", "resenas");
-            Directory.CreateDirectory(carpeta);
-            rutaArchivo = Path.Combine(carpeta, nombreArchivo);
-            using (FileStream destino = new FileStream(rutaArchivo, FileMode.Create))
-            {
-                datos.Foto.CopyTo(destino);
-            }
-            nueva.Foto = "/img/resenas/" + nombreArchivo;
-        }
-
-        // El procedimiento CrearResena guarda la reseña con la fecha de ahora, así que
-        // se publica 24 horas después y no se muestra enseguida (sus fotos tampoco)
-        int error;
-        try
-        {
-            error = BD.GuardarResena(nueva);
-        }
-        catch
-        {
-            // Si la base falla no queda una foto suelta
-            if (rutaArchivo != "") System.IO.File.Delete(rutaArchivo);
-            throw;
-        }
-
-        if (error != 0 && rutaArchivo != "") System.IO.File.Delete(rutaArchivo);
-        if (error == 1) return Json(new { ok = false, mensaje = "Elegí un puntaje del 1 al 5." });
-        if (error == 2) return Json(new { ok = false, mensaje = "Ya dejaste una reseña de este lugar." });
-
-        return Json(new { ok = true, publicada = false });
+        Usuarios usuario = Sesion.Leer(HttpContext.Session)!;
+        return Json(datos.Guardar(usuario.Id));
     }
 
     // 05 · Descubrir Restaurantes (privada). q viene del buscador del header o de un link.
     // Los resultados los pide descubrir.js con fetch a /Restaurantes/Resultados.
     public IActionResult Descubrir(string? q)
     {
-        if (HttpContext.Session.GetString("usuario") == null) return RedirectToAction("IniciarSesion", "Cuenta");
+        if (!Sesion.HayUsuario(HttpContext.Session)) return RedirectToAction("IniciarSesion", "Cuenta");
 
-        Usuarios usuario = UsuarioDeSesion();
+        Usuarios usuario = Sesion.Leer(HttpContext.Session)!;
         ViewBag.Texto = (q ?? "").Trim();
-        ViewBag.Recientes = BD.ObtenerBusquedasRecientes(usuario.Id, BusquedasRecientes);
+        ViewBag.Recientes = BD.ObtenerBusquedasRecientes(usuario.Id, BuscadorRestaurantes.BusquedasRecientes);
         // Las opciones del desplegable "Barrio" y los chips de categoría
         ViewBag.Barrios = BD.ObtenerBarrios();
         ViewBag.Categorias = BD.ObtenerCategorias();
-        // Donde arranca el mapa si el navegador no da la ubicación: el centro del barrio del perfil (si no, el centro de la Ciudad)
-        Barrios? barrioUsuario = BD.ObtenerBarrioDeUsuario(usuario.Id);
-        bool hayBarrio = barrioUsuario != null && barrioUsuario.Latitud != null && barrioUsuario.Longitud != null;
-        ViewBag.CentroLatitud = hayBarrio ? (double)barrioUsuario!.Latitud!.Value : -34.6037;
-        ViewBag.CentroLongitud = hayBarrio ? (double)barrioUsuario!.Longitud!.Value : -58.4000;
-        ViewBag.CentroEsBarrio = hayBarrio;
+        // Donde arranca el mapa si el navegador no da la ubicación
+        ViewBag.CentroEsBarrio = BuscadorRestaurantes.CentroDelMapa(usuario.Id, out double latitud, out double longitud);
+        ViewBag.CentroLatitud = latitud;
+        ViewBag.CentroLongitud = longitud;
         return View();
     }
 
-    // Cuántos lugares se muestran según el zoom del mapa: cuanto más lejos, menos y los mejores; cuanto más cerca, más.
-    // Sin zoom (se busca en toda la Ciudad) son los 80 mejores.
-    private static int LimiteSegunZoom(int? zoom)
-    {
-        if (zoom == null) return 80;
-        if (zoom <= 11) return 15;
-        if (zoom == 12) return 25;
-        if (zoom == 13) return 50;
-        if (zoom == 14) return 100;
-        if (zoom == 15) return 200;
-        return 400;
-    }
-
     // La llama descubrir.js con fetch al buscar, al cambiar de página, de barrio, de categoría, de orden o al mover el mapa.
-    // idBarrio: el desplegable "Barrio" (sin él, todos los barrios).
-    // idCategoria: el chip de categoría elegido (sin él, todas).
-    // norte, sur, este, oeste y zoom: lo que se ve en el mapa. Con zona, la lista y los pins son solo de esa zona y
-    //   cuanto menos zoom, menos lugares (los mejores). Sin zona (recién se buscó o se cambió un filtro) es toda la Ciudad.
-    // pines: si es true también devuelve en "pines" los lugares para el mapa (los mismos que la lista, todas las páginas).
-    //   descubrir.js lo pide solo cuando cambia la búsqueda, el filtro o la zona, no al cambiar de página.
-    // orden: "cerca" (Más cerca, el de siempre) o "puntaje" (Mejor puntuados), con o sin barrio elegido.
-    //   Sin barrio y ordenando por cercanía, 1 Pro destacado arriba de la página 1 (el más cercano).
-    // latitud y longitud: la ubicación del navegador. Solo se usan para medir las distancias: no se guardan.
-    // Si no vienen, se mide desde el centro del barrio del perfil y se devuelve su nombre en desdeBarrio (para el aviso).
-    // Devuelve { pagina, totalPaginas, total, resultados, pines, recientes, desdeBarrio, barrioElegido, otroBarrio }.
-    // otroBarrio solo viene si no hubo nada en el barrio elegido pero el texto está en otro.
-    // Cada búsqueda nueva (pagina 1 con texto, sin zona) se guarda.
+    // Qué recibe y qué devuelve está explicado en BuscadorRestaurantes.Buscar.
     public async Task<IActionResult> Resultados(string? texto, int pagina, int? idBarrio, int? idCategoria, string? orden,
         double? latitud, double? longitud, double? norte, double? sur, double? este, double? oeste, int? zoom, bool pines = false)
     {
-        if (HttpContext.Session.GetString("usuario") == null) return Unauthorized();
+        if (!Sesion.HayUsuario(HttpContext.Session)) return Unauthorized();
 
-        Usuarios usuario = UsuarioDeSesion();
-        texto = (texto ?? "").Trim();
-        if (texto.Length > 100) texto = texto.Substring(0, 100);
-
-        // Un barrio o una categoría que no existen se toman como "todos"
-        Barrios? barrioElegido = idBarrio == null ? null : BD.ObtenerBarrios().FirstOrDefault(b => b.Id == idBarrio);
-        if (barrioElegido == null) idBarrio = null;
-        if (idCategoria != null && !BD.ObtenerCategorias().Any(c => c.Id == idCategoria)) idCategoria = null;
-
-        // "puntaje" (Mejor puntuados) o, para cualquier otro valor, "cerca"
-        string ordenFinal = orden == "puntaje" ? "puntaje" : "cerca";
-
-        // Si el navegador no mandó una ubicación válida, se mide desde el barrio del perfil
-        string? desdeBarrio = null;
-        if (!EsUbicacionValida(latitud, longitud))
-        {
-            latitud = null;
-            longitud = null;
-            Barrios? barrioUsuario = BD.ObtenerBarrioDeUsuario(usuario.Id);
-            if (barrioUsuario != null && barrioUsuario.Latitud != null && barrioUsuario.Longitud != null)
-            {
-                latitud = (double)barrioUsuario.Latitud.Value;
-                longitud = (double)barrioUsuario.Longitud.Value;
-                desdeBarrio = barrioUsuario.Nombre;
-            }
-        }
-
-        // "Solo lo apto para mí" del onboarding o de Editar perfil (Usuarios.SoloApto)
-        bool soloApto = BD.ObtenerSoloApto(usuario.Id);
-
-        // Lo que se pide: la búsqueda, el barrio, la categoría y, si el mapa mandó una zona válida, esa zona con su límite por zoom
-        FiltroBusqueda filtro = new FiltroBusqueda();
-        filtro.Texto = texto;
-        filtro.IdUsuario = usuario.Id;
-        filtro.SoloApto = soloApto;
-        filtro.IdBarrio = idBarrio;
-        filtro.IdCategoria = idCategoria;
-        bool hayZona = EsZonaValida(norte, sur, este, oeste);
-        if (hayZona)
-        {
-            filtro.Norte = norte;
-            filtro.Sur = sur;
-            filtro.Este = este;
-            filtro.Oeste = oeste;
-        }
-        filtro.Limite = LimiteSegunZoom(hayZona ? zoom : null);
-
-        // Lo mismo pero en toda la Ciudad y sin límite (para saber si el texto existe en otro lado y para avisar en qué barrio hay)
-        FiltroBusqueda filtroCiudad = new FiltroBusqueda();
-        filtroCiudad.Texto = texto;
-        filtroCiudad.IdUsuario = usuario.Id;
-        filtroCiudad.SoloApto = soloApto;
-        filtroCiudad.IdCategoria = idCategoria;
-
-        // Se busca primero en nuestra base. Solo si no hay nada se pregunta a Geoapify, se guarda lo que encuentre y se vuelve a buscar.
-        // Con un barrio elegido, a Geoapify se le pregunta solo si el texto tampoco está en otros barrios (así no se gastan créditos de más).
-        // Al mover el mapa no se pregunta a Geoapify. Si no responde o se pasó el límite, queda "sin resultados" como siempre.
-        int total = BD.ContarRestaurantes(filtro);
-        if (total == 0 && texto != "" && pagina <= 1 && !hayZona
-            && (idBarrio == null || BD.ContarRestaurantes(filtroCiudad) == 0))
-        {
-            if (await Geoapify.BuscarYGuardar(texto) > 0) total = BD.ContarRestaurantes(filtro);
-        }
-        int totalPaginas = Math.Max(1, (int)Math.Ceiling(total / (double)ResultadosPorPagina));
-        if (pagina < 1) pagina = 1;
-        if (pagina > totalPaginas) pagina = totalPaginas;
-
-        if (pagina == 1 && texto != "" && !hayZona) BD.GuardarBusqueda(usuario.Id, texto);
-
-        List<object> resultados = new List<object>();
-        // Sin barrio y ordenando por cercanía: como máximo 1 Pro destacado ("Recomendado"), el más cercano
-        int? idDestacado = idBarrio == null && ordenFinal == "cerca" ? BD.ObtenerProDestacado(filtro, latitud, longitud) : null;
-
-        // Nada en el barrio elegido: ¿en qué otro barrio sí está ese texto?
-        BarrioConResultados? otroBarrio = null;
-        if (total == 0 && idBarrio != null && texto != "")
-            otroBarrio = BD.ObtenerBarrioConMasResultados(filtroCiudad, idBarrio.Value);
-
-        foreach (TarjetaRestaurante lugar in BD.BuscarRestaurantes(filtro, latitud, longitud,
-            ordenFinal, idDestacado, (pagina - 1) * ResultadosPorPagina, ResultadosPorPagina))
-        {
-            resultados.Add(new
-            {
-                id = lugar.Id,
-                nombre = lugar.Nombre,
-                foto = lugar.Foto,
-                categoria = lugar.Categoria,
-                barrio = lugar.Barrio,
-                puntaje = lugar.Puntaje == null ? null : lugar.Puntaje.Value.ToString("0.0", CultureInfo.InvariantCulture),
-                esFavorito = lugar.EsFavorito,
-                // Solo el Pro destacado lleva el chip "Recomendado"
-                destacado = lugar.Id == idDestacado,
-                origen = lugar.Origen,
-                latitud = lugar.Latitud,
-                longitud = lugar.Longitud,
-                // Con 3 decimales (metros): descubrir.js lo pasa a cuadras o km
-                distanciaKm = lugar.DistanciaKm == null ? (double?)null : Math.Round(lugar.DistanciaKm.Value, 3)
-            });
-        }
-
-        // Los pins del mapa: los mismos lugares que la lista (todas las páginas), solo con lo que necesita cada pin
-        List<object>? listaPines = null;
-        if (pines)
-        {
-            listaPines = new List<object>();
-            foreach (TarjetaRestaurante lugar in BD.ObtenerPinesMapa(filtro))
-            {
-                listaPines.Add(new
-                {
-                    id = lugar.Id,
-                    nombre = lugar.Nombre,
-                    foto = lugar.Foto,
-                    categoria = lugar.Categoria,
-                    puntaje = lugar.Puntaje == null ? null : lugar.Puntaje.Value.ToString("0.0", CultureInfo.InvariantCulture),
-                    latitud = lugar.Latitud,
-                    longitud = lugar.Longitud
-                });
-            }
-        }
-
-        return Json(new
-        {
-            pagina,
-            totalPaginas,
-            total,
-            resultados,
-            pines = listaPines,
-            recientes = BD.ObtenerBusquedasRecientes(usuario.Id, BusquedasRecientes),
-            desdeBarrio,
-            barrioElegido = barrioElegido?.Nombre,
-            otroBarrio = otroBarrio == null ? null : new { id = otroBarrio.Id, nombre = otroBarrio.Nombre, cantidad = otroBarrio.Cantidad }
-        });
-    }
-
-    // Una zona de mapa con números de verdad, norte arriba del sur y este a la derecha del oeste
-    private static bool EsZonaValida(double? norte, double? sur, double? este, double? oeste)
-    {
-        if (norte == null || sur == null || este == null || oeste == null) return false;
-        if (!double.IsFinite(norte.Value) || !double.IsFinite(sur.Value) || !double.IsFinite(este.Value) || !double.IsFinite(oeste.Value)) return false;
-        if (norte > 90 || sur < -90 || este > 180 || oeste < -180) return false;
-        return norte > sur && este > oeste;
-    }
-
-    // Una latitud entre -90 y 90 y una longitud entre -180 y 180 (y que sean números de verdad)
-    private static bool EsUbicacionValida(double? latitud, double? longitud)
-    {
-        if (latitud == null || longitud == null) return false;
-        if (!double.IsFinite(latitud.Value) || !double.IsFinite(longitud.Value)) return false;
-        return latitud >= -90 && latitud <= 90 && longitud >= -180 && longitud <= 180;
+        Usuarios usuario = Sesion.Leer(HttpContext.Session)!;
+        return Json(await BuscadorRestaurantes.Buscar(usuario.Id, texto, pagina, idBarrio, idCategoria, orden,
+            latitud, longitud, norte, sur, este, oeste, zoom, pines));
     }
 
     // 06 · Registro Restaurante (pública). Llegan desde la Landing y desde Iniciar sesión.
-    // plan = "pro" viene de "Pasarme a Pro" de la Landing y deja elegida la tarjeta Pro; con cualquier otro valor queda Gratis.
+    // plan = "pro" viene de "Pasarme a Pro" de la Landing y deja elegida la tarjeta Pro.
     public IActionResult Registro(string? plan)
     {
         ViewBag.Barrios = BD.ObtenerBarrios();
         ViewBag.Categorias = BD.ObtenerCategorias();
-        ViewBag.Plan = plan == "pro" ? "pro" : "gratis";
+        ViewBag.Plan = NuevoRestaurante.PlanInicial(plan);
         return View();
     }
 
-    // La llama "Crear cuenta" de 06 con fetch. Recibe NuevoRestaurante y devuelve { ok, campo, mensaje }
-    // (campo = "nombre", "email", "contrasena", "barrio", "categoria" o "aviso") o { ok, destino }.
-    // Si elige Pro solo se guarda el plan: todavía no hay cobro ni pantalla de pago.
+    // La llama "Crear cuenta" de 06 con fetch. Lo que devuelve está explicado en NuevoRestaurante.Registrar.
     [HttpPost]
     public IActionResult RegistrarRestaurante([FromBody] NuevoRestaurante datos)
     {
-        string nombre = (datos.Nombre ?? "").Trim();
-        string email = (datos.Email ?? "").Trim();
-        string contraseña = datos.Contraseña ?? "";
-
-        if (nombre == "")
-            return Json(new { ok = false, campo = "nombre", mensaje = "Completá el nombre del restaurante." });
-        if (nombre.Length > 100)
-            return Json(new { ok = false, campo = "nombre", mensaje = "El nombre puede tener hasta 100 caracteres." });
-        if (email == "" || !email.Contains('@') || email.Length > 100)
-            return Json(new { ok = false, campo = "email", mensaje = "Ingresá un email válido." });
-        if (contraseña == "")
-            return Json(new { ok = false, campo = "contrasena", mensaje = "Elegí una contraseña." });
-        if (contraseña.Length < 8)
-            return Json(new { ok = false, campo = "contrasena", mensaje = "La contraseña tiene que tener al menos 8 caracteres." });
-        if (datos.IdBarrio == null)
-            return Json(new { ok = false, campo = "barrio", mensaje = "Elegí un barrio." });
-        if (datos.IdCategoria == null)
-            return Json(new { ok = false, campo = "categoria", mensaje = "Elegí una categoría." });
-        if (datos.Plan != "gratis" && datos.Plan != "pro")
-            return Json(new { ok = false, campo = "aviso", mensaje = "Elegí un plan." });
-
-        int error = BD.RegistrarRestaurante(nombre, email, Contraseñas.Hashear(contraseña, email),
-            datos.IdBarrio.Value, datos.IdCategoria.Value, datos.Plan == "pro");
-        if (error == 1) return Json(new { ok = false, campo = "email", mensaje = "Ese email ya tiene una cuenta." });
-        if (error == 2) return Json(new { ok = false, campo = "barrio", mensaje = "Elegí un barrio de la lista." });
-        if (error == 3) return Json(new { ok = false, campo = "categoria", mensaje = "Elegí una categoría de la lista." });
-
-        // No hay pantalla para el restaurante: vuelve a Iniciar sesión con un aviso
-        return Json(new { ok = true, destino = "/Cuenta/IniciarSesion?restaurante=1" });
-    }
-
-    // Lo que necesita el JavaScript para armar una tarjeta de reseña
-    private static object ResenaParaJson(ResenaComunidad resena)
-    {
-        return new
-        {
-            id = resena.Id,
-            puntaje = resena.Puntaje,
-            comentario = resena.Comentario,
-            nombre = resena.NombreCompleto,
-            iniciales = resena.ObtenerIniciales(),
-            foto = Fotos.Avatar(resena.FotoPerfil),
-            fotoResena = Fotos.Avatar(resena.Foto),
-            hace = resena.TextoHace()
-        };
-    }
-
-    // Mira los primeros bytes del archivo: ".jpg", ".png" o ".webp". Si no es ninguna, "".
-    private static string ExtensionDeImagen(IFormFile archivo)
-    {
-        byte[] inicio = new byte[12];
-        int leidos;
-        using (Stream lector = archivo.OpenReadStream())
-        {
-            leidos = lector.Read(inicio, 0, inicio.Length);
-        }
-        if (leidos < 12) return "";
-
-        if (inicio[0] == 0xFF && inicio[1] == 0xD8 && inicio[2] == 0xFF) return ".jpg";
-        if (inicio[0] == 0x89 && inicio[1] == 0x50 && inicio[2] == 0x4E && inicio[3] == 0x47) return ".png";
-        if (inicio[0] == 'R' && inicio[1] == 'I' && inicio[2] == 'F' && inicio[3] == 'F'
-            && inicio[8] == 'W' && inicio[9] == 'E' && inicio[10] == 'B' && inicio[11] == 'P') return ".webp";
-        return "";
-    }
-
-    private Usuarios UsuarioDeSesion()
-    {
-        return JsonSerializer.Deserialize<Usuarios>(HttpContext.Session.GetString("usuario")!)!;
+        return Json(datos.Registrar());
     }
 }

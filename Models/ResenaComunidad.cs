@@ -40,6 +40,33 @@ public class ResenaComunidad
         return Plural((int)paso.TotalDays / 365, "año", "años");
     }
 
+    // Lo que necesita detalle.js para armar una tarjeta de reseña ("Ver las N")
+    public object ParaJson()
+    {
+        return new
+        {
+            id = Id,
+            puntaje = Puntaje,
+            comentario = Comentario,
+            nombre = NombreCompleto,
+            iniciales = ObtenerIniciales(),
+            foto = Fotos.Avatar(FotoPerfil),
+            fotoResena = Fotos.Avatar(Foto),
+            hace = TextoHace()
+        };
+    }
+
+    // Las reseñas de un restaurante desde la número "desde", listas para mandar como JSON
+    public static List<object> ListaParaJson(int idRestaurante, int desde)
+    {
+        List<object> resenas = new List<object>();
+        foreach (ResenaComunidad resena in BD.ObtenerResenasDeRestaurante(idRestaurante, desde, null))
+        {
+            resenas.Add(resena.ParaJson());
+        }
+        return resenas;
+    }
+
     private static string Plural(int cantidad, string singular, string plural)
     {
         return "Hace " + cantidad + " " + (cantidad == 1 ? singular : plural);

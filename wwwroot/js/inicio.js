@@ -1,8 +1,55 @@
 // 03 · Inicio: el corazón de cada tarjeta agrega o saca de favoritos con fetch
-// y actualiza "Tus favoritos" sin recargar.
+// y actualiza "Tus favoritos" sin recargar. Los chips de restricción cambian las dos grillas con fetch.
 
-const grillaFavoritos = document.getElementById("grillaFavoritos");
-const sinFavoritos = document.getElementById("sinFavoritos");
+const lugaresInicio = document.getElementById("lugaresInicio");
+
+// Las grillas se reemplazan al cambiar de chip: por eso se buscan cada vez
+function grillaFavoritos() {
+    return document.getElementById("grillaFavoritos");
+}
+
+function sinFavoritos() {
+    return document.getElementById("sinFavoritos");
+}
+
+// ---------- Chips de restricción ----------
+
+document.querySelectorAll(".filtros-rapidos .chip-filtro").forEach(function (chip) {
+    chip.addEventListener("click", async function (evento) {
+        evento.preventDefault();
+        if (chip.classList.contains("chip-activo")) return;
+
+        const restriccion = chip.dataset.restriccion;
+        try {
+            const respuesta = await fetch("/Home/LugaresInicio" + (restriccion === "" ? "" : "?restriccion=" + restriccion));
+
+            // Si se venció la sesión, al login
+            if (respuesta.status === 401) {
+                window.location.href = "/Cuenta/IniciarSesion";
+                return;
+            }
+
+            lugaresInicio.innerHTML = await respuesta.text();
+            marcarChip(chip);
+            // La dirección queda con el chip elegido (así al volver a entrar se ve igual), sin recargar
+            history.replaceState(null, "", chip.getAttribute("href"));
+        } catch (error) {
+            // Si falla la conexión, queda el chip que estaba
+        }
+    });
+});
+
+function marcarChip(elegido) {
+    document.querySelectorAll(".filtros-rapidos .chip-filtro").forEach(function (chip) {
+        const activo = chip === elegido;
+        chip.classList.toggle("chip-activo", activo);
+        chip.classList.toggle("chip-crema", !activo);
+        if (activo) chip.setAttribute("aria-current", "true");
+        else chip.removeAttribute("aria-current");
+    });
+}
+
+// ---------- Favoritos ----------
 
 document.addEventListener("click", async function (evento) {
     const boton = evento.target.closest(".boton-favorito");
@@ -47,22 +94,23 @@ function actualizarCorazones(idRestaurante, esFavorito) {
 }
 
 function actualizarListaFavoritos(tarjeta, idRestaurante, esFavorito) {
-    const enFavoritos = grillaFavoritos.querySelector('[data-id-restaurante="' + idRestaurante + '"]');
+    const grilla = grillaFavoritos();
+    const enFavoritos = grilla.querySelector('[data-id-restaurante="' + idRestaurante + '"]');
 
     if (esFavorito && !enFavoritos) {
         // Se copia la tarjeta que se tocó y se suma al final (los favoritos van en el orden en que se guardaron)
         const copia = tarjeta.cloneNode(true);
         copia.querySelector(".boton-favorito").disabled = false;
-        grillaFavoritos.appendChild(copia);
+        grilla.appendChild(copia);
     }
 
     if (!esFavorito && enFavoritos) {
         enFavoritos.classList.add("tarjeta-saliendo");
         setTimeout(function () {
             enFavoritos.remove();
-            sinFavoritos.hidden = grillaFavoritos.children.length > 0;
+            sinFavoritos().hidden = grilla.children.length > 0;
         }, 250);
     }
 
-    sinFavoritos.hidden = grillaFavoritos.children.length > 0;
+    sinFavoritos().hidden = grilla.children.length > 0;
 }

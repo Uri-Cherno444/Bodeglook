@@ -318,7 +318,10 @@
 
 .campo-con-error input,
 .campo-con-error input:hover,
-.campo-con-error input:focus {
+.campo-con-error input:focus,
+.campo-con-error textarea,
+.campo-con-error textarea:hover,
+.campo-con-error textarea:focus {
     border-color: var(--rojo);
     box-shadow: 0 0 0 3px rgba(255, 49, 49, 0.1);
 }

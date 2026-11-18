@@ -20,4 +20,19 @@ public static class Gustos
         limpios.Companias = datos.Companias.Where(c => Companias.Contains(c)).Distinct().ToList();
         return limpios;
     }
+
+    // "Seguir" del paso 1 del onboarding. Guarda solo lo válido y devuelve { ok, destino }:
+    // si no marcó restricciones se saltea el paso 2 (no hay nada que filtrar).
+    public static object Guardar(int idUsuario, DatosGustos datos)
+    {
+        DatosGustos gustos = Limpiar(datos);
+        BD.GuardarGustos(idUsuario, gustos);
+
+        if (gustos.Restricciones.Count == 0)
+        {
+            BD.GuardarSoloApto(idUsuario, false);
+            return new { ok = true, destino = "/Home/Inicio" };
+        }
+        return new { ok = true, destino = "/Cuenta/FiltroDietario" };
+    }
 }

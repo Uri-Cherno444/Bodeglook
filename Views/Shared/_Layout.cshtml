@@ -13,16 +13,15 @@
 </head>
 <body>
     @{
-        string? usuarioJson = Context.Session.GetString("usuario");
+        Usuarios? usuarioLogueado = Sesion.Leer(Context.Session);
         string pestaña = ViewData["Pestaña"] as string ?? "";
     }
     @if (ViewData["SinHeader"] != null)
     {
         // 02 · Iniciar Sesión no lleva header
     }
-    else if (usuarioJson != null)
+    else if (usuarioLogueado != null)
     {
-        Bodeglook.Models.Usuarios usuarioLogueado = System.Text.Json.JsonSerializer.Deserialize<Bodeglook.Models.Usuarios>(usuarioJson)!;
         string iniciales = usuarioLogueado.ObtenerIniciales();
         // null si no tiene foto: ahí el círculo muestra las iniciales
         string? fotoPerfil = Fotos.Avatar(usuarioLogueado.FotoPerfil);

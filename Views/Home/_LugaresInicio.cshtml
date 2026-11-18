@@ -1,0 +1,50 @@
+@using Bodeglook.Models
+@* "Recomendado para vos" y "Tus favoritos" de 03 · Inicio, con el chip de restricción elegido.
+   La usan Inicio.cshtml (al abrir) y /Home/LugaresInicio (al tocar un chip). *@
+@{
+    List<TarjetaRestaurante> recomendados = ViewBag.Recomendados;
+    List<TarjetaRestaurante> favoritos = ViewBag.Favoritos;
+    int? restriccionElegida = ViewBag.RestriccionElegida;
+}
+
+<!-- Recomendado para vos: según sus zonas, favoritos y reseñas; cambia en cada visita -->
+<section class="seccion-lugares">
+    <div class="seccion-lugares-encabezado">
+        <h2>Recomendado para vos</h2>
+        <a class="ver-todo" href="/Restaurantes/Descubrir">Ver todo</a>
+    </div>
+    <div class="grilla-lugares">
+        @foreach (TarjetaRestaurante lugar in recomendados)
+        {
+            @await Html.PartialAsync("_TarjetaLugar", lugar)
+        }
+    </div>
+    @if (recomendados.Count == 0)
+    {
+        <p class="sin-favoritos">No hay lugares con esta opción.</p>
+    }
+</section>
+
+<!-- Tus favoritos: los de la tabla Favoritos del usuario de la sesión -->
+<section class="seccion-lugares">
+    <div class="seccion-lugares-encabezado">
+        <h2>Tus favoritos</h2>
+        <a class="ver-todo" href="/Restaurantes/Descubrir">Ver todo</a>
+    </div>
+    <div class="grilla-lugares" id="grillaFavoritos" aria-live="polite">
+        @foreach (TarjetaRestaurante lugar in favoritos)
+        {
+            @await Html.PartialAsync("_TarjetaLugar", lugar)
+        }
+    </div>
+    <p class="sin-favoritos" id="sinFavoritos" hidden="@(favoritos.Count > 0)">
+        @if (restriccionElegida == null)
+        {
+            <text>Todavía no guardaste favoritos. <a href="/Restaurantes/Descubrir">Ir a Descubrir</a></text>
+        }
+        else
+        {
+            <text>No tenés favoritos con esta opción.</text>
+        }
+    </p>
+</section>

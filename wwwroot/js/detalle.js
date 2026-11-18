@@ -271,23 +271,39 @@ const miniaturaFoto = document.getElementById("miniaturaFoto");
 const miniaturaImagen = document.getElementById("miniaturaImagen");
 let fotoElegida = null;
 
-// Estado de error del kit: ícono de atención + tooltip negro (igual que en cuenta.js)
-function mostrarErrorFoto(mensaje) {
-    limpiarErrorFoto();
-    campoFotos.classList.add("campo-con-error");
+// Estado de error del kit: ícono de atención + tooltip negro (igual que en cuenta.js).
+// Lo usan el campo de fotos y el del comentario.
+function mostrarErrorEnCampo(campo, mensaje) {
+    limpiarErrorEnCampo(campo);
+    campo.classList.add("campo-con-error");
 
     const error = document.createElement("span");
     error.className = "campo-error";
     error.innerHTML = '<span class="tooltip"></span><img src="/img/icono-error.svg" width="24" height="24" alt="Error" />';
     error.querySelector(".tooltip").textContent = mensaje;
-    campoFotos.querySelector(".campo-entrada").appendChild(error);
+    campo.querySelector(".campo-entrada").appendChild(error);
+}
+
+function limpiarErrorEnCampo(campo) {
+    campo.classList.remove("campo-con-error");
+    const error = campo.querySelector(".campo-error");
+    if (error) error.remove();
+}
+
+function mostrarErrorFoto(mensaje) {
+    mostrarErrorEnCampo(campoFotos, mensaje);
 }
 
 function limpiarErrorFoto() {
-    campoFotos.classList.remove("campo-con-error");
-    const error = campoFotos.querySelector(".campo-error");
-    if (error) error.remove();
+    limpiarErrorEnCampo(campoFotos);
 }
+
+// El comentario con palabras no permitidas: el texto queda como estaba para que lo corrija,
+// y el error se va apenas empieza a cambiarlo
+const campoComentario = document.getElementById("campoComentario");
+comentarioResena.addEventListener("input", function () {
+    limpiarErrorEnCampo(campoComentario);
+});
 
 // Devuelve el mensaje de error de un archivo, o "" si está bien
 function errorDeFoto(archivo) {
@@ -424,6 +440,10 @@ formularioResena.addEventListener("submit", async function (evento) {
         } else if (resultado.campo === "foto") {
             // El servidor rechazó la foto: mismo estado de error del kit
             mostrarErrorFoto(resultado.mensaje);
+        } else if (resultado.campo === "comentario") {
+            // El texto tiene palabras no permitidas: se marca el campo y no se borra lo que escribió
+            mostrarErrorEnCampo(campoComentario, resultado.mensaje);
+            comentarioResena.focus();
         } else {
             mostrarAviso("aviso", resultado.mensaje || "No se pudo guardar la reseña. Probá de nuevo.");
         }

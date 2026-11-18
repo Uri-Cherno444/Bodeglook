@@ -396,6 +396,17 @@
     border-radius: 10px;
 }
 
+/* Comentario con palabras no permitidas: borde rojo del kit y el ícono arriba a la derecha, sin tapar el texto */
+.modal-resena .campo-comentario.campo-con-error textarea {
+    padding-right: 48px;
+    border-color: var(--rojo);
+}
+
+.modal-resena .campo-comentario .campo-error {
+    top: 12px;
+    transform: none;
+}
+
 /* Fotos (opcional): campo Drag&drop del UI Kit (asa de tres rayas + campo de 7px de radio) */
 .campo-fotos {
     width: 100%;

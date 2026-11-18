@@ -24,4 +24,37 @@ public class MensajeChat
         string dia = FechaHora.ToString("ddd", new CultureInfo("es-AR")).Replace(".", "");
         return char.ToUpper(dia[0]) + dia.Substring(1) + " " + FechaHora.ToString("dd/MM");
     }
+
+    // Lo que necesita chat.js para dibujar un mensaje. idUsuario: quien está mirando (sus mensajes van a la derecha).
+    public object ParaJson(int idUsuario)
+    {
+        Usuarios autor = new Usuarios { NombreCompleto = NombreCompleto };
+        return new
+        {
+            id = Id,
+            contenido = Contenido,
+            hora = FechaHora.ToString("HH:mm"),
+            dia = FechaHora.ToString("yyyy-MM-dd"),
+            textoDia = TextoDia(),
+            esMio = IdUsuario == idUsuario,
+            nombre = autor.ObtenerPrimerNombre(),
+            iniciales = autor.ObtenerIniciales(),
+            foto = Fotos.Avatar(FotoPerfil),
+            idPlan = IdPlan
+        };
+    }
+
+    // Lo que devuelve /Grupos/Mensajes: los mensajes con Id mayor a "desde" y cómo están todas las encuestas del grupo.
+    // Si los está viendo, los nuevos no cuentan como no leídos.
+    public static object NuevosDelGrupo(int idGrupo, int desde, int idUsuario)
+    {
+        BD.MarcarComoLeido(idUsuario, idGrupo);
+        List<MensajeChat> mensajes = BD.ObtenerMensajes(idGrupo, desde);
+        List<EncuestaPlan> encuestas = BD.ObtenerEncuestasDeGrupo(idGrupo, idUsuario);
+        return new
+        {
+            mensajes = mensajes.Select(m => m.ParaJson(idUsuario)),
+            encuestas = encuestas.Select(e => e.ParaJson())
+        };
+    }
 }

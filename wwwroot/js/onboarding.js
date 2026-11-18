@@ -101,3 +101,7 @@ async function enviar(boton, url, datos) {
     boton.disabled = false;
     boton.classList.remove("cargando");
 }
+
+// Cada pantalla del onboarding arranca lo suyo: 02c · Gustos tiene "Seguir" y 02d · Filtro dietario "Entrar a Bodeglook"
+if (document.getElementById("botonSeguir")) prepararGustos();
+if (document.getElementById("botonEntrar")) prepararFiltroDietario();
