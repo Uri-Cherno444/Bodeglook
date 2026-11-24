@@ -1689,8 +1689,7 @@ SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-/* El puntaje y la fecha de todas las reseñas. Una reseña se publica 24 horas después de su Fecha:
-   los promedios que se muestran solo cuentan las publicadas (eso lo resuelve TarjetaRestaurante). */
+/* El puntaje y la fecha de todas las reseñas (los puntajes por lugar ya los suma ListarRestaurantesBuscador). */
 CREATE PROCEDURE [dbo].[ListarPuntajesResenas]
 AS
 BEGIN
@@ -1705,16 +1704,26 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
+/* Las reseñas publicadas (con más de 24 horas) de un lugar, de la más nueva a la más vieja.
+   @Desde: cuántas se saltea. @Cantidad: cuántas trae (NULL = todas las que quedan).
+   Trae también el nombre y la foto de quien la escribió, así no hace falta pedir cada perfil aparte. */
 CREATE PROCEDURE [dbo].[ListarResenasRestaurante]
-    @idRestaurante INT
+    @idRestaurante INT,
+    @Desde INT = 0,
+    @Cantidad INT = NULL
 AS
 BEGIN
+    SET NOCOUNT ON;
+
     SELECT R.ID, R.Puntaje, R.Comentario, R.Foto, R.Fecha,
-           U.ID AS idUsuario, U.NombreUsuario, U.FotoPerfil
+           U.ID AS idUsuario, U.NombreUsuario, U.FotoPerfil,
+           ISNULL(NULLIF(U.NombreCompleto, ''), U.NombreUsuario) AS NombreCompleto
     FROM Reseñas R
     INNER JOIN Usuarios U ON U.ID = R.idUsuario
     WHERE R.idRestaurante = @idRestaurante
-    ORDER BY R.Fecha DESC;
+      AND R.Fecha <= DATEADD(HOUR, -24, GETDATE())
+    ORDER BY R.Fecha DESC, R.ID DESC
+    OFFSET @Desde ROWS FETCH NEXT ISNULL(@Cantidad, 2147483647) ROWS ONLY;
 END
 GO
 /****** Object:  StoredProcedure [dbo].[ListarRestaurantesBuscador]    Script Date: 18/11/2026 12:00:00 ******/
@@ -1723,6 +1732,7 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 /* Todos los restaurantes con su categoría, su barrio y las coordenadas (las del lugar y las del centro de su barrio).
+   También las reseñas ya contadas por lugar: las publicadas (más de 24 horas) y el promedio de todas.
    Con esto BuscadorRestaurantes busca, filtra y ordena en 05 · Descubrir, y TarjetaRestaurante arma los recomendados. */
 CREATE PROCEDURE [dbo].[ListarRestaurantesBuscador]
 AS
@@ -1730,10 +1740,15 @@ BEGIN
 	SET NOCOUNT ON;
 
 	SELECT r.ID, r.Nombre, r.Foto, c.Nombre AS Categoria, b.Nombre AS Barrio, r.idBarrio, r.idCategoria,
-		r.EsPro, r.Origen, r.Latitud, r.Longitud, b.Latitud AS LatitudBarrio, b.Longitud AS LongitudBarrio
+		r.EsPro, r.Origen, r.Latitud, r.Longitud, b.Latitud AS LatitudBarrio, b.Longitud AS LongitudBarrio,
+		ISNULL(p.Cantidad, 0) AS CantidadPublicadas, ISNULL(p.Suma, 0) AS SumaPublicadas, t.Promedio AS PromedioTodas
 	FROM Restaurantes r
 	INNER JOIN Categorias c ON c.ID = r.idCategoria
 	INNER JOIN Barrios b ON b.ID = r.idBarrio
+	LEFT JOIN (SELECT idRestaurante, COUNT(*) AS Cantidad, SUM(Puntaje) AS Suma
+		FROM Reseñas WHERE Fecha <= DATEADD(HOUR, -24, GETDATE()) GROUP BY idRestaurante) p ON p.idRestaurante = r.ID
+	LEFT JOIN (SELECT idRestaurante, AVG(CAST(Puntaje AS FLOAT)) AS Promedio
+		FROM Reseñas GROUP BY idRestaurante) t ON t.idRestaurante = r.ID
 	ORDER BY r.ID;
 END
 GO
@@ -1775,11 +1790,12 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 CREATE PROCEDURE [dbo].[Mostrar4Restaurantes]
-
+	@Cantidad INT = 4
 AS
 BEGIN
+	SET NOCOUNT ON;
 
-	SELECT * FROM Restaurantes ORDER BY ID ASC;
+	SELECT TOP (@Cantidad) * FROM Restaurantes ORDER BY ID ASC;
 END
 GO
 /****** Object:  StoredProcedure [dbo].[MostrarFavoritos]    Script Date: 4/11/2026 10:27:23 ******/
@@ -3212,12 +3228,13 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 CREATE PROCEDURE [dbo].[ListarBusquedasRecientes]
-    @idUsuario INT
+    @idUsuario INT,
+    @Cantidad INT = 3
 AS
 BEGIN
     SET NOCOUNT ON;
 
-    SELECT b.Texto
+    SELECT TOP (@Cantidad) b.Texto
     FROM Busquedas b
     WHERE b.idUsuario = @idUsuario
       AND NOT EXISTS (SELECT * FROM Busquedas posterior WHERE posterior.idUsuario = b.idUsuario AND posterior.Texto = b.Texto AND posterior.ID > b.ID)

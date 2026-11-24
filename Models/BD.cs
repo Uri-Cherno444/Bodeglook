@@ -750,7 +750,7 @@ public static class BD
 
     // ---------- Restaurantes ----------
 
-    // Procedimiento Mostrar4Restaurantes: las tarjetas de "Lugares que recomienda la comunidad" de la Landing
+    // Procedimiento Mostrar4Restaurantes (recibe la cantidad): las tarjetas de "Lugares que recomienda la comunidad" de la Landing
     // (los primeros restaurantes cargados). Se completan categoría, barrio, puntaje y favorito con ObtenerRestaurante
     // y ComprobarEsFavorito (con idUsuario 0 ninguno es favorito).
     public static List<TarjetaRestaurante> ObtenerMejorPuntuados(int cantidad, int idUsuario)
@@ -759,7 +759,8 @@ public static class BD
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
             tarjetas = conexion.Query<TarjetaRestaurante>("Mostrar4Restaurantes",
-                commandType: CommandType.StoredProcedure).Take(cantidad).ToList();
+                new { cantidad },
+                commandType: CommandType.StoredProcedure).ToList();
         }
         foreach (TarjetaRestaurante tarjeta in tarjetas)
         {
@@ -830,8 +831,8 @@ public static class BD
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
             return conexion.Query<string>("ListarBusquedasRecientes",
-                new { idUsuario },
-                commandType: CommandType.StoredProcedure).Take(cantidad).ToList();
+                new { idUsuario, cantidad },
+                commandType: CommandType.StoredProcedure).ToList();
         }
     }
 
@@ -939,30 +940,17 @@ public static class BD
 
     // Las reseñas de un lugar de la más nueva a la más vieja, salteando las primeras "desde".
     // cantidad = null trae todas las que quedan.
-    // Procedimiento ListarResenasRestaurante (ya viene de la más nueva a la más vieja).
-    // El procedimiento no filtra ni pagina: las 24 horas y el "desde / cantidad" se aplican acá.
-    // Devuelve el nombre de usuario; el nombre completo se pide con ObtenerPerfilUsuario.
+    // Procedimiento ListarResenasRestaurante: filtra las que tienen más de 24 horas, ordena de la más nueva
+    // a la más vieja (con el Id para desempatar) y pagina con "desde / cantidad". También trae el nombre
+    // completo y la foto de quien escribió cada reseña (JOIN con Usuarios).
     public static List<ResenaComunidad> ObtenerResenasDeRestaurante(int idRestaurante, int desde, int? cantidad)
     {
-        List<ResenaComunidad> resenas;
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
-            resenas = conexion.Query<ResenaComunidad>("ListarResenasRestaurante",
-                new { idRestaurante },
+            return conexion.Query<ResenaComunidad>("ListarResenasRestaurante",
+                new { idRestaurante, desde, cantidad },
                 commandType: CommandType.StoredProcedure).ToList();
         }
-
-        DateTime limite = DateTime.Now.AddHours(-24);
-        resenas = resenas.Where(resena => resena.Fecha <= limite).Skip(desde).ToList();
-        if (cantidad != null) resenas = resenas.Take(cantidad.Value).ToList();
-
-        foreach (ResenaComunidad resena in resenas)
-        {
-            Usuarios? autor = ObtenerPerfilUsuario(resena.IdUsuario);
-            resena.NombreCompleto = autor?.NombreCompleto ?? resena.NombreUsuario;
-            resena.FotoPerfil = autor?.FotoPerfil;
-        }
-        return resenas;
     }
 
     // Procedimiento CrearResena. La fecha de la reseña es ahora (la pone el procedimiento).
