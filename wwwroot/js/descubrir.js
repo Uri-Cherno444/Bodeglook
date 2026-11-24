@@ -1,6 +1,3 @@
-// 05 · Descubrir: busca con fetch a /Restaurantes/Resultados y arma la lista, la paginación
-// y los pins del mapa sin recargar. El mapa es Leaflet con OpenStreetMap.
-
 const formBusqueda = document.getElementById("formBusqueda");
 const textoBusqueda = document.getElementById("textoBusqueda");
 const listaResultados = document.getElementById("listaResultados");
@@ -13,29 +10,18 @@ const selectorOrden = document.getElementById("selectorOrden");
 const avisoUbicacion = document.getElementById("avisoUbicacion");
 const resultadosCuenta = document.getElementById("resultadosCuenta");
 
-// "No encontramos lugares con esa búsqueda." (el texto de siempre está en la vista)
 const textoSinResultados = sinResultados.textContent;
 
-// Lo que se buscó por última vez (las páginas siguientes usan el mismo texto)
 let textoActual = textoBusqueda.value.trim();
 let paginaActual = 1;
-// El chip de categoría elegido ("" = todas)
 let categoriaActual = "";
-// true: la lista y los pins son de lo que se ve en el mapa (y cambian al moverlo o hacer zoom).
-// false: recién se buscó o se cambió un filtro, así que son de toda la Ciudad y el mapa se ajusta a los resultados.
 let zonaActiva = true;
-// Para ignorar respuestas viejas si se pidió otra cosa mientras tanto
 let numeroPedido = 0;
 
-// La ubicación del navegador. Solo vive en esta página: se manda en cada búsqueda y no se guarda.
-// Si es null, el servidor mide desde el barrio del perfil.
 let latitud = null;
 let longitud = null;
 
-// ---------- Mapa ----------
-
 const elementoMapa = document.getElementById("mapa");
-// Donde arranca el mapa si el navegador no da la ubicación: el barrio del perfil (zoom 15) o el centro de la Ciudad (zoom 12)
 const centroLatitud = Number(elementoMapa.dataset.latitud);
 const centroLongitud = Number(elementoMapa.dataset.longitud);
 const centroEsBarrio = elementoMapa.dataset.esBarrio === "true";
@@ -43,8 +29,6 @@ const centroEsBarrio = elementoMapa.dataset.esBarrio === "true";
 const mapa = L.map("mapa", { scrollWheelZoom: true, minZoom: 10 })
     .setView([centroLatitud, centroLongitud], centroEsBarrio ? 15 : 12);
 
-// Mapa de OpenStreetMap. El punto "Estás acá" va en una capa DEBAJO del mapa (150) y el mapa se mezcla con
-// "multiply": el fondo y las calles blancas dejan ver el punto, pero el texto oscuro (nombres de calles) queda por encima y no se tapa.
 L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
     maxZoom: 19,
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -52,7 +36,6 @@ L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
 mapa.createPane("ubicacion").style.zIndex = 150;
 mapa.getPane("tilePane").style.mixBlendMode = "multiply";
 
-// Pins estilo Google Maps: gota con un círculo blanco adentro y sombra suave. El elegido es más grande y más oscuro.
 function crearPin(ancho, alto, color) {
     const svg = '<svg width="' + ancho + '" height="' + alto + '" viewBox="0 0 30 40" aria-hidden="true">' +
         '<path d="M15 1C7.3 1 1 7.2 1 14.9c0 10.2 12.3 22.8 13.1 23.6.5.5 1.3.5 1.8 0C16.7 37.7 29 25.1 29 14.9 29 7.2 22.7 1 15 1z" fill="' + color + '" stroke="#fff" stroke-width="2"/>' +
@@ -70,7 +53,6 @@ const pinElegidoIcono = crearPin(40, 53, "#e8590c");
 let pins = [];
 let pinElegido = null;
 
-// El punto de "Estás acá": chico, con una onda suave (ver .mi-ubicacion en descubrir.css)
 const iconoUbicacion = L.divIcon({
     className: "",
     html: '<span class="mi-ubicacion"><span class="mi-ubicacion-onda"></span><span class="mi-ubicacion-punto"></span></span>',
@@ -79,7 +61,6 @@ const iconoUbicacion = L.divIcon({
 });
 let puntoUbicacion = null;
 
-// Cuando el mapa se mueve por código (centrar, ajustar a los resultados) no hay que volver a buscar por zona
 let movimientoDeCodigo = false;
 
 function moverMapa(accion) {
@@ -88,7 +69,6 @@ function moverMapa(accion) {
     movimientoDeCodigo = false;
 }
 
-// Botón "Mi ubicación" (abajo a la derecha del mapa): vuelve a donde está la persona
 const botonUbicacion = L.control({ position: "bottomright" });
 botonUbicacion.onAdd = function () {
     const boton = L.DomUtil.create("button", "mapa-boton-ubicacion");
@@ -106,8 +86,6 @@ botonUbicacion.onAdd = function () {
 };
 botonUbicacion.addTo(mapa);
 
-// ---------- Buscar ----------
-
 formBusqueda.addEventListener("submit", function (evento) {
     evento.preventDefault();
     textoActual = textoBusqueda.value.trim();
@@ -115,7 +93,6 @@ formBusqueda.addEventListener("submit", function (evento) {
     buscar(1);
 });
 
-// Tocar una búsqueda reciente la vuelve a buscar
 chipsRecientes.addEventListener("click", function (evento) {
     const chip = evento.target.closest(".chip-reciente");
     if (!chip) return;
@@ -125,37 +102,31 @@ chipsRecientes.addEventListener("click", function (evento) {
     buscar(1);
 });
 
-// Elegir un barrio muestra solo los lugares de ese barrio, desde la página 1
 selectorBarrio.addEventListener("change", function () {
     cambiarBarrio(selectorBarrio.value);
 });
 
-// Cambiar el orden (Más cerca / Mejor puntuados) vuelve a la página 1, con o sin barrio
 selectorOrden.addEventListener("change", function () {
     buscar(1);
 });
 
-// Cambiar de barrio busca en toda la Ciudad (con ese barrio) y el mapa se ajusta a los resultados. El orden elegido se mantiene.
 function cambiarBarrio(idBarrio) {
     selectorBarrio.value = idBarrio;
     zonaActiva = false;
     buscar(1);
 }
 
-// pagina 1 también pide los pins del mapa; las demás páginas solo cambian la lista (los pins son los mismos).
 async function buscar(pagina) {
     const pedido = ++numeroPedido;
     const pedirPins = pagina === 1;
     listaResultados.setAttribute("aria-busy", "true");
 
-    // Texto, página, orden, barrio y categoría. La ubicación solo si el navegador la dio.
     let direccion = "/Restaurantes/Resultados?texto=" + encodeURIComponent(textoActual) + "&pagina=" + pagina + "&orden=" + selectorOrden.value;
     if (selectorBarrio.value !== "") direccion += "&idBarrio=" + selectorBarrio.value;
     if (categoriaActual !== "") direccion += "&idCategoria=" + categoriaActual;
     if (latitud !== null && longitud !== null) direccion += "&latitud=" + latitud + "&longitud=" + longitud;
     if (pedirPins) direccion += "&pines=true";
 
-    // Con zona activa se manda lo que se ve del mapa; cuanto menos zoom, menos lugares (los mejores)
     if (zonaActiva) {
         const limites = mapa.getBounds();
         direccion += "&norte=" + limites.getNorth() + "&sur=" + limites.getSouth() +
@@ -165,7 +136,6 @@ async function buscar(pagina) {
     try {
         const respuesta = await fetch(direccion);
 
-        // Si se venció la sesión, al login
         if (respuesta.status === 401) {
             window.location.href = "/Cuenta/IniciarSesion";
             return;
@@ -182,33 +152,26 @@ async function buscar(pagina) {
         mostrarPaginacion(datos.pagina, datos.totalPaginas);
         mostrarRecientes(datos.recientes);
         if (pedirPins && datos.pines) mostrarPins(datos.pines, !zonaActiva);
-        // Arranca elegido el primero de la página, como en el Figma
         if (datos.resultados.length > 0) elegirPin(datos.resultados[0].id);
     } catch (error) {
-        // Si falla la conexión, queda lo que se estaba viendo
     }
 
     if (pedido === numeroPedido) listaResultados.removeAttribute("aria-busy");
 }
 
-// "12 lugares en esta zona" (con zona) o "12 lugares" (en toda la Ciudad)
 function mostrarCuenta(total) {
     const texto = total + (total === 1 ? " lugar" : " lugares") + (zonaActiva ? " en esta zona" : "");
     resultadosCuenta.textContent = texto;
 }
 
-// ---------- Lista ----------
-
 function mostrarResultados(resultados) {
     const plantilla = document.getElementById("plantillaResultado");
     listaResultados.innerHTML = "";
-    // Los créditos de Geoapify y OpenStreetMap se muestran si algún resultado viene de ahí
     document.getElementById("creditosResultados").hidden = !resultados.some(function (lugar) { return lugar.origen === "Geoapify"; });
 
     resultados.forEach(function (lugar) {
         const tarjeta = plantilla.content.firstElementChild.cloneNode(true);
         tarjeta.dataset.idRestaurante = lugar.id;
-        // Solo el Pro destacado (uno, arriba de la página 1) lleva el chip "Recomendado"
         if (lugar.destacado) tarjeta.classList.add("resultado-pro");
         else tarjeta.querySelector(".chip-recomendado").remove();
 
@@ -224,7 +187,6 @@ function mostrarResultados(resultados) {
         tarjeta.querySelector(".resultado-barrio").textContent = textoBarrio(lugar);
         pintarCorazon(tarjeta.querySelector(".boton-favorito"), lugar.esFavorito);
 
-        // Pasar por arriba de una tarjeta marca su pin en el mapa
         tarjeta.addEventListener("mouseenter", function () {
             elegirPin(lugar.id);
         });
@@ -233,12 +195,9 @@ function mostrarResultados(resultados) {
     });
 }
 
-// Sin resultados: el texto de siempre o, si el texto está en otro barrio,
-// "No encontramos sushi en Palermo. Hay 3 en Belgrano" con el link que cambia el desplegable a ese barrio
 function mostrarSinResultados(datos) {
     sinResultados.hidden = datos.resultados.length > 0;
     if (!datos.otroBarrio) {
-        // En una zona sin lugares conviene mover o alejar el mapa; si no, el texto de siempre
         sinResultados.textContent = zonaActiva ? "No encontramos lugares en esta zona. Mové o alejá el mapa." : textoSinResultados;
         return;
     }
@@ -254,15 +213,11 @@ function mostrarSinResultados(datos) {
     sinResultados.appendChild(link);
 }
 
-// "Palermo · A unas 8 cuadras" (sin distancia, solo el barrio)
 function textoBarrio(lugar) {
     if (lugar.distanciaKm === null) return lugar.barrio;
     return lugar.barrio + " · " + textoDistancia(lugar.distanciaKm);
 }
 
-// 1 cuadra = 100 m. Menos de 50 m -> "A menos de 1 cuadra"; de 50 a 149 m -> "A 1 cuadra";
-// desde 150 m y hasta 20 cuadras -> "A unas N cuadras"; más -> en km con un decimal.
-// 0,8 km -> "A unas 8 cuadras"; 3,1 km -> "A 3,1 km"
 function textoDistancia(km) {
     if (km < 0.05) return "A menos de 1 cuadra";
     if (km < 0.15) return "A 1 cuadra";
@@ -271,9 +226,6 @@ function textoDistancia(km) {
     return "A " + (Math.round(km * 10) / 10).toFixed(1).replace(".", ",") + " km";
 }
 
-// ---------- Ubicación ----------
-
-// Si el servidor midió desde el barrio del perfil, se avisa arriba de la lista
 function mostrarAvisoUbicacion(desdeBarrio) {
     if (desdeBarrio) {
         avisoUbicacion.textContent = "Distancias aproximadas desde tu barrio (" + desdeBarrio + "). Activá la ubicación para verlas desde donde estás.";
@@ -283,22 +235,16 @@ function mostrarAvisoUbicacion(desdeBarrio) {
     }
 }
 
-// ¿Está en la Ciudad de Buenos Aires? Si no (o la ubicación es rara), el mapa arranca en el barrio del perfil.
 function estaEnLaCiudad(lat, lon) {
     return lat > -34.72 && lat < -34.52 && lon > -58.54 && lon < -58.33;
 }
 
-// Pone el punto "Estás acá" y centra el mapa ahí con zoom de cuadra (17)
 function mostrarUbicacion() {
     if (puntoUbicacion) puntoUbicacion.remove();
     puntoUbicacion = L.marker([latitud, longitud], { icon: iconoUbicacion, pane: "ubicacion", interactive: false, keyboard: false }).addTo(mapa);
     moverMapa(function () { mapa.setView([latitud, longitud], 17, { animate: false }); });
 }
 
-// Al entrar se pide la ubicación y después se hace la primera búsqueda, ya en la zona de la persona.
-// Si la bloquea, falla, está fuera de la Ciudad o el navegador no la tiene (o la página no es HTTPS), el mapa queda en el barrio del perfil.
-// Si no contesta el permiso en 5 segundos, se busca igual; si la da más tarde, se vuelve a buscar con ella.
-// Si se llegó con un texto en la ruta (/Restaurantes/Descubrir?q=sushi), se busca en toda la Ciudad y el mapa se ajusta a los resultados.
 function pedirUbicacionYBuscar() {
     zonaActiva = textoActual === "";
 
@@ -336,15 +282,11 @@ function pedirUbicacionYBuscar() {
     );
 }
 
-// "Vinoteca · ★ 4.7" (sin reseñas, solo la categoría)
 function textoCategoria(lugar) {
     if (lugar.puntaje === null) return lugar.categoria + " · Sin reseñas todavía";
     return lugar.categoria + " · ★ " + lugar.puntaje;
 }
 
-// ---------- Paginación ----------
-
-// Muestra hasta 6 números alrededor de la página actual y "..." si hay más
 function mostrarPaginacion(pagina, totalPaginas) {
     paginacion.innerHTML = "";
     paginacion.hidden = totalPaginas <= 1;
@@ -387,8 +329,6 @@ function crearFlecha(icono, texto, destino, desactivada) {
     return boton;
 }
 
-// ---------- Búsquedas recientes ----------
-
 function mostrarRecientes(recientes) {
     chipsRecientes.innerHTML = "";
     busquedasRecientes.hidden = recientes.length === 0;
@@ -402,10 +342,6 @@ function mostrarRecientes(recientes) {
     });
 }
 
-// ---------- Pins del mapa ----------
-
-// Un pin por cada lugar de la búsqueda, de todas las páginas (los que no tienen coordenadas no van al mapa).
-// ajustar: al buscar en toda la Ciudad, el mapa se acerca para que entren todos; al mover el mapa no se toca.
 function mostrarPins(resultados, ajustar) {
     pins.forEach(function (pin) { pin.marcador.remove(); });
     pins = [];
@@ -425,7 +361,6 @@ function mostrarPins(resultados, ajustar) {
     moverMapa(function () { mapa.fitBounds(limites, { padding: [80, 80], maxZoom: 15, animate: false }); });
 }
 
-// Al mover el mapa o hacer zoom se vuelve a pedir la lista y los pins de esa zona (con una pausa corta para no pedir de más)
 let esperaMovimiento = null;
 mapa.on("moveend", function () {
     if (movimientoDeCodigo) return;
@@ -436,7 +371,6 @@ mapa.on("moveend", function () {
     }, 400);
 });
 
-// El pin elegido se ve naranja y más grande, con su tarjetita arriba
 function elegirPin(idRestaurante) {
     const pin = pins.find(function (p) { return p.id === idRestaurante; });
     if (!pin || pin === pinElegido) return;
@@ -473,9 +407,6 @@ function crearTarjetaMapa(lugar) {
     return tarjeta;
 }
 
-// ---------- Categorías ----------
-
-// Los chips de categoría (Parrilla, Pizzería...): muestran solo ese tipo de lugar, en toda la Ciudad
 const categoriasLista = document.getElementById("categoriasLista");
 categoriasLista.addEventListener("click", function (evento) {
     const chip = evento.target.closest(".chip-categoria-filtro");
@@ -491,8 +422,6 @@ categoriasLista.addEventListener("click", function (evento) {
     zonaActiva = false;
     buscar(1);
 });
-
-// ---------- Favoritos ----------
 
 listaResultados.addEventListener("click", async function (evento) {
     const boton = evento.target.closest(".boton-favorito");
@@ -516,7 +445,6 @@ listaResultados.addEventListener("click", async function (evento) {
         const resultado = await respuesta.json();
         if (resultado.ok) pintarCorazon(boton, resultado.esFavorito);
     } catch (error) {
-        // Si falla la conexión, el corazón queda como estaba
     }
 
     boton.disabled = false;
@@ -528,5 +456,4 @@ function pintarCorazon(boton, esFavorito) {
     boton.setAttribute("aria-label", esFavorito ? "Sacar de favoritos" : "Agregar a favoritos");
 }
 
-// Al entrar se busca lo que vino en la ruta (o todo, si vino vacío), con la ubicación si la da
 pedirUbicacionYBuscar();

@@ -1,10 +1,4 @@
-// 02c · Onboarding · Gustos y 02d · Filtro dietario.
-// Los chips se marcan con aria-pressed. Al seguir se mandan los datos con fetch en JSON
-// y el servidor contesta a qué página ir. Usa mostrarAviso() de cuenta.js para los errores.
-
-// Paso 1
 function prepararGustos() {
-    // Cada grupo de chips: "varias" deja marcar muchos, "una" deja marcar uno solo
     document.querySelectorAll(".onboarding-chips").forEach(function (grupo) {
         grupo.querySelectorAll(".chip-opcion").forEach(function (chip) {
             chip.addEventListener("click", function () {
@@ -28,7 +22,6 @@ function prepararGustos() {
 
     const boton = document.getElementById("botonSeguir");
     boton.addEventListener("click", function () {
-        // Se manda todo lo marcado. "Ninguna" no tiene data-id, por eso no cuenta como restricción.
         const restricciones = [];
         document.querySelectorAll("#chipsRestricciones .chip-opcion[data-id][aria-pressed=true]").forEach(function (chip) {
             restricciones.push(Number(chip.dataset.id));
@@ -52,7 +45,6 @@ function prepararGustos() {
     });
 }
 
-// "Ninguna" desmarca las demás restricciones, y marcar otra desmarca "Ninguna"
 function desmarcarSegunNinguna(grupo, chipMarcado) {
     const ninguna = grupo.querySelector("[data-ninguna]");
 
@@ -65,7 +57,6 @@ function desmarcarSegunNinguna(grupo, chipMarcado) {
     }
 }
 
-// Paso 2
 function prepararFiltroDietario() {
     document.querySelector(".aviso-cerrar").addEventListener("click", ocultarAviso);
 
@@ -102,6 +93,5 @@ async function enviar(boton, url, datos) {
     boton.classList.remove("cargando");
 }
 
-// Cada pantalla del onboarding arranca lo suyo: 02c · Gustos tiene "Seguir" y 02d · Filtro dietario "Entrar a Bodeglook"
 if (document.getElementById("botonSeguir")) prepararGustos();
 if (document.getElementById("botonEntrar")) prepararFiltroDietario();

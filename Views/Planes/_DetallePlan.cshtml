@@ -1,7 +1,5 @@
 @using Bodeglook.Models
 @model EncuestaPlan
-@* La parte del Detalle del plan que se actualiza sola: datos, opciones, participantes, estado y diálogos.
-   La usan Detalle.cshtml (al abrir) y /Planes/DetalleParcial (cada 3 segundos). *@
 @{
     int idUsuario = ViewBag.IdUsuario;
     string textoLugarElegido = ViewBag.TextoLugarElegido;
@@ -23,7 +21,6 @@
             }
             else
             {
-                @* Mientras se vota todavía no hay hora: solo el día *@
                 <span><span>Día</span> <strong>@Model.TextoDia()</strong></span>
                 <span><span>Organiza</span> <strong>@Model.PrimerNombreCreador()</strong></span>
             }
@@ -98,7 +95,6 @@
 
 @if (Model.EnVotacion() && Model.EsCreador(idUsuario))
 {
-    @* Diálogo del kit para confirmar. Si hay empate en lugar o en horario, el creador elige entre los empatados. *@
     <dialog class="dialogo" id="dialogoConfirmarPlan" aria-labelledby="dialogoConfirmarTitulo" data-dia="@Model.TextoDia()">
         <div class="dialogo-encabezado">
             <h2 class="dialogo-titulo" id="dialogoConfirmarTitulo">¿Confirmar el plan?</h2>
@@ -145,7 +141,6 @@
             </fieldset>
         }
 
-        @* El resumen lo completa detalle-plan.js: "Bodega Los Alamos · Sáb 24/10 a las 21:00" *@
         <p class="dialogo-descripcion" id="resumenConfirmar"></p>
         <p class="dialogo-error" id="errorConfirmar" hidden></p>
         <div class="dialogo-botones">

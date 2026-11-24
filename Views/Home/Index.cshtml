@@ -9,7 +9,6 @@
     <link rel="stylesheet" href="~/css/index.css" asp-append-version="true" />
 }
 
-<!-- Hero -->
 <section class="hero">
     <div class="hero-texto">
         <span class="chip chip-naranja">
@@ -37,7 +36,6 @@
     </div>
 </section>
 
-<!-- Beneficios -->
 <section class="beneficios">
     <div class="fila-tarjetas">
         <div class="tarjeta">
@@ -64,7 +62,6 @@
     </div>
 </section>
 
-<!-- Cómo funciona -->
 <section class="seccion seccion-crema como-funciona">
     <div class="encabezado-seccion">
         <span class="chip chip-naranja">Cómo funciona</span>
@@ -90,7 +87,6 @@
     </div>
 </section>
 
-<!-- Lugares recomendados -->
 <section class="seccion lugares">
     <div class="lugares-encabezado">
         <div>
@@ -100,7 +96,6 @@
         <a class="boton boton-secundario" href="/Cuenta/IniciarSesion">Explorar restaurantes</a>
     </div>
 
-    @* Los 4 mejor puntuados, igual que "Recomendado para vos". Llevan al Detalle (si no hay sesión, pide iniciarla). *@
     <div class="grilla-lugares">
         @foreach (TarjetaRestaurante lugar in lugares)
         {
@@ -130,7 +125,6 @@
     </div>
 </section>
 
-<!-- Reseñas reales -->
 <section class="seccion seccion-negra resenas-reales">
     <div class="resenas-reales-texto">
         <span class="chip chip-naranja">Sin canjes</span>
@@ -145,7 +139,6 @@
         </div>
     </div>
 
-    @* DATOS DE PRUEBA: estas 3 reseñas están copiadas del Figma. Después salen de la base. *@
     <div class="resenas-lista">
         <div class="tarjeta-resena">
             <div class="resena-autor">
@@ -201,7 +194,6 @@
     </div>
 </section>
 
-<!-- Para restaurantes -->
 <section class="seccion seccion-crema para-restaurantes">
     <div class="encabezado-seccion">
         <span class="chip chip-naranja">Para restaurantes</span>
@@ -246,7 +238,6 @@
     </div>
 </section>
 
-<!-- Llamado final -->
 <section class="seccion">
     <div class="llamado-final">
         <div>

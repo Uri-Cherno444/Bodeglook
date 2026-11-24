@@ -1,5 +1,3 @@
-// 08 · Mis Planes: las pestañas piden los planes con fetch y se arman las tarjetas sin recargar.
-
 const grillaPlanes = document.getElementById("grillaPlanes");
 const sinPlanes = document.getElementById("sinPlanes");
 const pestanas = document.querySelectorAll(".pestana");
@@ -13,7 +11,6 @@ async function cargarPlanes(filtro) {
         grillaPlanes.appendChild(crearTarjetaPlan(plan));
     });
 
-    // "Todavía no tenés planes" solo si no hay ninguno en "Todos"
     sinPlanes.hidden = !(planes.length === 0 && filtro === "todos");
 }
 
@@ -22,7 +19,6 @@ function crearTarjetaPlan(plan) {
 
     const tarjeta = document.createElement("a");
     tarjeta.className = "tarjeta-plan " + (confirmado ? "tarjeta-plan-confirmado" : "tarjeta-plan-votacion");
-    // Confirmado: al Detalle del lugar elegido. En votación todavía no hay lugar: a la votación.
     tarjeta.href = confirmado ? "/Restaurantes/Detalle/" + plan.idRestauranteElegido : "/Planes/Detalle/" + plan.id;
 
     const detalle = confirmado
@@ -36,7 +32,6 @@ function crearTarjetaPlan(plan) {
         '  <span class="tarjeta-plan-pie"><span class="tarjeta-plan-detalle"></span><span class="avatares"></span></span>' +
         '</span>';
 
-    // textContent para que un nombre con caracteres raros no se interprete como HTML
     tarjeta.querySelector(".tarjeta-plan-nombre").textContent = plan.titulo;
     tarjeta.querySelector(".chip-estado").textContent = plan.estado;
     tarjeta.querySelector(".chip-estado").classList.add(confirmado ? "chip-confirmado" : "chip-naranja");

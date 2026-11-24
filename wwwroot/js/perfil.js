@@ -1,7 +1,3 @@
-// 08c · Editar perfil (modal), cambiar foto y 08d · Cambios guardados.
-// "Guardar cambios" manda el formulario con fetch, cierra el modal y actualiza la tarjeta de perfil sin recargar.
-// Usa mostrarErrorCampo(), limpiarErrorCampo(), limpiarErrores(), mostrarAviso() y ocultarAviso() de cuenta.js.
-
 const modalPerfil = document.getElementById("modalEditarPerfil");
 const formularioPerfil = document.getElementById("formularioPerfil");
 const fotoModal = document.getElementById("modalPerfilFoto");
@@ -15,14 +11,10 @@ const restriccionNinguna = document.getElementById("restriccionNinguna");
 const opcionSoloApto = document.getElementById("verSoloApto");
 const opcionVerTodo = document.getElementById("verTodo");
 
-// La foto del modal tal como está guardada (para volver a ella al cancelar)
 let vistaFotoGuardada = fotoModal.innerHTML;
-// La foto nueva ya recortada: se sube recién con "Guardar cambios"
 let fotoPendiente = null;
 let urlFotoPendiente = null;
 let temporizadorExito = null;
-
-// ---------- Abrir y cerrar el modal ----------
 
 document.getElementById("botonEditarPerfil").addEventListener("click", function () {
     modalPerfil.showModal();
@@ -36,8 +28,6 @@ document.getElementById("cancelarPerfil").addEventListener("click", function () 
     modalPerfil.close();
 });
 
-// Se cierre como se cierre (Cancelar, la X, Escape o después de guardar) el formulario queda
-// con lo último que está guardado: lo que se tocó y no se guardó se descarta.
 modalPerfil.addEventListener("close", function () {
     formularioPerfil.reset();
     limpiarErrores(formularioPerfil);
@@ -47,17 +37,12 @@ modalPerfil.addEventListener("close", function () {
 
 document.querySelector("#aviso .aviso-cerrar").addEventListener("click", ocultarAviso);
 
-// Al escribir o elegir en un campo con error, se le saca el error
 formularioPerfil.querySelectorAll(".campo input, .campo select").forEach(function (entrada) {
     entrada.addEventListener("input", function () {
         limpiarErrorCampo(entrada.closest(".campo"));
     });
 });
 
-// ---------- Restricciones: "Ninguna" y "Solo lo apto" ----------
-
-// "Ninguna" desmarca las demás restricciones, y marcar otra desmarca "Ninguna".
-// "Ninguna" queda marcada sola cuando no hay ninguna restricción marcada.
 formularioPerfil.addEventListener("change", function (evento) {
     const marcada = evento.target;
     if (marcada !== restriccionNinguna && marcada.name !== "restricciones") return;
@@ -75,23 +60,20 @@ function hayRestriccionesMarcadas() {
     return formularioPerfil.querySelector('input[name="restricciones"]:checked') !== null;
 }
 
-// Sin restricciones no hay nada que filtrar: "Solo lo apto para mí" no se puede elegir
 function actualizarSoloApto() {
     const hay = hayRestriccionesMarcadas();
     opcionSoloApto.disabled = !hay;
     if (!hay) opcionVerTodo.checked = true;
 }
 
-// ---------- Cambiar foto ----------
-
 const archivoFoto = document.getElementById("archivoFoto");
 const lienzo = document.getElementById("lienzoFoto");
 const contexto = lienzo.getContext("2d");
 const zoomFoto = document.getElementById("zoomFoto");
 
-const LADO = 299;       // el lienzo
-const DIAMETRO = 264;   // el círculo que queda de foto de perfil
-const SALIDA = 512;     // la foto que se sube: 512 x 512
+const LADO = 299;
+const DIAMETRO = 264;
+const SALIDA = 512;
 
 let imagen = null;
 let escalaBase = 1;
@@ -125,7 +107,6 @@ function abrirEditorFoto(archivo) {
     foto.onload = function () {
         URL.revokeObjectURL(url);
         imagen = foto;
-        // La foto cubre justo el círculo; con el zoom se acerca
         escalaBase = DIAMETRO / Math.min(foto.width, foto.height);
         zoomFoto.value = 1;
         centroX = LADO / 2;
@@ -140,7 +121,6 @@ function abrirEditorFoto(archivo) {
     foto.src = url;
 }
 
-// La foto no puede dejar espacios vacíos dentro del círculo
 function limitarEncuadre() {
     const escala = escalaBase * Number(zoomFoto.value);
     const sobraX = Math.max(0, (imagen.width * escala - DIAMETRO) / 2);
@@ -158,7 +138,6 @@ function dibujarEditor() {
     contexto.clearRect(0, 0, LADO, LADO);
     contexto.drawImage(imagen, centroX - ancho / 2, centroY - alto / 2, ancho, alto);
 
-    // Lo que queda fuera del círculo se oscurece
     contexto.fillStyle = "rgba(0, 0, 0, 0.55)";
     contexto.beginPath();
     contexto.rect(0, 0, LADO, LADO);
@@ -172,7 +151,6 @@ function dibujarEditor() {
     contexto.stroke();
 }
 
-// Arrastrar para encuadrar
 let arrastrando = false;
 let ultimoX = 0;
 let ultimoY = 0;
@@ -186,7 +164,6 @@ lienzo.addEventListener("pointerdown", function (evento) {
 
 lienzo.addEventListener("pointermove", function (evento) {
     if (!arrastrando) return;
-    // El lienzo puede verse más chico que 299 px en pantallas angostas
     const proporcion = lienzo.width / lienzo.getBoundingClientRect().width;
     centroX += (evento.clientX - ultimoX) * proporcion;
     centroY += (evento.clientY - ultimoY) * proporcion;
@@ -207,8 +184,6 @@ document.getElementById("cancelarDialogoFoto").addEventListener("click", functio
     dialogoFoto.close();
 });
 
-// "Guardar imagen": recorta el círculo en una foto cuadrada de 512 px. Todavía no se sube:
-// se muestra en el modal y se sube con "Guardar cambios".
 document.getElementById("guardarDialogoFoto").addEventListener("click", function () {
     const salida = document.createElement("canvas");
     salida.width = SALIDA;
@@ -257,13 +232,10 @@ function liberarFotoPendiente() {
     urlFotoPendiente = null;
 }
 
-// Al cancelar, la foto del modal vuelve a la que estaba guardada
 function descartarFotoPendiente() {
     liberarFotoPendiente();
     fotoModal.innerHTML = vistaFotoGuardada;
 }
-
-// ---------- Guardar cambios ----------
 
 formularioPerfil.addEventListener("submit", async function (evento) {
     evento.preventDefault();
@@ -272,7 +244,6 @@ formularioPerfil.addEventListener("submit", async function (evento) {
     const nombre = campoNombre.value.trim();
     const usuario = campoUsuario.value.trim();
 
-    // El servidor valida lo mismo; esto es para avisar sin esperar
     const errores = [];
     if (nombre === "") errores.push(["nombre", "Completá tu nombre y apellido."]);
     else if (nombre.length > 100) errores.push(["nombre", "Puede tener hasta 100 caracteres."]);
@@ -311,7 +282,6 @@ formularioPerfil.addEventListener("submit", async function (evento) {
     try {
         const respuesta = await fetch("/Perfil/GuardarPerfil", { method: "POST", body: datos });
 
-        // Si se venció la sesión, al login
         if (respuesta.status === 401) {
             window.location.href = "/Cuenta/IniciarSesion";
             return;
@@ -320,7 +290,6 @@ formularioPerfil.addEventListener("submit", async function (evento) {
         const resultado = await respuesta.json();
         if (resultado.ok) {
             aplicarPerfilGuardado(resultado.perfil);
-            // Lo que se acaba de guardar pasa a ser el punto de partida del formulario
             guardarComoPuntoDePartida();
             modalPerfil.close();
             mostrarAvisoExito();
@@ -341,11 +310,9 @@ function mostrarErroresDeCampos(errores) {
     errores.forEach(function (error) {
         mostrarErrorCampo(formularioPerfil.querySelector('[data-campo="' + error[0] + '"]'), error[1]);
     });
-    // El foco queda en el primer campo con error
     formularioPerfil.querySelector(".campo-con-error input, .campo-con-error select").focus();
 }
 
-// form.reset() vuelve a los valores por defecto del HTML: se los actualiza con lo recién guardado
 function guardarComoPuntoDePartida() {
     formularioPerfil.querySelectorAll("input[type=checkbox], input[type=radio]").forEach(function (entrada) {
         entrada.defaultChecked = entrada.checked;
@@ -358,7 +325,6 @@ function guardarComoPuntoDePartida() {
     });
 }
 
-// Actualiza sin recargar la tarjeta de perfil, el modal y el menú del avatar del header
 function aplicarPerfilGuardado(perfil) {
     document.getElementById("perfilNombre").textContent = perfil.nombre;
     document.getElementById("perfilUsuario").textContent = "@" + perfil.usuario + (perfil.barrio ? " · " + perfil.barrio : "");
@@ -367,7 +333,6 @@ function aplicarPerfilGuardado(perfil) {
         ponerFoto(document.getElementById("perfilFoto"), perfil.foto);
         ponerFoto(fotoModal, perfil.foto);
     } else if (!fotoModal.querySelector("img")) {
-        // Sin foto, el modal muestra las iniciales
         fotoModal.textContent = perfil.iniciales;
     }
     liberarFotoPendiente();
@@ -384,7 +349,6 @@ function aplicarPerfilGuardado(perfil) {
     chips.hidden = perfil.restricciones.length === 0;
     document.getElementById("perfilChipsVacio").hidden = perfil.restricciones.length > 0;
 
-    // Header: el avatar con las iniciales, y el nombre y @usuario del menú
     const avatar = document.getElementById("botonAvatar");
     if (avatar) avatar.textContent = perfil.iniciales;
     const avatarMenu = document.querySelector(".avatar-menu");
@@ -395,12 +359,9 @@ function aplicarPerfilGuardado(perfil) {
     if (usuarioMenu) usuarioMenu.textContent = "@" + perfil.usuario;
 }
 
-// ---------- 08d · Snackbar de éxito ----------
-
 function mostrarAvisoExito() {
     clearTimeout(temporizadorExito);
     avisoExito.hidden = false;
-    // Se vuelve a poner la clase para que la animación arranque de nuevo
     avisoExito.classList.remove("aviso-visible");
     void avisoExito.offsetWidth;
     avisoExito.classList.add("aviso-visible");
@@ -414,7 +375,6 @@ function ocultarAvisoExito() {
 
 document.getElementById("cerrarAvisoExito").addEventListener("click", ocultarAvisoExito);
 
-// "Ver todos" muestra los planes que quedaron ocultos
 document.getElementById("verTodosPlanes").addEventListener("click", function () {
     document.querySelectorAll(".grilla-planes-perfil .tarjeta-plan[hidden]").forEach(function (tarjeta) {
         tarjeta.hidden = false;

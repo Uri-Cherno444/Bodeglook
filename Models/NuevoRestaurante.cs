@@ -1,7 +1,5 @@
 namespace Bodeglook.Models;
 
-// No es una tabla: lo que manda el formulario de 06 · Registro Restaurante.
-// Plan es "gratis" o "pro".
 public class NuevoRestaurante
 {
     public string? Nombre { get; set; }
@@ -11,15 +9,11 @@ public class NuevoRestaurante
     public int? IdCategoria { get; set; }
     public string? Plan { get; set; }
 
-    // La tarjeta que arranca elegida: "pro" si viene de "Pasarme a Pro" de la Landing; con cualquier otro valor, "gratis"
     public static string PlanInicial(string? plan)
     {
         return plan == "pro" ? "pro" : "gratis";
     }
 
-    // Revisa y guarda la cuenta del restaurante. Devuelve { ok, campo, mensaje }
-    // (campo = "nombre", "email", "contrasena", "barrio", "categoria" o "aviso") o { ok, destino }.
-    // Si elige Pro solo se guarda el plan: todavía no hay cobro ni pantalla de pago.
     public object Registrar()
     {
         string nombre = (Nombre ?? "").Trim();
@@ -49,7 +43,6 @@ public class NuevoRestaurante
         if (error == 2) return new { ok = false, campo = "barrio", mensaje = "Elegí un barrio de la lista." };
         if (error == 3) return new { ok = false, campo = "categoria", mensaje = "Elegí una categoría de la lista." };
 
-        // No hay pantalla para el restaurante: vuelve a Iniciar sesión con un aviso
         return new { ok = true, destino = "/Cuenta/IniciarSesion?restaurante=1" };
     }
 }

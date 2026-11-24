@@ -1,13 +1,11 @@
 namespace Bodeglook.Models;
 
-// No es una tabla: un integrante del grupo y lo que votó en el plan ("Participantes" de 07h).
 public class Participante
 {
     public int IdUsuario { get; set; }
     public string? NombreCompleto { get; set; }
     public int? IdLugarVotado { get; set; }
     public string? LugarVotado { get; set; }
-    // Igual que OpcionHorario.IdHorario: la primera fila de PlanesHorarios con esa hora
     public int? IdHorarioVotado { get; set; }
     public DateTime? HorarioVotado { get; set; }
 
@@ -16,7 +14,6 @@ public class Participante
         return IdLugarVotado != null && IdHorarioVotado != null;
     }
 
-    // Para el usuario de la sesión va "YO" y "Vos", como en el Figma
     public string Iniciales(int idUsuarioSesion)
     {
         if (IdUsuario == idUsuarioSesion) return "YO";
@@ -29,7 +26,6 @@ public class Participante
         return new Usuarios { NombreCompleto = NombreCompleto }.ObtenerPrimerNombre();
     }
 
-    // "Votó · Bodega Los Alamos · 21:00", "Votaste · ..." o "Todavía no votó"
     public string TextoVoto(int idUsuarioSesion)
     {
         if (IdLugarVotado == null && IdHorarioVotado == null)

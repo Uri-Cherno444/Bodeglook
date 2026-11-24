@@ -7,10 +7,8 @@
     List<Restricciones> restricciones = ViewBag.Restricciones;
     List<TarjetaRestaurante> restaurantes = ViewBag.Restaurantes;
     List<TarjetaPlan> planes = ViewBag.Planes;
-    // "Mis Planes" muestra 6 (tres filas); "Ver todos" muestra el resto
     int planesIniciales = ViewBag.PlanesIniciales;
 
-    // 08c · Editar perfil: las opciones y lo que el usuario ya eligió
     List<Barrios> barrios = ViewBag.Barrios;
     List<Restricciones> todasRestricciones = ViewBag.TodasRestricciones;
     List<int> restriccionesMarcadas = ViewBag.RestriccionesMarcadas;
@@ -20,18 +18,15 @@
 }
 
 @section Estilos {
-    @* cuenta.css trae el estilo del desplegable de los campos (Ubicación) *@
     <link rel="stylesheet" href="~/css/cuenta.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/perfil.css" asp-append-version="true" />
 }
 
-@* 08 · Perfil y Amigos *@
 <div class="perfil">
     <a class="boton-volver perfil-volver" href="/Home/Inicio" aria-label="Volver">
         <img src="~/img/icono-volver.svg" width="22" height="22" alt="" />
     </a>
 
-    <!-- Tarjeta de perfil -->
     <section class="tarjeta-perfil">
         <span class="perfil-foto" id="perfilFoto">
             @if (Model.FotoPerfil != null)
@@ -53,7 +48,6 @@
                 <span class="perfil-dato-numero">@ViewBag.CantidadResenas</span>
                 <span class="perfil-dato-texto">reseñas</span>
             </div>
-            @* Las amistades todavía no tienen tabla en la base *@
             <div class="perfil-dato">
                 <span class="perfil-dato-numero">0</span>
                 <span class="perfil-dato-texto">amigos</span>
@@ -94,7 +88,6 @@
     </section>
 
     <div class="perfil-columna">
-        <!-- Mis Amigos: las amistades todavía no tienen tabla en la base -->
         <section class="perfil-bloque">
             <div class="perfil-bloque-encabezado">
                 <h2>Mis Amigos</h2>
@@ -102,7 +95,6 @@
             <p class="perfil-vacio">Todavía no tenés amigos en Bodeglook.</p>
         </section>
 
-        <!-- Mis Planes: los de todos los grupos del usuario -->
         <section class="perfil-bloque">
             <div class="perfil-bloque-encabezado">
                 <h2>Mis Planes</h2>
@@ -120,7 +112,6 @@
                     TarjetaPlan plan = planes[i];
                     bool confirmado = plan.EsConfirmado();
 
-                    @* El Detalle del plan todavía no tiene pantalla: lleva a la votación *@
                     <a class="tarjeta-plan @(confirmado ? "tarjeta-plan-confirmado" : "tarjeta-plan-votacion")" href="/Planes/Detalle/@plan.Id" hidden="@(i >= planesIniciales)">
                         <span class="tarjeta-plan-franja"></span>
                         <span class="tarjeta-plan-contenido">
@@ -145,7 +136,6 @@
     </div>
 </div>
 
-@* 08c · Editar perfil (modal). <dialog> ya se cierra con Escape. Cancelar, la X y Escape cierran sin guardar. *@
 <dialog class="modal-perfil" id="modalEditarPerfil" aria-labelledby="modalPerfilTitulo">
     <form id="formularioPerfil" novalidate>
         <div class="modal-perfil-encabezado">
@@ -156,7 +146,6 @@
             <button type="button" class="boton-cerrar-modal" id="cerrarModalPerfil" aria-label="Cerrar">✕</button>
         </div>
 
-        @* Errores generales (la foto, la conexión): el aviso amarillo del kit *@
         <div class="aviso" id="aviso" hidden>
             <span class="aviso-texto" id="avisoTexto"></span>
             <button type="button" class="aviso-cerrar" aria-label="Cerrar aviso">
@@ -306,7 +295,6 @@
     </form>
 </dialog>
 
-@* Modal de cambiar foto del kit: se recorta en círculo y se acerca con el zoom *@
 <dialog class="dialogo dialogo-foto" id="dialogoFoto" aria-labelledby="dialogoFotoTitulo">
     <div class="dialogo-encabezado">
         <h2 class="dialogo-titulo" id="dialogoFotoTitulo">Cambiar foto de perfil</h2>
@@ -326,7 +314,6 @@
     </div>
 </dialog>
 
-@* 08d · Cambios guardados: el snackbar de éxito del kit, abajo al centro. Se va solo a los 4 segundos. *@
 <div class="aviso aviso-exito aviso-flotante" id="avisoExito" role="status" hidden>
     <span class="aviso-texto">Guardamos tus cambios</span>
     <button type="button" class="aviso-cerrar" id="cerrarAvisoExito" aria-label="Cerrar aviso">

@@ -1,13 +1,9 @@
-/* 03 · Inicio */
-
 .inicio {
     padding: 48px 64px 64px;
     display: flex;
     flex-direction: column;
     gap: 48px;
 }
-
-/* ---------- Banner ---------- */
 
 .banner {
     background: var(--crema);
@@ -74,17 +70,12 @@
     color: var(--gris-texto);
 }
 
-/* ---------- Filtros rápidos ---------- */
-
 .filtros-rapidos {
     display: flex;
     gap: 10px;
     flex-wrap: wrap;
 }
 
-/* ---------- Secciones de tarjetas ---------- */
-
-/* Las dos grillas (las cambia inicio.js al tocar un chip): mismo espacio entre secciones que .inicio */
 #lugaresInicio {
     display: flex;
     flex-direction: column;

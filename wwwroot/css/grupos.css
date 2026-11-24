@@ -1,13 +1,9 @@
-/* 07 · Chat de grupo y 07g · Crear grupo */
-
 .pagina-chat {
     padding: 56px 112px 96px;
     display: flex;
     align-items: flex-start;
     gap: 32px;
 }
-
-/* ---------- Conversación ---------- */
 
 .conversacion {
     flex: 1;
@@ -59,7 +55,6 @@
     color: var(--gris-texto);
 }
 
-/* En el Figma mide 905px de alto; en pantallas más bajas se achica para que entre con el campo de escribir */
 .conversacion-mensajes {
     height: 905px;
     max-height: calc(100vh - 220px);
@@ -76,7 +71,6 @@
     flex-shrink: 0;
 }
 
-/* Separador por día ("Hoy") */
 .mensaje-dia {
     margin: 0;
     font-size: 13px;
@@ -84,7 +78,6 @@
     color: var(--gris-texto);
 }
 
-/* Mensaje de otro: iniciales a la izquierda, nombre arriba y burbuja blanca */
 .mensaje {
     max-width: 70%;
     display: flex;
@@ -138,7 +131,6 @@
     color: var(--gris-texto);
 }
 
-/* Mensaje mío: a la derecha y en naranja */
 .mensaje-mio {
     align-self: flex-end;
 }
@@ -165,8 +157,6 @@
 .campo-mensaje {
     width: 300px;
 }
-
-/* ---------- 07g · Crear grupo ---------- */
 
 .dialogo-grupo {
     width: 640px;
@@ -258,7 +248,6 @@
     font-size: 14px;
 }
 
-/* Los campos del modal son un poco más altos y con borde claro (como en el Figma) */
 .dialogo-grupo .campo label {
     font-size: 16px;
 }
@@ -293,7 +282,6 @@
     color: var(--naranja);
 }
 
-/* Entran 4 amigos; si hay más, la lista se desliza */
 .lista-amigos {
     max-height: 272px;
     overflow-y: auto;
@@ -330,7 +318,6 @@
     font-weight: 700;
 }
 
-/* Checkbox del kit: el input real queda invisible y se dibuja la caja de al lado */
 .casilla {
     position: absolute;
     opacity: 0;
@@ -382,9 +369,6 @@
     padding: 0 32px;
 }
 
-/* ---------- Encuesta de un plan (07 · en votación y 07e · confirmado) ---------- */
-/* La usan el chat y "Ver detalle" */
-
 .encuesta {
     width: 560px;
     max-width: 100%;
@@ -428,7 +412,6 @@
     color: var(--gris-texto);
 }
 
-/* "LUGAR" y "HORARIO" */
 .encuesta-seccion {
     font-size: 12px;
     font-weight: 700;
@@ -442,7 +425,6 @@
     gap: 14px;
 }
 
-/* Estado de error del kit en la encuesta: ícono de atención y texto rojo en negrita */
 .encuesta-error {
     margin: 0;
     display: flex;
@@ -475,14 +457,12 @@
     border-color: var(--naranja);
 }
 
-/* Mi voto (en votación) o el lugar que ganó (confirmado): borde de 2px, por eso 1px menos de relleno */
 .opcion-plan-elegida {
     padding: 11px;
     border: 2px solid var(--naranja);
     background: var(--naranja-suave);
 }
 
-/* Confirmado: los que no ganaron quedan apagados y no se pueden tocar */
 .encuesta-confirmada .opcion-plan {
     cursor: default;
 }
@@ -568,8 +548,6 @@
     text-decoration: underline;
 }
 
-/* ---------- 07b · Crear plan ---------- */
-
 .dialogo-plan {
     width: 720px;
 }
@@ -596,7 +574,6 @@
     color: var(--gris-texto);
 }
 
-/* Número + buscador en una fila */
 .lugar-plan {
     flex-direction: row;
     align-items: center;
@@ -638,7 +615,6 @@
     font-weight: 700;
 }
 
-/* 07c · Resultados de búsqueda debajo del campo de lugar */
 .resultados-lugares {
     position: absolute;
     top: calc(100% + 6px);
@@ -704,7 +680,6 @@
     gap: 6px;
 }
 
-/* Foto chica del lugar: resultados del buscador del modal Crear plan y opciones de la encuesta */
 .lugar-miniatura {
     flex-shrink: 0;
     width: 48px;
@@ -758,7 +733,6 @@
     font-weight: 700;
 }
 
-/* Estado de error del kit adentro del modal: el ícono va dentro del campo para que el tooltip no se corte */
 .dialogo-plan .campo-error {
     left: auto;
     right: 12px;
@@ -766,7 +740,6 @@
     transform: translateY(-50%);
 }
 
-/* El borde claro de los campos del modal le ganaba al rojo del error */
 .dialogo-plan .campo-con-error input,
 .dialogo-plan .campo-con-error input:hover,
 .dialogo-plan .campo-con-error input:focus {
@@ -803,7 +776,6 @@
         padding: 24px 16px 48px;
     }
 
-    /* "+ Crear plan" baja a su propia fila para que el nombre del grupo entre */
     .conversacion-cabecera {
         flex-wrap: wrap;
         padding: 16px;

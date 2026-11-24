@@ -1,11 +1,5 @@
 namespace Bodeglook.Models;
 
-// No es una tabla: resuelve qué foto mostrar de un restaurante.
-// Las fotos de cada restaurante están en wwwroot/img/restaurantes/{id}/:
-//   portada.jpg (o .png)  -> la foto de portada
-//   cualquier otra imagen -> la galería (en orden alfabético: galeria-1.jpg, galeria-2.jpg...)
-// Si Restaurantes.Foto tiene una ruta y el archivo existe, esa es la portada.
-// Si no hay ninguna foto, se usa la imagen por defecto (logo de Bodeglook sobre fondo crema).
 public static class Fotos
 {
     public const string PorDefecto = "/img/restaurante-sin-foto.svg";
@@ -22,7 +16,6 @@ public static class Fotos
         return Path.Combine(CarpetaWeb(), "img", "restaurantes", idRestaurante.ToString());
     }
 
-    // "/img/x.jpg" existe en wwwroot
     private static bool Existe(string? ruta)
     {
         if (string.IsNullOrWhiteSpace(ruta)) return false;
@@ -30,7 +23,6 @@ public static class Fotos
         return File.Exists(archivo);
     }
 
-    // Las imágenes de la carpeta del restaurante como rutas web, en orden alfabético
     private static List<string> ImagenesDeCarpeta(int idRestaurante)
     {
         string carpeta = CarpetaRestaurante(idRestaurante);
@@ -43,7 +35,6 @@ public static class Fotos
             .ToList();
     }
 
-    // La foto de portada: Restaurantes.Foto, o portada.* de la carpeta, o la imagen por defecto
     public static string Portada(int idRestaurante, string? foto)
     {
         if (Existe(foto)) return foto!;
@@ -53,7 +44,6 @@ public static class Fotos
         return portada ?? PorDefecto;
     }
 
-    // La galería: la portada primero y después el resto de la carpeta. Vacía si el restaurante no tiene fotos.
     public static List<string> Galeria(int idRestaurante, string? foto)
     {
         string portada = Portada(idRestaurante, foto);
@@ -67,19 +57,13 @@ public static class Fotos
         return galeria;
     }
 
-    // Foto de usuario o de grupo: la ruta si el archivo existe, si no null (se muestran las iniciales)
     public static string? Avatar(string? foto)
     {
         return Existe(foto) ? foto : null;
     }
 
-    // ---------- Fotos que sube la gente (reseñas, perfil y grupos) ----------
-
-    // Las fotos subidas pesan hasta 5 MB
     public const long TamanoMaximo = 5 * 1024 * 1024;
 
-    // Mira los primeros bytes del archivo: ".jpg", ".png" o ".webp". Si no es ninguna, "".
-    // Así se sabe qué es de verdad, no lo que dice el nombre del archivo.
     public static string ExtensionDeImagen(IFormFile archivo)
     {
         byte[] inicio = new byte[12];
@@ -97,8 +81,6 @@ public static class Fotos
         return "";
     }
 
-    // Guarda el archivo en wwwroot/img/{carpeta}/{nombre} y devuelve la ruta web ("/img/resenas/abc.jpg").
-    // carpeta puede ser "" (queda directo en wwwroot/img).
     public static string GuardarSubida(IFormFile archivo, string carpeta, string nombre)
     {
         string carpetaFisica = Path.Combine(CarpetaWeb(), "img", carpeta);
@@ -110,7 +92,6 @@ public static class Fotos
         return carpeta == "" ? "/img/" + nombre : "/img/" + carpeta + "/" + nombre;
     }
 
-    // Borra una foto subida a partir de su ruta web, si existe
     public static void BorrarSubida(string? rutaWeb)
     {
         if (string.IsNullOrWhiteSpace(rutaWeb)) return;

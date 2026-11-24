@@ -1,7 +1,3 @@
-/* 04 · Detalle + Reseña */
-
-/* ---------- Banner ---------- */
-
 .detalle-banner {
     position: relative;
     height: 380px;
@@ -22,7 +18,6 @@
     left: 64px;
 }
 
-/* Puntaje y corazón arriba a la derecha */
 .detalle-banner-acciones {
     position: absolute;
     top: 0;
@@ -50,8 +45,6 @@
     border: none;
     background: none;
 }
-
-/* ---------- Contenido ---------- */
 
 .detalle-contenido {
     display: flex;
@@ -124,7 +117,6 @@
     display: none;
 }
 
-/* Galería de la pestaña "Fotos": grilla de miniaturas que abren el visor */
 .galeria {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -157,7 +149,6 @@
     display: block;
 }
 
-/* Visor de fotos: usa .dialogo del kit; acá el ancho, la foto y las flechas */
 .visor {
     position: relative;
     width: min(1000px, calc(100% - 32px));
@@ -211,16 +202,12 @@
     color: var(--gris-texto);
 }
 
-/* ---------- Dejar una reseña (botón que abre el modal 04b) ---------- */
-
 .dejar-resena {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     gap: 16px;
 }
-
-/* ---------- 04b · Modal "Dejar una reseña" ---------- */
 
 .modal-resena {
     width: min(760px, calc(100% - 32px));
@@ -273,7 +260,6 @@
     color: var(--verde);
 }
 
-/* Cada dimensión: título y subtítulo a la izquierda, notas del 1 al 5 a la derecha */
 .dimensiones {
     width: 100%;
     display: flex;
@@ -295,7 +281,6 @@
     border-top: none;
 }
 
-/* La legend va adentro del flex como un bloque más */
 .dimension-textos {
     float: left;
     padding: 0;
@@ -396,7 +381,6 @@
     border-radius: 10px;
 }
 
-/* Comentario con palabras no permitidas: borde rojo del kit y el ícono arriba a la derecha, sin tapar el texto */
 .modal-resena .campo-comentario.campo-con-error textarea {
     padding-right: 48px;
     border-color: var(--rojo);
@@ -407,7 +391,6 @@
     transform: none;
 }
 
-/* Fotos (opcional): campo Drag&drop del UI Kit (asa de tres rayas + campo de 7px de radio) */
 .campo-fotos {
     width: 100%;
     display: flex;
@@ -428,7 +411,6 @@
     cursor: pointer;
 }
 
-/* Las tres rayas del kit */
 .subir-foto-asa {
     flex-shrink: 0;
     width: 30px;
@@ -460,7 +442,6 @@
     border-color: var(--naranja);
 }
 
-/* Cuando arrastran un archivo encima */
 .subir-foto.arrastrando .subir-foto-texto {
     border-color: var(--naranja);
     background: var(--naranja-suave);
@@ -477,7 +458,6 @@
     outline-offset: 2px;
 }
 
-/* Estado de error del kit: borde rojo, ícono de atención adentro del campo y tooltip negro */
 .campo-fotos.campo-con-error .subir-foto-texto,
 .campo-fotos.campo-con-error .subir-foto:hover .subir-foto-texto {
     padding-right: 44px;
@@ -504,7 +484,6 @@
     transform: none;
 }
 
-/* Miniatura de la foto elegida, con la X para sacarla antes de publicar */
 .foto-miniatura {
     position: relative;
     width: 96px;
@@ -570,7 +549,6 @@
     pointer-events: none;
 }
 
-/* Sin marcar: círculo con borde. Marcado: el ícono del Figma. */
 .radio-chico {
     flex-shrink: 0;
     width: 24px;
@@ -637,8 +615,6 @@
     padding: 0 32px;
 }
 
-/* ---------- Reseñas de la comunidad ---------- */
-
 .resenas-comunidad {
     display: flex;
     flex-direction: column;
@@ -656,7 +632,6 @@
     font-size: 28px;
 }
 
-/* "Ver las N" es un botón con el estilo del link "Ver todo" */
 .resenas-comunidad-encabezado .ver-todo {
     padding: 0;
     border: none;
@@ -675,12 +650,9 @@
     gap: 16px;
 }
 
-/* La reseña recién enviada entra desde arriba */
 .resena-nueva {
     animation: aparecer 0.4s ease;
 }
-
-/* ---------- Tarjeta lateral ---------- */
 
 .detalle-acciones {
     width: 440px;

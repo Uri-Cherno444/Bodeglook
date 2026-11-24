@@ -7,12 +7,10 @@
 }
 
 @section Estilos {
-    @* Mapa: Leaflet con los mapas de OpenStreetMap *@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
     <link rel="stylesheet" href="~/css/descubrir.css" asp-append-version="true" />
 }
 
-@* 05 · Descubrir Restaurantes *@
 <div class="descubrir">
     <section class="descubrir-encabezado">
         <a class="boton-volver" href="/Home/Inicio" aria-label="Volver">
@@ -46,7 +44,6 @@
             <div class="resultados-encabezado">
                 <h2>Lugares en el mapa</h2>
                 <div class="resultados-filtros">
-                    @* Desplegables del UI Kit (08 · Dropdown) *@
                     <select class="desplegable selector-barrio" id="selectorBarrio" aria-label="Barrio">
                         <option value="">Todos los barrios</option>
                         @foreach (Barrios barrio in barrios)
@@ -54,7 +51,6 @@
                             <option value="@barrio.Id">@barrio.Nombre</option>
                         }
                     </select>
-                    @* Orden de la lista: por cercanía (el de siempre) o por puntaje. Funciona con o sin barrio elegido. *@
                     <select class="desplegable selector-orden" id="selectorOrden" aria-label="Ordenar">
                         <option value="cerca">Más cerca</option>
                         <option value="puntaje">Mejor puntuados</option>
@@ -62,7 +58,6 @@
                 </div>
             </div>
 
-            @* Categorías para decidir qué comer (como en Google Maps): muestran solo ese tipo de lugar *@
             <nav class="categorias-lista" id="categoriasLista" aria-label="Categorías de lugares">
                 <button type="button" class="chip chip-filtro chip-categoria-filtro chip-activo" data-id="" aria-pressed="true">Todas</button>
                 @foreach (Categorias categoria in categorias)
@@ -72,18 +67,13 @@
             </nav>
             <p class="resultados-cuenta" id="resultadosCuenta" role="status"></p>
 
-            @* Snackbar del kit. Solo se ve si el navegador no dio la ubicación (lo prende descubrir.js con el barrio del perfil). *@
             <p class="aviso aviso-ubicacion" id="avisoUbicacion" role="status" hidden></p>
 
-            @* Las tarjetas las arma descubrir.js con lo que devuelve /Restaurantes/Resultados *@
             <div class="lista-resultados" id="listaResultados" aria-live="polite"></div>
-            @* Si no hay nada en el barrio elegido pero sí en otro, descubrir.js cambia el texto por
-               "No encontramos sushi en Palermo. Hay 3 en Belgrano" (con el link a ese barrio) *@
             <p class="sin-resultados" id="sinResultados" hidden>No encontramos lugares con esa búsqueda.</p>
 
             <nav class="paginacion" id="paginacion" aria-label="Páginas de resultados"></nav>
 
-            @* Solo se ve cuando algún resultado viene de Geoapify (lo prende descubrir.js) *@
             <div id="creditosResultados" hidden>
                 @await Html.PartialAsync("_Creditos")
             </div>
@@ -99,8 +89,6 @@
     </div>
 </div>
 
-@* Molde de cada resultado. El nombre es el link al Detalle y se estira a toda la tarjeta;
-   el corazón es un botón aparte, por encima (igual que en las tarjetas de Inicio). *@
 <template id="plantillaResultado">
     <article class="resultado">
         <img class="resultado-foto" src="" width="96" height="96" loading="lazy" alt="" />
@@ -121,7 +109,6 @@
     </article>
 </template>
 
-@* Tarjetita del pin elegido en el mapa *@
 <template id="plantillaTarjetaMapa">
     <a class="mapa-tarjeta" href="">
         <span class="mapa-tarjeta-foto">

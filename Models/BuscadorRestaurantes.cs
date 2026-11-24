@@ -2,15 +2,11 @@ using System.Globalization;
 
 namespace Bodeglook.Models;
 
-// No es una tabla: la búsqueda de 05 · Descubrir Restaurantes (lista, mapa, filtros y Geoapify).
 public static class BuscadorRestaurantes
 {
-    // 5 resultados por página y las últimas 3 búsquedas
     public const int ResultadosPorPagina = 5;
     public const int BusquedasRecientes = 3;
 
-    // Donde arranca el mapa si el navegador no da la ubicación: el centro del barrio del perfil
-    // (si no tiene, el centro de la Ciudad). Devuelve true si es el barrio del perfil.
     public static bool CentroDelMapa(int idUsuario, out double latitud, out double longitud)
     {
         Barrios? barrioUsuario = BD.ObtenerBarrioDeUsuario(idUsuario);
@@ -20,33 +16,18 @@ public static class BuscadorRestaurantes
         return hayBarrio;
     }
 
-    // Lo que devuelve /Restaurantes/Resultados a descubrir.js:
-    // { pagina, totalPaginas, total, resultados, pines, recientes, desdeBarrio, barrioElegido, otroBarrio }.
-    // texto: lo que escribió. idBarrio: el desplegable "Barrio" (sin él, todos). idCategoria: el chip elegido (sin él, todas).
-    // norte, sur, este, oeste y zoom: lo que se ve en el mapa. Con zona, la lista y los pins son solo de esa zona y
-    //   cuanto menos zoom, menos lugares (los mejores). Sin zona (recién se buscó o se cambió un filtro) es toda la Ciudad.
-    // pines: si es true también devuelve en "pines" los lugares para el mapa (los mismos que la lista, todas las páginas).
-    // orden: "cerca" (Más cerca, el de siempre) o "puntaje" (Mejor puntuados).
-    //   Sin barrio y ordenando por cercanía, 1 Pro destacado arriba de la página 1 (el más cercano).
-    // latitud y longitud: la ubicación del navegador. Solo se usan para medir las distancias: no se guardan.
-    //   Si no vienen, se mide desde el centro del barrio del perfil y se devuelve su nombre en desdeBarrio (para el aviso).
-    // otroBarrio solo viene si no hubo nada en el barrio elegido pero el texto está en otro.
-    // Cada búsqueda nueva (pagina 1 con texto, sin zona) se guarda.
     public static async Task<object> Buscar(int idUsuario, string? texto, int pagina, int? idBarrio, int? idCategoria, string? orden,
         double? latitud, double? longitud, double? norte, double? sur, double? este, double? oeste, int? zoom, bool pines)
     {
         texto = (texto ?? "").Trim();
         if (texto.Length > 100) texto = texto.Substring(0, 100);
 
-        // Un barrio o una categoría que no existen se toman como "todos"
         Barrios? barrioElegido = idBarrio == null ? null : BD.ObtenerBarrios().FirstOrDefault(b => b.Id == idBarrio);
         if (barrioElegido == null) idBarrio = null;
         if (idCategoria != null && !BD.ObtenerCategorias().Any(c => c.Id == idCategoria)) idCategoria = null;
 
-        // "puntaje" (Mejor puntuados) o, para cualquier otro valor, "cerca"
         string ordenFinal = orden == "puntaje" ? "puntaje" : "cerca";
 
-        // Si el navegador no mandó una ubicación válida, se mide desde el barrio del perfil
         string? desdeBarrio = null;
         if (!EsUbicacionValida(latitud, longitud))
         {
@@ -61,10 +42,8 @@ public static class BuscadorRestaurantes
             }
         }
 
-        // "Solo lo apto para mí" del onboarding o de Editar perfil (Usuarios.SoloApto)
         bool soloApto = BD.ObtenerSoloApto(idUsuario);
 
-        // Lo que se pide: la búsqueda, el barrio, la categoría y, si el mapa mandó una zona válida, esa zona con su límite por zoom
         FiltroBusqueda filtro = new FiltroBusqueda();
         filtro.Texto = texto;
         filtro.IdUsuario = idUsuario;
@@ -81,21 +60,16 @@ public static class BuscadorRestaurantes
         }
         filtro.Limite = LimiteSegunZoom(hayZona ? zoom : null);
 
-        // Lo mismo pero en toda la Ciudad y sin límite (para saber si el texto existe en otro lado y para avisar en qué barrio hay)
         FiltroBusqueda filtroCiudad = new FiltroBusqueda();
         filtroCiudad.Texto = texto;
         filtroCiudad.IdUsuario = idUsuario;
         filtroCiudad.SoloApto = soloApto;
         filtroCiudad.IdCategoria = idCategoria;
 
-        // Todos los lugares se traen una sola vez y se filtran acá
         List<TarjetaRestaurante> todos = TarjetaRestaurante.CargarTodos(idUsuario);
         List<int> restriccionesUsuario = BD.ObtenerRestriccionesDeUsuario(idUsuario).Select(r => r.Id).ToList();
         List<TarjetaRestaurante> encontrados = Filtrar(todos, filtro, restriccionesUsuario);
 
-        // Se busca primero en nuestra base. Solo si no hay nada se pregunta a Geoapify, se guarda lo que encuentre y se vuelve a buscar.
-        // Con un barrio elegido, a Geoapify se le pregunta solo si el texto tampoco está en otros barrios (así no se gastan créditos de más).
-        // Al mover el mapa no se pregunta a Geoapify. Si no responde o se pasó el límite, queda "sin resultados" como siempre.
         if (encontrados.Count == 0 && texto != "" && pagina <= 1 && !hayZona
             && (idBarrio == null || Filtrar(todos, filtroCiudad, restriccionesUsuario).Count == 0))
         {
@@ -117,7 +91,6 @@ public static class BuscadorRestaurantes
             lugar.DistanciaKm = lugar.CalcularDistancia(latitud, longitud);
         }
 
-        // Sin barrio y ordenando por cercanía: como máximo 1 Pro destacado ("Recomendado"), el más cercano
         int? idDestacado = null;
         if (idBarrio == null && ordenFinal == "cerca")
         {
@@ -129,7 +102,6 @@ public static class BuscadorRestaurantes
             if (destacado != null) idDestacado = destacado.Id;
         }
 
-        // Nada en el barrio elegido: ¿en qué otro barrio sí está ese texto?
         BarrioConResultados? otroBarrio = null;
         if (total == 0 && idBarrio != null && texto != "")
             otroBarrio = BarrioConMasResultados(Filtrar(todos, filtroCiudad, restriccionesUsuario), idBarrio.Value);
@@ -147,18 +119,14 @@ public static class BuscadorRestaurantes
                 barrio = lugar.Barrio,
                 puntaje = TextoPuntaje(lugar.Puntaje),
                 esFavorito = lugar.EsFavorito,
-                // Solo el Pro destacado lleva el chip "Recomendado"
                 destacado = lugar.Id == idDestacado,
                 origen = lugar.Origen,
                 latitud = lugar.Latitud,
                 longitud = lugar.Longitud,
-                // Con 3 decimales (metros): descubrir.js lo pasa a cuadras o km
                 distanciaKm = lugar.DistanciaKm == null ? (double?)null : Math.Round(lugar.DistanciaKm.Value, 3)
             });
         }
 
-        // Los pins del mapa: los mismos lugares que la lista (todas las páginas), solo con lo que necesita cada pin.
-        // Los que no tienen coordenadas (ni propias ni de su barrio) no van.
         List<object>? listaPines = null;
         if (pines)
         {
@@ -192,18 +160,8 @@ public static class BuscadorRestaurantes
         };
     }
 
-    // ---------- Filtros y orden ----------
-
-    // Las palabras que no sirven para buscar ("parrilla en Palermo" -> "parrilla", "Palermo")
     private static readonly List<string> PalabrasVacias = new List<string> { "en", "de", "la", "el", "los", "las", "del", "con", "y" };
 
-    // Los lugares que cumplen el filtro:
-    // - soloApto: solo los que cumplen al menos una restricción del usuario (si no marcó ninguna, todos)
-    // - el barrio y la categoría elegidos (null = todos)
-    // - el texto: cada palabra (hasta 5, sin las vacías) tiene que estar en el nombre, el barrio o la categoría.
-    //   No importan tildes ni mayúsculas ("nunez" encuentra "Núñez") y "Parrillas" encuentra "Parrilla".
-    // - si hay zona, solo lo que cae dentro de lo que se ve en el mapa
-    // - si hay Limite, solo los Limite mejores (ver TarjetaRestaurante.PuntajeParaOrdenar; si empatan, primero los Pro)
     private static List<TarjetaRestaurante> Filtrar(List<TarjetaRestaurante> todos, FiltroBusqueda filtro, List<int> restriccionesUsuario)
     {
         List<string> palabras = new List<string>();
@@ -235,7 +193,6 @@ public static class BuscadorRestaurantes
         return encontrados.Where(lugar => mejores.Contains(lugar.Id)).ToList();
     }
 
-    // Cada palabra tiene que estar en el nombre, el barrio o la categoría (también sin la "s" final)
     private static bool TieneTodasLasPalabras(TarjetaRestaurante lugar, List<string> palabras)
     {
         string nombre = SinTildes(lugar.Nombre);
@@ -253,7 +210,6 @@ public static class BuscadorRestaurantes
         return true;
     }
 
-    // "Núñez" -> "nunez": minúsculas y sin tildes, para comparar como lo escribió la persona
     private static string SinTildes(string? texto)
     {
         string resultado = "";
@@ -265,7 +221,6 @@ public static class BuscadorRestaurantes
         return resultado;
     }
 
-    // El lugar (o el centro de su barrio, si no tiene coordenadas) cae dentro de lo que se ve en el mapa
     private static bool EstaEnLaZona(TarjetaRestaurante lugar, FiltroBusqueda filtro)
     {
         if (lugar.Latitud == null || lugar.Longitud == null) return false;
@@ -274,8 +229,6 @@ public static class BuscadorRestaurantes
         return latitud >= filtro.Sur && latitud <= filtro.Norte && longitud >= filtro.Oeste && longitud <= filtro.Este;
     }
 
-    // El orden de la lista: el Pro destacado arriba de todo; después, con "puntaje", los mejor puntuados primero;
-    // y siempre del más cerca al más lejos. Los que no tienen distancia o reseñas van al final.
     private static List<TarjetaRestaurante> Ordenar(List<TarjetaRestaurante> lugares, string orden, int? idDestacado)
     {
         return lugares
@@ -290,7 +243,6 @@ public static class BuscadorRestaurantes
             .ToList();
     }
 
-    // El barrio (que no sea el elegido) con más lugares de la búsqueda. Si empatan, el primero por nombre.
     private static BarrioConResultados? BarrioConMasResultados(List<TarjetaRestaurante> enLaCiudad, int idBarrioElegido)
     {
         return enLaCiudad
@@ -302,14 +254,11 @@ public static class BuscadorRestaurantes
             .FirstOrDefault();
     }
 
-    // 4.5 -> "4.5" (con punto, como lo espera descubrir.js). null si no tiene reseñas.
     private static string? TextoPuntaje(double? puntaje)
     {
         return puntaje == null ? null : puntaje.Value.ToString("0.0", CultureInfo.InvariantCulture);
     }
 
-    // Cuántos lugares se muestran según el zoom del mapa: cuanto más lejos, menos y los mejores; cuanto más cerca, más.
-    // Sin zoom (se busca en toda la Ciudad) son los 80 mejores.
     private static int LimiteSegunZoom(int? zoom)
     {
         if (zoom == null) return 80;
@@ -321,7 +270,6 @@ public static class BuscadorRestaurantes
         return 400;
     }
 
-    // Una zona de mapa con números de verdad, norte arriba del sur y este a la derecha del oeste
     private static bool EsZonaValida(double? norte, double? sur, double? este, double? oeste)
     {
         if (norte == null || sur == null || este == null || oeste == null) return false;
@@ -330,7 +278,6 @@ public static class BuscadorRestaurantes
         return norte > sur && este > oeste;
     }
 
-    // Una latitud entre -90 y 90 y una longitud entre -180 y 180 (y que sean números de verdad)
     private static bool EsUbicacionValida(double? latitud, double? longitud)
     {
         if (latitud == null || longitud == null) return false;

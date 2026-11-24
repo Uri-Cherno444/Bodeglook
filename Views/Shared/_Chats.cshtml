@@ -1,14 +1,11 @@
 @using Bodeglook.Models
 @model List<ResumenChat>
-@* Panel "Chats": lo usan 08 · Mis Planes, 06 · Votación y 10 · Chat de grupo.
-   ViewBag.GrupoAbierto marca en naranja suave el grupo que se está viendo (solo en el chat). *@
 @{
     int grupoAbierto = ViewBag.GrupoAbierto ?? 0;
 }
 <aside class="panel-chats">
     <div class="panel-chats-encabezado">
         <h2>Chats</h2>
-        @* Abre el modal Crear grupo. En el chat lo abre chat.js sin salir de la página. *@
         <a class="panel-chats-crear" href="/Grupos?crear=1" aria-label="Crear grupo">
             <img src="~/img/icono-mensaje.svg" width="24" height="24" alt="" />
         </a>

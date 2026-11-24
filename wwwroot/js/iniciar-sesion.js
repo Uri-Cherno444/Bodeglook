@@ -1,6 +1,3 @@
-// 02 · Iniciar sesión. Usa prepararFormulario y mostrarAviso de cuenta.js.
-
-// Si viene de registrar un restaurante se avisa que se guardó
 if (new URLSearchParams(window.location.search).get("restaurante") === "1") {
     mostrarAviso("Registramos tu restaurante.");
 }

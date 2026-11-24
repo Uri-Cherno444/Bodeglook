@@ -5,7 +5,6 @@ namespace Bodeglook.Controllers;
 
 public class PlanesController : Controller
 {
-    // 08 · Mis Planes
     public IActionResult MisPlanes()
     {
         if (!Sesion.HayUsuario(HttpContext.Session)) return RedirectToAction("IniciarSesion", "Cuenta");
@@ -15,8 +14,6 @@ public class PlanesController : Controller
         return View();
     }
 
-    // La llaman las pestañas Todos / En votación / Confirmados con fetch.
-    // filtro: "todos", "votacion" o "confirmados"
     public IActionResult ListaPlanes(string filtro)
     {
         if (!Sesion.HayUsuario(HttpContext.Session)) return Unauthorized();
@@ -25,8 +22,6 @@ public class PlanesController : Controller
         return Json(BD.ObtenerPlanesDeUsuario(usuario.Id, TarjetaPlan.ConfirmadoSegunFiltro(filtro)));
     }
 
-    // Un plan se crea desde el chat de un grupo (07b). Los "Crear plan" de otras pantallas llevan
-    // al chat más reciente con el modal abierto; idRestaurante es el lugar que viene del Detalle.
     public IActionResult NuevoPlan(int? idRestaurante)
     {
         if (!Sesion.HayUsuario(HttpContext.Session)) return RedirectToAction("IniciarSesion", "Cuenta");
@@ -34,14 +29,11 @@ public class PlanesController : Controller
         return RedirectToAction("Index", "Grupos", new { plan = 1, lugar = idRestaurante });
     }
 
-    // La dirección vieja de "Ver detalle"
     public IActionResult Votacion(int id)
     {
         return RedirectToAction("Detalle", new { id });
     }
 
-    // 07h · Detalle del plan en votación / 07i · confirmado (privada).
-    // Solo lo ven los integrantes del grupo; el creador confirma o cancela desde acá.
     public IActionResult Detalle(int id)
     {
         if (!Sesion.HayUsuario(HttpContext.Session)) return RedirectToAction("IniciarSesion", "Cuenta");
@@ -54,7 +46,6 @@ public class PlanesController : Controller
         return View(encuesta);
     }
 
-    // La parte de la página que cambia (votos, participantes y estado). detalle-plan.js la pide cada 3 segundos.
     public IActionResult DetalleParcial(int id)
     {
         if (!Sesion.HayUsuario(HttpContext.Session)) return Unauthorized();
@@ -70,16 +61,12 @@ public class PlanesController : Controller
     private void PrepararDetalle(EncuestaPlan encuesta, int idUsuario)
     {
         ViewBag.IdUsuario = idUsuario;
-        // "Opciones sin TACC verificadas" del lugar elegido
         List<string> restricciones = encuesta.IdRestauranteElegido == null
             ? new List<string>()
             : BD.ObtenerRestriccionesDeRestaurante(encuesta.IdRestauranteElegido.Value);
         ViewBag.TextoLugarElegido = encuesta.TextoLugarElegido(restricciones);
     }
 
-    // ---------- Acciones que llama el JavaScript con fetch ----------
-
-    // Buscador de cada campo de lugar del modal Crear plan
     public IActionResult BuscarLugares(int idGrupo, string? texto)
     {
         if (!Sesion.HayUsuario(HttpContext.Session)) return Unauthorized();
@@ -90,7 +77,6 @@ public class PlanesController : Controller
         return Json(LugarBuscado.BuscarParaGrupo(idGrupo, texto));
     }
 
-    // "Crear plan" del modal. Lo que devuelve está explicado en NuevoPlan.Crear.
     [HttpPost]
     public IActionResult CrearPlan([FromBody] NuevoPlan datos)
     {
@@ -102,7 +88,6 @@ public class PlanesController : Controller
         return Json(respuesta);
     }
 
-    // Votar el lugar desde la encuesta. Recibe: { idPlan: 1, idRestaurante: 4 }
     [HttpPost]
     public IActionResult Votar([FromBody] Votos datos)
     {
@@ -114,7 +99,6 @@ public class PlanesController : Controller
         return Json(respuesta);
     }
 
-    // Votar el horario. Recibe: { idPlan: 1, idHorarioVotado: 2 }
     [HttpPost]
     public IActionResult VotarHorario([FromBody] Votos datos)
     {
@@ -126,7 +110,6 @@ public class PlanesController : Controller
         return Json(respuesta);
     }
 
-    // "Confirmar lugar y horario". Recibe: { idPlan: 1, idRestaurante: 4, idHorario: 2 }
     [HttpPost]
     public IActionResult Confirmar([FromBody] DecisionPlan datos)
     {
@@ -138,7 +121,6 @@ public class PlanesController : Controller
         return Json(respuesta);
     }
 
-    // "Cancelar plan". Recibe: { idPlan: 1 }
     [HttpPost]
     public IActionResult Cancelar([FromBody] DecisionPlan datos)
     {

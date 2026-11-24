@@ -2,7 +2,6 @@ using System.Globalization;
 
 namespace Bodeglook.Models;
 
-// No es una tabla: cada fila de la lista "Chats" (un grupo del usuario).
 public class ResumenChat
 {
     public int IdGrupo { get; set; }
@@ -12,10 +11,8 @@ public class ResumenChat
     public int NoLeidos { get; set; }
     public string Integrantes { get; set; } = "";
 
-    // Para ordenar la lista: la fecha del último mensaje o, si no hay, la de creación del grupo
     public DateTime? FechaOrden { get; set; }
 
-    // "18:42" si es de hoy, "Ayer", el día de la semana ("Lun") si es de esta semana, o la fecha
     public string TextoHora()
     {
         if (UltimaFecha == null) return "";

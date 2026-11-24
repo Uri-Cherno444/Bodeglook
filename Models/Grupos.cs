@@ -7,7 +7,6 @@ public class Grupos
     public string? Foto { get; set; }
     public DateTime? FechaCreacion { get; set; }
 
-    // Cabecera del chat: "Cami, Sofi y vos"
     public static string TextoIntegrantes(int idGrupo, int idUsuario)
     {
         List<string> nombres = BD.ObtenerIntegrantesDeGrupo(idGrupo)
@@ -18,22 +17,18 @@ public class Grupos
         return string.Join(", ", nombres) + " y vos";
     }
 
-    // "Sumá amigos" del modal Crear grupo: todos los demás usuarios
     public static object AmigosParaJson(int idUsuario)
     {
         List<Usuarios> amigos = BD.ObtenerOtrosUsuarios(idUsuario);
         return amigos.Select(a => new { id = a.Id, nombre = a.NombreCompleto, iniciales = a.ObtenerIniciales() });
     }
 
-    // Revisa y crea el grupo: nombre, integrantes (uno por amigo marcado) y foto (opcional).
-    // Devuelve { ok, mensaje } si hay un error o { ok, destino } con el chat nuevo.
     public static object Crear(string? nombre, int idCreador, List<int> integrantes, IFormFile? foto)
     {
         nombre = (nombre ?? "").Trim();
         if (nombre == "") return new { ok = false, mensaje = "Poné el nombre del grupo." };
         if (nombre.Length > 50) return new { ok = false, mensaje = "El nombre del grupo puede tener hasta 50 caracteres." };
 
-        // Solo se suman usuarios que existen (y no el creador, que entra solo)
         List<int> existentes = BD.ObtenerOtrosUsuarios(idCreador).Select(u => u.Id).ToList();
         List<int> validos = integrantes.Where(id => existentes.Contains(id)).Distinct().ToList();
         if (validos.Count == 0) return new { ok = false, mensaje = "Sumá al menos un amigo." };
@@ -51,7 +46,6 @@ public class Grupos
 
         int idGrupo = BD.CrearGrupo(nombre, idCreador, validos);
 
-        // La foto se guarda en wwwroot/img con el Id del grupo: /img/grupo-7.jpg
         if (foto != null)
             BD.ActualizarFotoGrupo(idGrupo, Fotos.GuardarSubida(foto, "", "grupo-" + idGrupo + extension));
 

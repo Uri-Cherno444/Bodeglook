@@ -11,7 +11,6 @@
 }
 
 <div class="inicio">
-    <!-- Banner -->
     <section class="banner">
         <div class="banner-texto">
             <p class="banner-saludo">Hola, @ViewBag.PrimerNombre</p>
@@ -29,7 +28,6 @@
                 <span class="dato-numero">@ViewBag.PlanesEnVotacion</span>
                 <span class="dato-texto">@(ViewBag.PlanesEnVotacion == 1 ? "plan en votación" : "planes en votación")</span>
             </div>
-            @* Las amistades no tienen tabla en la base: cuenta a quienes comparten algún grupo con el usuario *@
             <div class="dato">
                 <img src="~/img/icono-usuarios-chico.svg" width="24" height="24" alt="" />
                 <span class="dato-numero">@ViewBag.Amigos</span>
@@ -38,7 +36,6 @@
         </div>
     </section>
 
-    @* Cada chip es una restricción de la base: muestra los lugares que ofrecen esa opción *@
     <nav class="filtros-rapidos" aria-label="Filtrar por restricción">
         <a class="chip chip-filtro @(restriccionElegida == null ? "chip-activo" : "chip-crema")"
            href="/Home/Inicio" data-restriccion="" aria-current="@(restriccionElegida == null ? "true" : null)">Todos</a>
@@ -49,7 +46,6 @@
         }
     </nav>
 
-    @* Las dos grillas cambian con el chip elegido: inicio.js las vuelve a pedir a /Home/LugaresInicio sin recargar *@
     <div id="lugaresInicio">
         @await Html.PartialAsync("_LugaresInicio")
     </div>

@@ -1,8 +1,5 @@
 @using System.Globalization
 @model Bodeglook.Models.TarjetaRestaurante
-@* Tarjeta de lugar con el corazón de favoritos (03 · Inicio).
-   El nombre es el link al Detalle y su área se estira a toda la tarjeta (ver .tarjeta-lugar-enlace);
-   el corazón es un botón aparte, por encima, para que no abra el Detalle. *@
 <article class="tarjeta-lugar" data-id-restaurante="@Model.Id">
     <div class="tarjeta-lugar-foto">
         <img src="@Model.Foto" width="400" height="230" loading="lazy" alt="" />

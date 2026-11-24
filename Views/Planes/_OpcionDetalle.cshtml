@@ -1,7 +1,5 @@
 @using Bodeglook.Models
 @model OpcionDetalle
-@* Una opción de lugar o de horario del Detalle del plan: nombre, detalle, votos, barra e iniciales de quién votó.
-   La usa _DetallePlan.cshtml; los datos los arma EncuestaPlan.DetalleLugares / DetalleHorarios. *@
 <div class="opcion-detalle @(Model.Resaltada ? "opcion-detalle-resaltada" : "")">
     <div class="opcion-detalle-fila">
         <div>

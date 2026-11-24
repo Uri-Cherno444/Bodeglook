@@ -9,7 +9,6 @@
     <link rel="stylesheet" href="~/css/grupos.css" asp-append-version="true" />
 }
 
-@* 07 · Chat de grupo *@
 <div class="pagina-chat">
     @await Html.PartialAsync("_Chats", (List<ResumenChat>)ViewBag.Chats)
 
@@ -34,7 +33,6 @@
                 <button type="button" class="boton boton-secundario" id="botonCrearPlan">+ Crear plan</button>
             </div>
 
-            @* Los mensajes los arma chat.js con lo que devuelve /Grupos/Mensajes *@
             <div class="conversacion-mensajes" id="listaMensajes" aria-live="polite"></div>
 
             <form class="conversacion-escribir" id="formularioMensaje">
@@ -53,7 +51,6 @@
     }
 </div>
 
-<!-- 07g · Crear grupo -->
 <dialog class="dialogo dialogo-grupo" id="dialogoCrearGrupo" aria-labelledby="dialogoCrearGrupoTitulo">
     <form class="formulario-grupo" id="formularioGrupo">
         <div class="dialogo-grupo-encabezado">
@@ -93,7 +90,6 @@
             <div class="campo">
                 <input type="search" id="buscarAmigos" placeholder="Buscar entre tus amigos" aria-label="Buscar entre tus amigos" autocomplete="off" />
             </div>
-            @* Las filas las arma chat.js con lo que devuelve /Grupos/Amigos *@
             <div class="lista-amigos" id="listaAmigos"></div>
         </div>
 
@@ -111,7 +107,6 @@
     LugarBuscado? lugarInicial = ViewBag.LugarInicial;
     string[] horarios = ViewBag.Horarios;
 
-    <!-- 07b · Crear plan (07c mientras busca un lugar, 07d completo) -->
     <dialog class="dialogo dialogo-grupo dialogo-plan" id="dialogoCrearPlan" aria-labelledby="dialogoCrearPlanTitulo"
             data-lugar-id="@lugarInicial?.Id" data-lugar-texto="@lugarInicial?.TextoCampo()">
         <form class="formulario-grupo formulario-plan" id="formularioPlan" novalidate>
@@ -149,7 +144,6 @@
                         <div class="campo-entrada">
                             <input type="text" class="lugar-plan-buscar" placeholder="Buscar restaurante o bodega" aria-label="Lugar @i"
                                    autocomplete="off" role="combobox" aria-expanded="false" aria-controls="resultadosLugar@(i)" />
-                            @* Los resultados los arma chat.js con lo que devuelve /Planes/BuscarLugares *@
                             <div class="resultados-lugares" id="resultadosLugar@(i)" role="listbox" hidden></div>
                         </div>
                     </div>
@@ -167,7 +161,6 @@
                         <input type="date" id="diaPlan" min="@ViewBag.Hoy" />
                     </div>
                 </div>
-                @* Selección múltiple: cada chip marcado es un horario para votar *@
                 <div class="campo" data-campo="horarios">
                     <div class="campo-entrada horarios-sugeridos" role="group" aria-label="Horarios para votar">
                         @foreach (string horario in horarios)

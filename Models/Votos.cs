@@ -1,17 +1,13 @@
 namespace Bodeglook.Models;
 
-// Un voto por persona y por plan: el lugar y el horario van en la misma fila
 public class Votos
 {
     public int Id { get; set; }
     public int? IdUsuario { get; set; }
     public int? IdPlan { get; set; }
     public int? IdRestaurante { get; set; }
-    // La fila de PlanesHorarios del lugar votado. null si todavía no votó horario.
     public int? IdHorarioVotado { get; set; }
 
-    // Votar el lugar desde la encuesta ({ idPlan, idRestaurante }). Se puede cambiar mientras esté En votación.
-    // Devuelve { ok, mensaje }, o null si quien vota no es del grupo (el controller responde 403).
     public object? VotarLugar(int idUsuario)
     {
         Planes? plan = BD.ObtenerPlan(IdPlan ?? 0);
@@ -25,9 +21,6 @@ public class Votos
         return new { ok = true };
     }
 
-    // Votar el horario ({ idPlan, idHorarioVotado }). Igual que el lugar: se puede cambiar mientras esté En votación.
-    // Votos guarda lugar y horario juntos, así que primero hay que votar un lugar.
-    // Devuelve { ok, mensaje }, o null si quien vota no es del grupo (el controller responde 403).
     public object? VotarHorario(int idUsuario)
     {
         Planes? plan = BD.ObtenerPlan(IdPlan ?? 0);

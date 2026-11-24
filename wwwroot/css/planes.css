@@ -1,5 +1,3 @@
-/* 08 · Mis Planes (y la distribución con el panel "Chats" que usan 06 y 10) */
-
 .pagina-con-chats {
     padding: 56px 112px 96px;
     display: flex;
@@ -61,8 +59,6 @@
     font-size: 20px;
     font-weight: 700;
 }
-
-/* 07h · Detalle del plan en votación / 07i · confirmado */
 
 .detalle-plan {
     padding: 40px 112px 96px;
@@ -126,7 +122,6 @@
     font-size: 13px;
 }
 
-/* Grupo · Día (u hora) · Organiza (o Confirmó) */
 .detalle-plan-datos {
     display: flex;
     flex-wrap: wrap;
@@ -159,7 +154,6 @@
     font-size: 20px;
 }
 
-/* Cada opción de lugar o de horario */
 .opcion-detalle {
     padding: 20px 24px;
     border: 1px solid var(--linea);
@@ -170,7 +164,6 @@
     gap: 12px;
 }
 
-/* La que va ganando (o la que ganó) */
 .opcion-detalle-resaltada {
     border-color: var(--naranja);
     background: var(--naranja-suave);
@@ -213,7 +206,6 @@
     overflow: hidden;
 }
 
-/* Sin votos queda un puntito, como en el Figma */
 .opcion-detalle-barra span {
     display: block;
     height: 100%;
@@ -239,7 +231,6 @@
     font-size: 11px;
 }
 
-/* Lugar elegido (07i) */
 .lugar-elegido {
     padding: 24px 28px;
     border: 1px solid var(--naranja);
@@ -280,7 +271,6 @@
     color: var(--gris-texto);
 }
 
-/* Columna de la derecha: Participantes / Quiénes van y la tarjeta de estado */
 .detalle-plan-lateral {
     flex: 0 0 380px;
     display: flex;
@@ -350,7 +340,6 @@
     text-decoration: underline;
 }
 
-/* Diálogo de confirmar: elegir entre los empatados */
 .desempate {
     margin: 14px 0 0;
     padding: 0;

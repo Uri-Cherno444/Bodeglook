@@ -1,5 +1,3 @@
-/* Componentes del UI Kit de Bodeglook (Figma) */
-
 :root {
     --blanco: #ffffff;
     --negro: #000000;
@@ -18,8 +16,6 @@
     --naranja-oscuro: #f57f36;
     --sombra-hover: 0 10px 24px rgba(0, 0, 0, 0.12);
 }
-
-/* ---------- Botones ---------- */
 
 .boton {
     display: inline-flex;
@@ -81,7 +77,6 @@
     color: var(--blanco);
 }
 
-/* Blanco con borde fino ("Atrás" del onboarding) */
 .boton-blanco {
     background: var(--blanco);
     border: 1px solid var(--linea);
@@ -96,7 +91,6 @@
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
 }
 
-/* Mientras espera la respuesta del servidor */
 .boton.cargando {
     position: relative;
     color: transparent;
@@ -124,8 +118,6 @@
 .boton-ancho {
     width: 100%;
 }
-
-/* ---------- Campo de texto ---------- */
 
 .campo {
     display: flex;
@@ -170,7 +162,6 @@
     color: var(--gris-texto);
 }
 
-/* Campo de varias líneas (Campo de reseña en 04 · Detalle + Reseña) */
 .campo textarea {
     width: 100%;
     height: 110px;
@@ -198,11 +189,6 @@
 .campo textarea::placeholder {
     color: var(--gris-texto);
 }
-
-/* ---------- Barra de puntaje (Rating bar del UI Kit) ---------- */
-/* 5 puntos sobre una línea. Hasta el elegido va en naranja y arriba aparece su etiqueta.
-   --posicion va de 0 (punto 1) a 1 (punto 5); la cambia el JavaScript al elegir un punto.
-   Cada punto tiene su --paso (0 a 4) para ubicarse sobre la línea. */
 
 .barra-puntaje {
     --posicion: 0.75;
@@ -244,7 +230,6 @@
     cursor: pointer;
 }
 
-/* El círculo se dibuja adentro del botón: así el área para tocar es más grande que el punto */
 .barra-puntaje-punto::before {
     content: "";
     position: absolute;
@@ -273,7 +258,6 @@
     border-radius: 50%;
 }
 
-/* La etiqueta usa el tooltip del kit, más chica que la de los errores */
 .barra-puntaje .tooltip {
     bottom: auto;
     top: 0;
@@ -282,8 +266,6 @@
     animation: none;
     transition: left 0.2s ease;
 }
-
-/* ---------- Página sin desarrollar ---------- */
 
 .no-desarrollado {
     margin: 64px auto;
@@ -308,8 +290,6 @@
     font-size: 18px;
     color: var(--gris-texto);
 }
-
-/* Estado de error del UI Kit: ícono de atención al costado y tooltip negro arriba */
 
 .campo-entrada {
     position: relative;
@@ -360,7 +340,6 @@
     animation: aparecer-suave 0.25s ease;
 }
 
-/* Flechita del tooltip */
 .tooltip::after {
     content: "";
     position: absolute;
@@ -370,8 +349,6 @@
     border: 6px solid transparent;
     border-top-color: var(--negro);
 }
-
-/* ---------- Aviso (Snackbar del UI Kit, variante amarilla) ---------- */
 
 .aviso {
     width: 100%;
@@ -397,14 +374,12 @@
     animation: aparecer 0.3s ease;
 }
 
-/* Variante verde del Snackbar (Property 1=Success): "Guardamos tus cambios" */
 .aviso-exito {
     border-color: #76ca66;
     background: rgba(118, 202, 102, 0.1);
     color: #76ca66;
 }
 
-/* Flotando abajo al centro de la pantalla (08d · Perfil · Cambios guardados) */
 .aviso-flotante {
     position: fixed;
     left: 50%;
@@ -430,8 +405,6 @@
 .aviso-cerrar:hover {
     transform: rotate(90deg);
 }
-
-/* ---------- Diálogo (UI Kit) ---------- */
 
 .dialogo {
     width: 504px;
@@ -482,7 +455,6 @@
     width: 110px;
 }
 
-/* La X de los modales grandes: círculo naranja suave (la usan Dejar una reseña y Editar perfil) */
 .boton-cerrar-modal {
     flex-shrink: 0;
     width: 40px;
@@ -515,7 +487,6 @@
     transform: rotate(90deg);
 }
 
-/* Botón redondo con flecha para volver (Detalle e Iniciar sesión) */
 .boton-volver {
     width: 44px;
     height: 44px;
@@ -537,13 +508,10 @@
     outline-offset: 2px;
 }
 
-/* Sobre fondo blanco (onboarding) va en naranja suave con borde */
 .boton-volver-suave {
     background: var(--naranja-suave);
     border: 1px solid var(--linea);
 }
-
-/* ---------- Chips ---------- */
 
 .chip {
     display: inline-flex;
@@ -571,8 +539,6 @@
     font-size: 15px;
 }
 
-/* ---------- Tarjeta base ---------- */
-
 .tarjeta {
     background: var(--blanco);
     border: 1px solid var(--linea);
@@ -596,7 +562,6 @@
     color: var(--gris-texto);
 }
 
-/* Círculo con ícono o número */
 .icono-circulo {
     display: flex;
     align-items: center;
@@ -615,9 +580,6 @@
     font-weight: 700;
 }
 
-/* ---------- Tarjeta de lugar ---------- */
-
-/* Grilla de tarjetas de lugar, 4 por fila */
 .grilla-lugares {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -663,7 +625,6 @@
     justify-content: center;
 }
 
-/* Corazón que se puede tocar (03 · Inicio): vacío en negro, lleno en naranja si es favorito */
 .boton-favorito {
     cursor: pointer;
 }
@@ -692,7 +653,6 @@
     outline-offset: 2px;
 }
 
-/* La tarjeta con corazón es un <article>: el nombre es el link y su área cubre toda la tarjeta */
 .tarjeta-lugar {
     position: relative;
 }
@@ -749,7 +709,6 @@
 
 .tarjeta-lugar-nombre {
     font-size: 20px;
-    /* Nombres largos (los lugares importados): máximo 2 líneas y "..." al final */
     min-width: 0;
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -788,8 +747,6 @@
     font-size: 14px;
     color: var(--gris-texto);
 }
-
-/* ---------- Reseña ---------- */
 
 .tarjeta-resena {
     background: var(--blanco);
@@ -831,7 +788,6 @@
     color: var(--gris-texto);
 }
 
-/* Foto de la reseña: miniatura debajo del texto, se toca para verla en grande */
 .resena-foto {
     width: 96px;
     height: 96px;
@@ -872,11 +828,8 @@
     font-size: 16px;
     font-weight: 700;
     flex-shrink: 0;
-    /* Con foto de perfil, la imagen queda recortada en el círculo */
     overflow: hidden;
 }
-
-/* ---------- Logo ---------- */
 
 .logo {
     display: flex;
@@ -887,8 +840,6 @@
     font-size: 26px;
     font-weight: 700;
 }
-
-/* ---------- Header ---------- */
 
 .encabezado {
     height: 88px;
@@ -904,8 +855,6 @@
     display: flex;
     gap: 12px;
 }
-
-/* Header con sesión iniciada */
 
 .encabezado-izquierda {
     display: flex;
@@ -939,7 +888,6 @@
     text-decoration: none;
 }
 
-/* Raya de 3px debajo de cada pestaña; solo se ve en la activa */
 .navegacion a::after {
     content: "";
     width: 48px;
@@ -962,8 +910,6 @@
     font-size: 14px;
 }
 
-/* ---------- Chips de filtro ---------- */
-
 .chip-filtro {
     padding: 8px 18px;
     font-size: 15px;
@@ -974,9 +920,6 @@
     background: var(--naranja);
     color: var(--blanco);
 }
-
-/* ---------- Paginación (Pagination del UI Kit) ---------- */
-/* Flechas grises, números en gris claro y la página actual en un cuadrado naranja */
 
 .paginacion {
     display: flex;
@@ -1034,9 +977,6 @@
     outline-offset: 2px;
 }
 
-/* ---------- Chips seleccionables (onboarding) ---------- */
-/* Botón con aria-pressed: sin elegir va blanco con borde, elegido va naranja */
-
 .chip-opcion {
     padding: 9px 16px;
     border: 1px solid var(--linea);
@@ -1063,8 +1003,6 @@
     outline: 2px solid var(--naranja);
     outline-offset: 2px;
 }
-
-/* ---------- Footer ---------- */
 
 .pie {
     background: var(--negro);
@@ -1174,8 +1112,6 @@
     }
 }
 
-/* ---------- Pestañas (08 · Mis Planes) ---------- */
-
 .pestanas {
     display: flex;
     gap: 24px;
@@ -1207,8 +1143,6 @@
     padding-bottom: 7px;
 }
 
-/* ---------- Tarjeta de plan ---------- */
-
 .tarjeta-plan {
     display: flex;
     min-width: 0;
@@ -1227,7 +1161,6 @@
     box-shadow: var(--sombra-hover);
 }
 
-/* Franja de color a la izquierda: naranja en votación, verde confirmado */
 .tarjeta-plan-franja {
     flex: 0 0 8px;
     background: var(--naranja);
@@ -1277,14 +1210,10 @@
     color: var(--verde);
 }
 
-/* Plan cancelado por su creador */
 .chip-cancelado {
     background: var(--arena);
     color: var(--gris-texto);
 }
-
-/* ---------- Radio (Radio Button del UI Kit) ---------- */
-/* El input real queda invisible y se dibuja el círculo de al lado. Lo usan la encuesta y el Detalle del plan. */
 
 .radio {
     position: absolute;
@@ -1319,10 +1248,6 @@
 .radio:focus-visible + .radio-circulo {
     box-shadow: 0 0 0 3px var(--naranja-suave);
 }
-
-/* ---------- Casilla (Checkbox del UI Kit) ---------- */
-/* Igual que el radio: el input real queda invisible y se dibuja la caja de al lado.
-   La etiqueta va a la izquierda de la caja, como en el Figma. También sirve de fila para un radio. */
 
 .casilla {
     display: inline-flex;
@@ -1362,7 +1287,6 @@
     box-shadow: 0 0 0 3px var(--naranja-suave);
 }
 
-/* Iniciales superpuestas de los integrantes */
 .avatares {
     display: flex;
     flex-shrink: 0;
@@ -1380,8 +1304,6 @@
 .avatar-mini:first-child {
     margin-left: 0;
 }
-
-/* ---------- Panel "Chats" ---------- */
 
 .panel-chats {
     flex: 0 0 520px;
@@ -1511,8 +1433,6 @@
     }
 }
 
-/* ---------- Hover ---------- */
-
 .tarjeta,
 .tarjeta-resena,
 .dato {
@@ -1604,8 +1524,6 @@
     text-decoration: underline;
 }
 
-/* ---------- Menú del avatar ---------- */
-
 .menu-usuario {
     position: relative;
 }
@@ -1623,7 +1541,6 @@
     box-shadow: 0 0 0 3px var(--naranja-suave);
 }
 
-/* Borde naranja mientras el menú está abierto (11 · Menú del avatar) */
 .avatar-boton[aria-expanded="true"] {
     box-shadow: inset 0 0 0 2px var(--naranja);
 }
@@ -1711,16 +1628,12 @@
     background: rgba(0, 0, 0, 0.5);
 }
 
-/* "Cerrar sesión" no entra en 110px con el padding del botón */
 .dialogo-botones .boton {
     min-width: 110px;
     width: auto;
     padding: 0 16px;
 }
 
-/* ---------- Movimiento al cargar ---------- */
-
-/* Las secciones de cada pantalla entran de abajo, una después de la otra */
 main > section,
 main > .inicio > * {
     animation: aparecer 0.6s ease both;
@@ -1759,7 +1672,6 @@ main > section:nth-child(n+5) { animation-delay: 0.3s; }
     to { transform: rotate(360deg); }
 }
 
-/* Para quien tiene activado "reducir movimiento" en el sistema */
 @media (prefers-reduced-motion: reduce) {
     *,
     *::before,
@@ -1769,8 +1681,6 @@ main > section:nth-child(n+5) { animation-delay: 0.3s; }
         transition-duration: 0.01ms !important;
     }
 }
-
-/* ---------- Créditos de Geoapify y OpenStreetMap ---------- */
 
 .creditos {
     margin: 8px 0 0;

@@ -2,8 +2,6 @@ using System.Text.Json;
 
 namespace Bodeglook.Models;
 
-// No es una tabla: guarda y lee el usuario logueado en la Session (como JSON, sin la contraseña).
-// La usan todos los controllers y el _Layout.
 public static class Sesion
 {
     private const string Clave = "usuario";
@@ -13,7 +11,6 @@ public static class Sesion
         return sesion.GetString(Clave) != null;
     }
 
-    // null si no hay nadie logueado
     public static Usuarios? Leer(ISession sesion)
     {
         string? json = sesion.GetString(Clave);

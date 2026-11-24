@@ -1,13 +1,7 @@
-// Formularios de Iniciar sesión y Registro.
-// Mandan los datos con fetch en JSON y muestran los errores con los estados del UI Kit:
-//   - error de un campo: ícono de atención + tooltip negro al costado del campo
-//   - aviso general: snackbar amarillo arriba del formulario
-
 function prepararFormulario(idFormulario, url, obtenerDatos) {
     const formulario = document.getElementById(idFormulario);
     const boton = formulario.querySelector("button[type=submit]");
 
-    // Al escribir en un campo con error, se le saca el error
     formulario.querySelectorAll(".campo input, .campo select").forEach(function (input) {
         input.addEventListener("input", function () {
             limpiarErrorCampo(input.closest(".campo"));
@@ -77,7 +71,6 @@ function mostrarAviso(mensaje) {
     const aviso = document.getElementById("aviso");
     document.getElementById("avisoTexto").textContent = mensaje;
     aviso.hidden = false;
-    // Se vuelve a poner la clase para que la animación arranque de nuevo
     aviso.classList.remove("aviso-visible");
     void aviso.offsetWidth;
     aviso.classList.add("aviso-visible");

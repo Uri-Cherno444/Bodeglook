@@ -1,5 +1,3 @@
-/* 08 · Perfil y Amigos */
-
 .perfil {
     padding: 48px 96px 88px;
     display: flex;
@@ -10,8 +8,6 @@
 .perfil-volver {
     flex-shrink: 0;
 }
-
-/* ---------- Tarjeta de perfil ---------- */
 
 .tarjeta-perfil {
     flex: 0 0 460px;
@@ -115,8 +111,6 @@ a.chip-perfil:hover {
     color: var(--gris-texto);
 }
 
-/* ---------- Columna derecha: amigos y planes ---------- */
-
 .perfil-columna {
     flex: 1;
     min-width: 0;
@@ -143,7 +137,6 @@ a.chip-perfil:hover {
     font-size: 36px;
 }
 
-/* "Ver todos" es un botón con el estilo del link "Ver todo" */
 .perfil-bloque-encabezado .ver-todo {
     padding: 0;
     border: none;
@@ -165,8 +158,6 @@ a.chip-perfil:hover {
 .grilla-planes-perfil .tarjeta-plan[hidden] {
     display: none;
 }
-
-/* ---------- Pantallas chicas ---------- */
 
 @media (max-width: 1200px) {
     .perfil {
@@ -202,9 +193,6 @@ a.chip-perfil:hover {
         grid-template-columns: 1fr;
     }
 }
-
-/* ---------- 08c · Editar perfil (modal) ---------- */
-/* Mismo estilo que Agregar amigo y Dejar una reseña: fondo oscuro, tarjeta blanca, título con la X y botones abajo */
 
 .modal-perfil {
     width: min(1000px, calc(100% - 32px));
@@ -294,7 +282,6 @@ a.chip-perfil:hover {
     overflow: hidden;
 }
 
-/* En el Figma las etiquetas de los campos del modal son de 16px */
 .modal-perfil .campo label {
     font-size: 16px;
     line-height: 24px;
@@ -326,7 +313,6 @@ a.chip-perfil:hover {
     gap: 6px 20px;
 }
 
-/* ¿Qué querés ver?: dos tarjetas con radio. La elegida va con borde y fondo naranja suave. */
 .modal-perfil-ver {
     display: flex;
     gap: 16px;
@@ -352,7 +338,6 @@ a.chip-perfil:hover {
     background: var(--naranja-suave);
 }
 
-/* Sin restricciones no hay nada que filtrar: "Solo lo apto para mí" no se puede elegir */
 .modal-perfil-opcion:has(input:disabled) {
     opacity: 0.5;
     cursor: not-allowed;
@@ -390,7 +375,6 @@ a.chip-perfil:hover {
     }
 }
 
-/* Cambiar foto de perfil (modal del kit): usa .dialogo, acá solo el ancho, el recorte y el zoom */
 .dialogo-foto {
     width: 343px;
 }
@@ -430,7 +414,6 @@ a.chip-perfil:hover {
     width: auto;
 }
 
-/* Que el atributo hidden gane sobre el display del contenedor (para actualizar los chips sin recargar) */
 .perfil-chips[hidden] {
     display: none;
 }

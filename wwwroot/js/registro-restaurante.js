@@ -1,6 +1,3 @@
-// 06 · Registro Restaurante. Usa prepararFormulario de cuenta.js.
-
-// La tarjeta de plan elegida va con borde y fondo naranja suave
 document.querySelectorAll(".plan-opcion input").forEach(function (radio) {
     radio.addEventListener("change", function () {
         document.querySelectorAll(".plan-opcion").forEach(function (opcion) {
@@ -9,7 +6,6 @@ document.querySelectorAll(".plan-opcion input").forEach(function (radio) {
     });
 });
 
-// Volver a la pantalla anterior (si se llegó desde otra página de Bodeglook)
 document.getElementById("botonVolver").addEventListener("click", function (evento) {
     if (document.referrer.startsWith(window.location.origin) && history.length > 1) {
         evento.preventDefault();

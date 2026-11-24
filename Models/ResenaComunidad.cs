@@ -1,24 +1,18 @@
 namespace Bodeglook.Models;
 
-// No es una tabla: cada reseña de "Reseñas de la comunidad" en 04 · Detalle + Reseña,
-// con el nombre de quien la escribió.
 public class ResenaComunidad
 {
     public int Id { get; set; }
     public int Puntaje { get; set; }
     public string? Comentario { get; set; }
-    // La foto que adjuntó a la reseña (Reseñas.Foto), null si no puso ninguna
     public string? Foto { get; set; }
     public DateTime Fecha { get; set; }
     public string? NombreCompleto { get; set; }
-    // La foto de perfil de quien la escribió (null: se muestran las iniciales)
     public string? FotoPerfil { get; set; }
 
-    // Los devuelve el procedimiento ListarResenasRestaurante
     public int IdUsuario { get; set; }
     public string? NombreUsuario { get; set; }
 
-    // Las iniciales se calculan igual que en el resto de la app
     public string ObtenerIniciales()
     {
         Usuarios autor = new Usuarios();
@@ -26,7 +20,6 @@ public class ResenaComunidad
         return autor.ObtenerIniciales();
     }
 
-    // "Hace 2 días", "Hace 1 semana", "Hace 3 semanas" (como en el Figma)
     public string TextoHace()
     {
         TimeSpan paso = DateTime.Now - Fecha;
@@ -40,7 +33,6 @@ public class ResenaComunidad
         return Plural((int)paso.TotalDays / 365, "año", "años");
     }
 
-    // Lo que necesita detalle.js para armar una tarjeta de reseña ("Ver las N")
     public object ParaJson()
     {
         return new
@@ -56,7 +48,6 @@ public class ResenaComunidad
         };
     }
 
-    // Las reseñas de un restaurante desde la número "desde", listas para mandar como JSON
     public static List<object> ListaParaJson(int idRestaurante, int desde)
     {
         List<object> resenas = new List<object>();

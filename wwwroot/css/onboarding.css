@@ -1,12 +1,9 @@
-/* 02c · Onboarding · Gustos y 02d · Filtro dietario */
-
 .onboarding {
     padding: 56px 16px 80px;
     display: flex;
     justify-content: center;
 }
 
-/* La tarjeta queda centrada y la flecha a su izquierda */
 .onboarding-contenedor {
     position: relative;
     width: 100%;
@@ -28,8 +25,6 @@
     flex-direction: column;
     gap: 28px;
 }
-
-/* ---------- Progreso ---------- */
 
 .progreso {
     display: flex;
@@ -55,8 +50,6 @@
     background: var(--naranja);
 }
 
-/* ---------- Título ---------- */
-
 .onboarding-titulo {
     display: flex;
     flex-direction: column;
@@ -76,7 +69,6 @@
     color: var(--gris-texto);
 }
 
-/* En el paso 2 la pregunta va más grande */
 .onboarding-titulo-pregunta {
     gap: 10px;
 }
@@ -85,8 +77,6 @@
     font-size: 20px;
     line-height: 30px;
 }
-
-/* ---------- Paso 1: secciones con chips ---------- */
 
 .onboarding-seccion {
     display: flex;
@@ -104,8 +94,6 @@
     flex-wrap: wrap;
     gap: 10px;
 }
-
-/* ---------- Paso 2: tarjetas con radio ---------- */
 
 .opciones-filtro {
     display: flex;
@@ -130,14 +118,12 @@
     border-color: var(--naranja);
 }
 
-/* La elegida: fondo naranja suave y borde naranja de 2px (se resta 1px de padding para que no salte) */
 .opcion-filtro:has(input:checked) {
     padding: 27px;
     border: 2px solid var(--naranja);
     background: var(--naranja-suave);
 }
 
-/* El radio de verdad queda oculto: se ve el círculo de abajo */
 .opcion-filtro input {
     position: absolute;
     opacity: 0;
@@ -170,7 +156,6 @@
     display: none;
 }
 
-/* Marcado: se ve el ícono del Figma en lugar del círculo vacío */
 .opcion-filtro:has(input:checked) .radio {
     border: none;
 }
@@ -192,8 +177,6 @@
     color: var(--gris-texto);
 }
 
-/* ---------- Botones de abajo ---------- */
-
 .onboarding-acciones {
     display: flex;
     justify-content: flex-end;
@@ -213,10 +196,7 @@
     color: var(--negro);
 }
 
-/* ---------- Pantallas chicas ---------- */
-
 @media (max-width: 1100px) {
-    /* No entra la flecha al costado: va arriba de la tarjeta */
     .onboarding-volver {
         position: static;
         margin-bottom: 16px;

@@ -12,15 +12,11 @@ public class Usuarios
     public DateTime? FechaRegistro { get; set; }
     public int? IdBarrio { get; set; }
 
-    // Nombre del barrio: solo lo completa el procedimiento ObtenerPerfilUsuario
     public string? Barrio { get; set; }
 
-    // Gustos del onboarding: con qué frecuencia sale y si quiere ver solo lo apto para sus restricciones
-    // (null = todavía no eligió). Solo los completa BD.ObtenerDatosEdicion.
     public string? Frecuencia { get; set; }
     public bool? SoloApto { get; set; }
 
-    // "Camila Fernández" -> "CF". Si tiene una sola palabra: "Cami" -> "CA" (como en el Figma)
     public string ObtenerIniciales()
     {
         string[] palabras = (NombreCompleto ?? "").Split(' ', StringSplitOptions.RemoveEmptyEntries);
@@ -29,19 +25,11 @@ public class Usuarios
         return (palabras[0].Substring(0, 1) + palabras[1].Substring(0, 1)).ToUpper();
     }
 
-    // "Camila Fernández" -> "Camila"
     public string ObtenerPrimerNombre()
     {
         return (NombreCompleto ?? "").Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? "";
     }
 
-    // ---------- Cuenta (02 · Iniciar sesión y Registro) ----------
-    // Devuelven { ok, campo, mensaje } si hay un error:
-    //   campo = "usuario", "contrasena", etc. si el error es de un campo
-    //   campo = "aviso" si el error va en el aviso de arriba del formulario
-    // o { ok, destino } con la página a la que sigue. En "logueado" queda el usuario para guardar en la sesión (null si hubo error).
-
-    // Recibe { nombreUsuario: "email", contraseña: "..." }. El procedimiento InicioSesionUsuario busca por email y contraseña hasheada.
     public static object Ingresar(Usuarios datos, out Usuarios? logueado)
     {
         logueado = null;
@@ -58,7 +46,6 @@ public class Usuarios
         return new { ok = true, destino = "/Home/Inicio" };
     }
 
-    // Recibe { nombreCompleto, nombreUsuario, email, contraseña }. Con la cuenta nueva queda con sesión y sigue al onboarding.
     public static object Registrar(Usuarios datos, out Usuarios? logueado)
     {
         logueado = null;
@@ -81,7 +68,6 @@ public class Usuarios
         nuevo.Email = email;
         nuevo.Contraseña = Contraseñas.Hashear(datos.Contraseña, email);
 
-        // La base pide un barrio y el formulario no lo pregunta: queda el primero de la lista (provisorio)
         int idBarrio = BD.ObtenerBarrios()[0].Id;
         int? error = BD.RegistrarUsuario(nuevo, idBarrio);
         if (error == 1)
@@ -96,12 +82,6 @@ public class Usuarios
         return new { ok = true, destino = "/Cuenta/Gustos" };
     }
 
-    // ---------- 08c · Editar perfil ----------
-
-    // "Guardar cambios" del modal Editar perfil. sesion es el usuario logueado: si se guarda bien,
-    // se le cargan los datos nuevos (el controller lo vuelve a guardar en la sesión).
-    // Devuelve { ok, campo, mensaje } si hay un error ("campo" = nombre, usuario, ubicacion o aviso)
-    // o { ok, perfil } con lo que hay que mostrar en la tarjeta de perfil.
     public static object GuardarPerfil(Usuarios sesion, string? nombreCompleto, string? nombreUsuario, int? idBarrio,
         List<int>? restricciones, List<int>? zonas, string? frecuencia, List<string>? companias,
         bool soloApto, IFormFile? foto)
@@ -127,7 +107,6 @@ public class Usuarios
         if (barrio == null)
             return new { ok = false, campo = "ubicacion", mensaje = "Elegí tu ubicación." };
 
-        // La foto: se mira qué es de verdad (no lo que dice el nombre del archivo)
         string extension = "";
         if (foto != null)
         {
@@ -145,12 +124,10 @@ public class Usuarios
             Frecuencia = frecuencia,
             Companias = companias ?? new List<string>()
         });
-        // Sin restricciones no hay nada que filtrar: queda "Ver todo"
         bool soloAptoFinal = soloApto && gustos.Restricciones.Count > 0;
 
         string? fotoAnterior = BD.ObtenerDatosEdicion(sesion.Id)?.FotoPerfil;
         string? fotoNueva = null;
-        // La foto se guarda en wwwroot/img/usuarios con el Id y la hora (así el navegador no muestra la vieja)
         if (foto != null)
             fotoNueva = Fotos.GuardarSubida(foto, "usuarios", "usuario-" + sesion.Id + "-" + DateTime.UtcNow.Ticks + extension);
 
@@ -160,16 +137,13 @@ public class Usuarios
         }
         catch
         {
-            // Si la base falla no queda una foto suelta
             Fotos.BorrarSubida(fotoNueva);
             throw;
         }
 
-        // La foto vieja ya no se usa: se borra (solo si es una de las subidas, no una foto de ejemplo)
         if (fotoNueva != null && fotoAnterior != null && fotoAnterior.StartsWith("/img/usuarios/"))
             Fotos.BorrarSubida("/img/usuarios/" + Path.GetFileName(fotoAnterior));
 
-        // El header y el menú del avatar leen la sesión: se actualiza con lo nuevo
         sesion.NombreCompleto = nombreCompleto;
         sesion.NombreUsuario = nombreUsuario;
         sesion.IdBarrio = barrio.Id;

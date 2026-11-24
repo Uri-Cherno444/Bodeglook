@@ -7,7 +7,6 @@
     bool yaReseno = ViewBag.YaReseno;
     List<string> galeria = Model.Galeria();
     Planes? visita = ViewBag.Visita;
-    // Los cuatro puntajes del modal 04b: nombre del campo, título y subtítulo (NuevaResena.Dimensiones)
     string[,] dimensiones = ViewBag.Dimensiones;
 }
 
@@ -16,7 +15,6 @@
 }
 
 <div class="detalle" data-id-restaurante="@Model.Id">
-    <!-- Banner con foto, volver, puntaje y corazón -->
     <section class="detalle-banner">
         <img class="detalle-banner-foto" src="@Model.Foto" width="1440" height="380" alt="" />
         <a class="boton-volver detalle-volver" id="botonVolver" href="/Home/Inicio" aria-label="Volver">
@@ -39,7 +37,6 @@
 
     <div class="detalle-contenido">
         <div class="detalle-principal">
-            <!-- Nombre, categoría, puntaje, cantidad de reseñas, barrio y chips dietarios -->
             <div class="detalle-titulo">
                 <h1>@Model.Nombre</h1>
                 <div class="detalle-datos">
@@ -71,7 +68,6 @@
                 }
             </div>
 
-            <!-- Pestañas: cada bloque de abajo dice en qué pestañas se ve (data-pestanas) -->
             <div class="pestanas" role="tablist">
                 <button type="button" class="pestana activa" role="tab" aria-selected="true" data-pestana="informacion">Información</button>
                 <button type="button" class="pestana" role="tab" aria-selected="false" data-pestana="resenas">Reseñas</button>
@@ -84,7 +80,6 @@
                 <p class="detalle-descripcion" data-pestanas="informacion">@Model.Descripcion</p>
             }
 
-            <!-- Fotos: galería en grilla. Al tocar una se ve en grande (visor de abajo) -->
             <div class="detalle-fotos" data-pestanas="fotos" hidden>
                 @if (galeria.Count > 0)
                 {
@@ -103,7 +98,6 @@
                 }
             </div>
 
-            <!-- Dejar una reseña: abre el modal 04b. Se deja una sola por lugar. -->
             <div class="dejar-resena" data-pestanas="informacion resenas">
                 <button type="button" class="boton boton-primario" id="botonDejarResena" disabled="@yaReseno">
                     @(yaReseno ? "Ya dejaste una reseña" : "Dejar una reseña")
@@ -116,7 +110,6 @@
                 </div>
             </div>
 
-            <!-- Reseñas de la comunidad: de la más nueva a la más vieja -->
             <section class="resenas-comunidad" data-pestanas="informacion resenas">
                 <div class="resenas-comunidad-encabezado">
                     <h2>Reseñas de la comunidad</h2>
@@ -152,7 +145,6 @@
                             {
                                 <p class="resena-texto">@resena.Comentario</p>
                             }
-                            @* La foto que adjuntó: miniatura debajo del texto, al tocarla se ve en grande *@
                             @if (Fotos.Avatar(resena.Foto) != null)
                             {
                                 <button type="button" class="resena-foto" aria-label="Ver la foto de la reseña">
@@ -166,7 +158,6 @@
             </section>
         </div>
 
-        <!-- Tarjeta lateral -->
         <aside class="detalle-acciones">
             <button type="button"
                     class="boton boton-secundario boton-ancho detalle-boton-favorito"
@@ -174,7 +165,6 @@
                     aria-pressed="@(Model.EsFavorito ? "true" : "false")">
                 @(Model.EsFavorito ? "Sacar de favoritos" : "Agregar a favoritos")
             </button>
-            @* Abre el modal Crear plan en el chat más reciente, con este lugar en el primer campo *@
             <a class="boton boton-primario boton-grande boton-ancho" href="/Planes/NuevoPlan?idRestaurante=@Model.Id">Crear plan</a>
             <div class="detalle-divisor"></div>
             @if (Model.TextoHorario() != "")
@@ -198,7 +188,6 @@
                     @Model.TextoDireccion()
                 </p>
             }
-            @* El mini mapa queda como imagen fija por ahora *@
             <div class="detalle-mapa">
                 <img src="~/img/icono-imagen-grande.svg" width="40" height="40" alt="" />
             </div>
@@ -210,7 +199,6 @@
     </div>
 </div>
 
-<!-- Visor de fotos: foto en grande con flechas para pasar y la X para cerrar. Lo arma detalle.js. -->
 <dialog class="dialogo visor" id="visorFotos" aria-label="Foto en grande">
     <button type="button" class="boton-volver visor-cerrar" id="visorCerrar" aria-label="Cerrar">
         <img src="~/img/icono-cerrar.svg" width="24" height="24" alt="" />
@@ -225,7 +213,6 @@
     <p class="visor-contador" id="visorContador" aria-live="polite"></p>
 </dialog>
 
-<!-- 04b · Dejar una reseña (modal). <dialog> ya se cierra con Escape. -->
 <dialog class="modal-resena" id="modalResena" aria-labelledby="modalResenaTitulo">
     <form id="formularioResena" method="dialog" novalidate>
         <div class="modal-resena-encabezado">
@@ -270,14 +257,12 @@
             <span class="puntaje-general-valor" id="puntajeGeneral" aria-live="polite">–</span>
         </div>
 
-        @* Si el servidor encuentra palabras no permitidas, detalle.js lo marca con el estado de error del kit *@
         <div class="campo campo-comentario" id="campoComentario">
             <div class="campo-entrada">
                 <textarea id="comentarioResena" aria-label="Tu reseña" placeholder="Contá tu experiencia con sinceridad..."></textarea>
             </div>
         </div>
 
-        @* Fotos (opcional): campo Drag&drop del UI Kit. Se arrastra o se toca para elegir del dispositivo. *@
         <div class="campo-fotos" id="campoFotos">
             <p class="campo-fotos-titulo">Agregá fotos (opcional)</p>
             <div class="campo-entrada">

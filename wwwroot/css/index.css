@@ -1,5 +1,3 @@
-/* 01 · Index (landing pública) */
-
 .seccion {
     padding: 96px 112px;
 }
@@ -11,8 +9,6 @@
 .seccion-negra {
     background: var(--negro);
 }
-
-/* ---------- Hero ---------- */
 
 .hero {
     background: var(--crema);
@@ -101,8 +97,6 @@
     color: var(--gris-texto);
 }
 
-/* ---------- Beneficios y pasos ---------- */
-
 .beneficios {
     padding: 72px 112px;
 }
@@ -120,8 +114,6 @@
 .beneficios .tarjeta p {
     max-width: 464px;
 }
-
-/* ---------- Encabezados de sección ---------- */
 
 .como-funciona {
     display: flex;
@@ -157,8 +149,6 @@
     width: 100%;
 }
 
-/* ---------- Lugares recomendados ---------- */
-
 .lugares {
     display: flex;
     flex-direction: column;
@@ -184,8 +174,6 @@
     line-height: 30px;
     color: var(--gris-texto);
 }
-
-/* ---------- Reseñas reales ---------- */
 
 .resenas-reales {
     display: flex;
@@ -227,8 +215,6 @@
     flex-direction: column;
     gap: 16px;
 }
-
-/* ---------- Para restaurantes ---------- */
 
 .para-restaurantes {
     display: flex;
@@ -306,12 +292,9 @@
     flex-shrink: 0;
 }
 
-/* El botón queda abajo de todo, como el espaciador del Figma */
 .tarjeta-precio .boton {
     margin-top: auto;
 }
-
-/* ---------- Llamado final ---------- */
 
 .llamado-final {
     background: var(--naranja);
@@ -329,8 +312,6 @@
     font-size: 20px;
     line-height: 30px;
 }
-
-/* ---------- Pantallas chicas ---------- */
 
 @media (max-width: 1200px) {
     .hero,

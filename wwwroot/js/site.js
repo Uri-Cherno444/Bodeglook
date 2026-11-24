@@ -1,6 +1,4 @@
-﻿// 11 · Menú del avatar y 12 · Cerrar sesión (solo existen con sesión iniciada)
-
-const botonAvatar = document.getElementById("botonAvatar");
+﻿const botonAvatar = document.getElementById("botonAvatar");
 
 if (botonAvatar) {
     const menu = document.getElementById("menuUsuario");
@@ -24,14 +22,12 @@ if (botonAvatar) {
         }
     });
 
-    // Al tocar fuera del avatar y del menú, se cierra
     document.addEventListener("click", function (evento) {
         if (!menu.hidden && !menu.contains(evento.target) && !botonAvatar.contains(evento.target)) {
             cerrarMenu();
         }
     });
 
-    // Con Escape también se cierra (el diálogo ya se cierra solo con Escape)
     document.addEventListener("keydown", function (evento) {
         if (evento.key === "Escape" && !menu.hidden) {
             cerrarMenu();

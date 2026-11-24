@@ -1,5 +1,3 @@
-/* 02 · Iniciar Sesión y Registro */
-
 .cuenta {
     display: flex;
     min-height: 880px;
@@ -98,7 +96,6 @@
     text-decoration: none;
 }
 
-/* 02b · Crear cuenta: formulario un poco más ancho y más apretado que el de Iniciar sesión */
 .cuenta-formulario-registro {
     width: 340px;
     gap: 14px;
@@ -124,12 +121,10 @@
     font-size: 15px;
 }
 
-/* "¿Tenés un restaurante?" va un poco más chico */
 .cuenta-pie-chico {
     font-size: 14px;
 }
 
-/* 06 · Registro Restaurante: el título se corta en dos líneas ("Registrá tu / restaurante") */
 .cuenta-formulario-restaurante {
     width: 300px;
 }
@@ -138,7 +133,6 @@
     white-space: normal;
 }
 
-/* Desplegables de Barrio y Categoría: se ven como los campos de texto del kit */
 .campo select {
     width: 100%;
     height: 44px;
@@ -154,7 +148,6 @@
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-/* Sin elegir, el texto del ejemplo va en gris como el placeholder de los campos */
 .campo select:has(option[value=""]:checked) {
     color: var(--gris-texto);
 }
@@ -176,12 +169,10 @@
     box-shadow: 0 0 0 3px rgba(255, 49, 49, 0.1);
 }
 
-/* El ícono de error no tapa la flecha del desplegable en celular */
 .campo-con-error select {
     padding-right: 44px;
 }
 
-/* Plan: dos tarjetas seleccionables. La elegida va con borde y fondo naranja suave. */
 .plan-campo {
     width: 100%;
     margin: 0;
@@ -228,7 +219,6 @@
     background: var(--naranja-suave);
 }
 
-/* El radio queda escondido pero se puede usar con el teclado */
 .plan-opcion input {
     position: absolute;
     opacity: 0;
@@ -249,14 +239,12 @@
     color: var(--gris-texto);
 }
 
-/* Botón para volver a la Landing, arriba a la izquierda del panel negro */
 .cuenta-volver {
     position: absolute;
     top: 48px;
     left: 64px;
 }
 
-/* El logo grande flota apenas */
 .cuenta-logo img {
     animation: flotar 4s ease-in-out infinite;
 }
@@ -267,7 +255,6 @@
 }
 
 @media (max-width: 900px) {
-    /* En celular no entra el tooltip centrado: se alinea a la derecha del ícono */
     .campo-error {
         left: auto;
         right: 10px;
@@ -310,7 +297,6 @@
         padding: 48px 16px;
     }
 
-    /* En celular va arriba de todo, en el flujo de la columna */
     .cuenta-volver {
         position: static;
         align-self: flex-start;

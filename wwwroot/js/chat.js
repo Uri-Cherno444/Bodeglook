@@ -1,26 +1,18 @@
-// 07 · Chat de grupo y 07g · Crear grupo.
-// Los mensajes se piden con fetch: todos al abrir y después, cada 3 segundos, solo los nuevos.
-// En cada consulta también se refresca la lista "Chats" (hora, orden, no leídos y grupos nuevos).
-
 const conversacion = document.getElementById("conversacion");
-// En /Grupos sin ningún grupo no hay conversación: solo la lista y el modal
 const idGrupo = conversacion ? Number(conversacion.dataset.idGrupo) : 0;
 const listaMensajes = document.getElementById("listaMensajes");
 const formularioMensaje = document.getElementById("formularioMensaje");
 const campoMensaje = document.getElementById("campoMensaje");
 
-let ultimoId = 0;     // el último mensaje que ya está dibujado
-let ultimoDia = "";   // para poner el separador "Hoy" / "Ayer" / "Lun 26/10" cuando cambia el día
+let ultimoId = 0;
+let ultimoDia = "";
 
-// Las consultas y los envíos van de a uno, en fila: así un mensaje nunca se dibuja dos veces
-// ni en desorden aunque el envío y la consulta de los 3 segundos coincidan.
 let pedidos = Promise.resolve();
 function enFila(tarea) {
     pedidos = pedidos.then(tarea).catch(function () { });
     return pedidos;
 }
 
-// Si la sesión se cerró o ya no es integrante, se va de la página
 function revisarRespuesta(respuesta) {
     if (respuesta.status === 401) window.location.href = "/Cuenta/IniciarSesion";
     if (respuesta.status === 403) window.location.href = "/Grupos";
@@ -28,18 +20,15 @@ function revisarRespuesta(respuesta) {
     return respuesta;
 }
 
-// Devuelve { mensajes, encuestas }: los mensajes nuevos y cómo están todas las encuestas del grupo
 async function traerMensajesNuevos() {
     const respuesta = revisarRespuesta(await fetch("/Grupos/Mensajes?id=" + idGrupo + "&desde=" + ultimoId));
     const datos = await respuesta.json();
     const mensajes = datos.mensajes;
 
-    // Se baja hasta el final solo si ya estaba abajo (o es la primera carga), para no cortarle la lectura
     const estabaAbajo = ultimoId === 0 ||
         listaMensajes.scrollHeight - listaMensajes.scrollTop - listaMensajes.clientHeight < 80;
 
     mensajes.forEach(dibujarMensaje);
-    // Después de dibujar los mensajes, así las encuestas nuevas ya tienen su tarjeta
     actualizarEncuestas(datos.encuestas);
 
     if (mensajes.length === 0) return;
@@ -61,7 +50,6 @@ function dibujarMensaje(mensaje) {
 
     const fila = document.createElement("div");
 
-    // Mensaje encuesta: va la tarjeta vacía y la llena actualizarEncuestas
     if (mensaje.idPlan) {
         fila.className = "mensaje mensaje-encuesta" + (mensaje.esMio ? " mensaje-mio" : "");
         fila.innerHTML = (mensaje.esMio ? "" : '<span class="avatar avatar-mensaje"></span>') + '<div class="encuesta"></div>';
@@ -86,13 +74,11 @@ function dibujarMensaje(mensaje) {
         fila.querySelector(".mensaje-autor").textContent = mensaje.nombre;
     }
 
-    // textContent para que un mensaje con "<" o ">" no se interprete como HTML
     fila.querySelector(".mensaje-texto p").textContent = mensaje.contenido;
     fila.querySelector(".mensaje-hora").textContent = mensaje.hora;
     listaMensajes.appendChild(fila);
 }
 
-// La foto de perfil de quien escribió; si no tiene, sus iniciales en el círculo
 function ponerAvatar(avatar, mensaje) {
     if (!mensaje.foto) {
         avatar.textContent = mensaje.iniciales;
@@ -107,9 +93,6 @@ function ponerAvatar(avatar, mensaje) {
     avatar.appendChild(foto);
 }
 
-// ---------- Encuestas de los planes (07 y 07e) ----------
-
-// Solo se vuelve a dibujar la encuesta que cambió (alguien votó o el creador la confirmó)
 function actualizarEncuestas(encuestas) {
     encuestas.forEach(function (encuesta) {
         const tarjeta = listaMensajes.querySelector('.encuesta[data-id-plan="' + encuesta.id + '"]');
@@ -121,8 +104,6 @@ function actualizarEncuestas(encuestas) {
     });
 }
 
-// La encuesta tiene dos partes con el mismo diseño: LUGAR y HORARIO.
-// estado: "votacion", "confirmado" o "cancelado".
 function dibujarEncuesta(tarjeta, encuesta) {
     const confirmado = encuesta.estado === "confirmado";
     const cancelado = encuesta.estado === "cancelado";
@@ -152,7 +133,6 @@ function dibujarEncuesta(tarjeta, encuesta) {
     if (cancelado) subtitulo = encuesta.textoDia + " · El plan se canceló";
     tarjeta.querySelector(".encuesta-subtitulo").textContent = subtitulo;
 
-    // Resaltado: mi voto mientras se vota; el que ganó cuando está confirmado; ninguno si se canceló
     const lugarResaltado = abierto ? encuesta.miVoto : confirmado ? encuesta.idElegido : null;
     const horarioResaltado = abierto ? encuesta.miVotoHorario : confirmado ? encuesta.idHorarioElegido : null;
 
@@ -178,7 +158,6 @@ function dibujarEncuesta(tarjeta, encuesta) {
     tarjeta.querySelector(".encuesta-pie a").href = "/Planes/Detalle/" + encuesta.id;
 }
 
-// Una opción con el radio del kit, cantidad de votos y barra. tipo: "lugar" u "horario" (el horario no lleva detalle).
 function crearOpcionEncuesta(encuesta, tipo, id, nombre, detalle, votos, porcentaje, resaltada, foto) {
     const abierto = encuesta.estado === "votacion";
     const fila = document.createElement("label");
@@ -209,7 +188,6 @@ function crearOpcionEncuesta(encuesta, tipo, id, nombre, detalle, votos, porcent
     return fila;
 }
 
-// Votar: se toca una opción de lugar o de horario. Se pueden cambiar los dos mientras esté En votación.
 if (listaMensajes) {
     listaMensajes.addEventListener("change", function (evento) {
         const radio = evento.target;
@@ -226,7 +204,6 @@ if (listaMensajes) {
                 body: JSON.stringify(datos)
             }));
             const resultado = await respuesta.json();
-            // Si el voto no se guardó, la tarjeta se vuelve a dibujar como está en la base (el radio vuelve atrás)
             if (!resultado.ok) tarjeta.dataset.datos = "";
             await traerMensajesNuevos();
             if (!resultado.ok) mostrarErrorEncuesta(tarjeta, radio.dataset.tipo, resultado.mensaje);
@@ -234,8 +211,6 @@ if (listaMensajes) {
     });
 }
 
-// Estado de error del kit (ícono de atención + texto rojo) debajo de LUGAR o de HORARIO.
-// Se saca solo cuando la encuesta se vuelve a dibujar (alguien vota).
 function mostrarErrorEncuesta(tarjeta, tipo, mensaje) {
     const opciones = tarjeta.querySelector(tipo === "horario" ? ".encuesta-horarios" : ".encuesta-lugares");
     if (!opciones) return;
@@ -248,20 +223,17 @@ function mostrarErrorEncuesta(tarjeta, tipo, mensaje) {
     opciones.after(error);
 }
 
-// Reemplaza la lista "Chats" por la que arma el servidor (_Chats.cshtml)
 async function actualizarListaChats() {
     const respuesta = revisarRespuesta(await fetch("/Grupos/ListaChats?abierto=" + idGrupo));
     const html = await respuesta.text();
     document.querySelector(".panel-chats").outerHTML = html;
 }
 
-// Primero los mensajes (que marcan el chat como leído) y después la lista, así el abierto queda sin no leídos
 async function actualizar() {
     if (idGrupo) await traerMensajesNuevos();
     await actualizarListaChats();
 }
 
-// Enter dentro del campo también manda el formulario
 if (formularioMensaje) {
     formularioMensaje.addEventListener("submit", function (evento) {
         evento.preventDefault();
@@ -288,7 +260,6 @@ if (formularioMensaje) {
 
 if (idGrupo) enFila(traerMensajesNuevos);
 
-// Cada 3 segundos, si la consulta anterior ya terminó
 let consultando = false;
 setInterval(function () {
     if (consultando) return;
@@ -297,8 +268,6 @@ setInterval(function () {
         consultando = false;
     });
 }, 3000);
-
-// ---------- 07g · Crear grupo ----------
 
 const dialogoGrupo = document.getElementById("dialogoCrearGrupo");
 const formularioGrupo = document.getElementById("formularioGrupo");
@@ -350,12 +319,10 @@ function actualizarContador() {
     contadorSeleccionados.textContent = cantidad + (cantidad === 1 ? " seleccionado" : " seleccionados");
 }
 
-// "Julián" se encuentra escribiendo "julian"
 function sinAcentos(texto) {
     return texto.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 }
 
-// El buscador solo esconde filas: los que ya estaban marcados siguen marcados
 buscarAmigos.addEventListener("input", function () {
     const buscado = sinAcentos(buscarAmigos.value.trim());
     listaAmigos.querySelectorAll(".amigo").forEach(function (fila) {
@@ -369,7 +336,6 @@ document.getElementById("botonSubirFoto").addEventListener("click", function () 
     campoFoto.click();
 });
 
-// Muestra la foto elegida adentro del círculo
 campoFoto.addEventListener("change", function () {
     fotoNuevaCirculo.textContent = "+";
     if (campoFoto.files.length === 0) return;
@@ -390,7 +356,6 @@ document.getElementById("cancelarCrearGrupo").addEventListener("click", function
 
 formularioGrupo.querySelector(".aviso-cerrar").addEventListener("click", ocultarAviso);
 
-// Se manda como formulario (no JSON) porque lleva la foto
 formularioGrupo.addEventListener("submit", async function (evento) {
     evento.preventDefault();
     ocultarAviso();
@@ -429,15 +394,12 @@ function ocultarAviso() {
     document.getElementById("aviso").hidden = true;
 }
 
-// El ícono de "Chats" abre el modal. La lista se reemplaza cada 3 segundos, por eso se escucha en document.
 document.addEventListener("click", function (evento) {
     if (evento.target.closest(".panel-chats-crear")) {
         evento.preventDefault();
         abrirCrearGrupo();
     }
 });
-
-// ---------- 07b · Crear plan ----------
 
 const dialogoPlan = document.getElementById("dialogoCrearPlan");
 
@@ -462,7 +424,6 @@ if (dialogoPlan) {
             chip.setAttribute("aria-pressed", "false");
         });
 
-        // Si viene desde el Detalle de un restaurante, ese lugar va en el primer campo (solo la primera vez)
         if (dialogoPlan.dataset.lugarId) {
             const primero = camposLugar[0].querySelector(".lugar-plan-buscar");
             primero.value = dialogoPlan.dataset.lugarTexto;
@@ -480,7 +441,6 @@ if (dialogoPlan) {
             .map(function (chip) { return chip.dataset.horario; });
     }
 
-    // Selección múltiple: cada chip se marca y desmarca. Hasta 3 horarios.
     chipsHorario.forEach(function (chip) {
         chip.addEventListener("click", function () {
             limpiarErrorCampo(campoHorarios);
@@ -493,21 +453,18 @@ if (dialogoPlan) {
         });
     });
 
-    // Al escribir en un campo con error, se le saca el error
     [nombrePlan, diaPlan].forEach(function (input) {
         input.addEventListener("input", function () {
             limpiarErrorCampo(input.closest(".campo"));
         });
     });
 
-    // 07c · Cada campo de lugar busca mientras escribís (espera 250 ms a que deje de escribir)
     camposLugar.forEach(function (campo) {
         const input = campo.querySelector(".lugar-plan-buscar");
         const resultados = campo.querySelector(".resultados-lugares");
         let espera = null;
 
         input.addEventListener("input", function () {
-            // Si cambia el texto, el lugar que había elegido ya no vale
             input.dataset.idLugar = "";
             limpiarErrorCampo(campo);
             clearTimeout(espera);
@@ -525,7 +482,6 @@ if (dialogoPlan) {
             cerrarResultados(campo);
         });
 
-        // Escape cierra la lista sin cerrar el modal
         input.addEventListener("keydown", function (evento) {
             if (evento.key === "Escape" && !resultados.hidden) {
                 evento.preventDefault();
@@ -533,7 +489,6 @@ if (dialogoPlan) {
             }
         });
 
-        // Así el clic en un resultado no le saca el foco al campo antes de elegirlo
         resultados.addEventListener("mousedown", function (evento) {
             evento.preventDefault();
         });
@@ -544,7 +499,6 @@ if (dialogoPlan) {
         const resultados = campo.querySelector(".resultados-lugares");
         const respuesta = revisarRespuesta(await fetch("/Planes/BuscarLugares?idGrupo=" + idGrupo + "&texto=" + encodeURIComponent(texto)));
         const datos = await respuesta.json();
-        // Si mientras tanto siguió escribiendo, esta respuesta ya no sirve
         if (input.value.trim() !== texto) return;
 
         resultados.innerHTML = "";
@@ -630,7 +584,6 @@ if (dialogoPlan) {
         formularioPlan.querySelectorAll(".campo").forEach(limpiarErrorCampo);
         document.getElementById("avisoPlan").hidden = true;
 
-        // Si escribió en un campo de lugar pero no eligió nada de la lista
         for (const campo of camposLugar) {
             const input = campo.querySelector(".lugar-plan-buscar");
             if (input.value.trim() !== "" && !input.dataset.idLugar) {
@@ -661,7 +614,6 @@ if (dialogoPlan) {
             const resultado = await respuesta.json();
             if (resultado.ok) {
                 dialogoPlan.close();
-                // La encuesta aparece en el chat como un mensaje más
                 enFila(actualizar);
             } else {
                 mostrarErrorCampo(formularioPlan.querySelector('[data-campo="' + resultado.campo + '"]'), resultado.mensaje);
@@ -685,7 +637,6 @@ if (dialogoPlan) {
     if (new URLSearchParams(window.location.search).get("plan") === "1") abrirCrearPlan();
 }
 
-// Estado de error del kit: ícono de atención + tooltip negro (igual que en cuenta.js)
 function mostrarErrorCampo(campo, mensaje) {
     campo.classList.add("campo-con-error");
 
@@ -696,7 +647,6 @@ function mostrarErrorCampo(campo, mensaje) {
     error.querySelector(".tooltip").textContent = mensaje;
     entrada.appendChild(error);
 
-    // Los horarios no tienen input: se enfoca el primer chip
     campo.querySelector("input, button").focus();
 }
 
@@ -706,7 +656,6 @@ function limpiarErrorCampo(campo) {
     if (error) error.remove();
 }
 
-// Viene de otra pantalla: /Grupos?crear=1 abre Crear grupo y /Planes/NuevoPlan llega con ?plan=1
 const parametros = new URLSearchParams(window.location.search);
 if (parametros.get("crear") === "1") abrirCrearGrupo();
 if (parametros.has("crear") || parametros.has("plan") || parametros.has("lugar")) {

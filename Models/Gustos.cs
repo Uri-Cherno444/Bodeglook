@@ -1,13 +1,10 @@
 namespace Bodeglook.Models;
 
-// No es una tabla: las opciones fijas de "Gustos" (02c · Onboarding y 08c · Editar perfil).
-// Las restricciones y las zonas salen de las tablas Restricciones y Barrios.
 public static class Gustos
 {
     public static readonly string[] Frecuencias = { "Varias veces por semana", "Una vez por semana", "Cada tanto" };
     public static readonly string[] Companias = { "Amigos", "Pareja", "Familia", "Compañeros de trabajo" };
 
-    // Deja solo lo válido de lo que mandó el navegador: Id que existen, opciones de la lista y sin repetidos
     public static DatosGustos Limpiar(DatosGustos datos)
     {
         List<int> idsRestricciones = BD.ObtenerRestricciones().Select(r => r.Id).ToList();
@@ -21,8 +18,6 @@ public static class Gustos
         return limpios;
     }
 
-    // "Seguir" del paso 1 del onboarding. Guarda solo lo válido y devuelve { ok, destino }:
-    // si no marcó restricciones se saltea el paso 2 (no hay nada que filtrar).
     public static object Guardar(int idUsuario, DatosGustos datos)
     {
         DatosGustos gustos = Limpiar(datos);
