@@ -103,7 +103,7 @@ public class Usuarios
         if (BD.ExisteNombreUsuario(nombreUsuario, sesion.Id))
             return new { ok = false, campo = "usuario", mensaje = "Ese usuario ya existe. Probá con otro." };
 
-        Barrios? barrio = BD.ObtenerBarrios().FirstOrDefault(b => b.Id == idBarrio);
+        Barrios? barrio = BD.ObtenerBarrio(idBarrio);
         if (barrio == null)
             return new { ok = false, campo = "ubicacion", mensaje = "Elegí tu ubicación." };
 

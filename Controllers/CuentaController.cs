@@ -23,7 +23,7 @@ public class CuentaController : Controller
         Usuarios usuario = Sesion.Leer(HttpContext.Session)!;
         ViewBag.Restricciones = BD.ObtenerRestricciones();
         ViewBag.Barrios = BD.ObtenerBarrios();
-        ViewBag.Marcadas = BD.ObtenerRestriccionesDeUsuario(usuario.Id).Select(r => r.Id).ToList();
+        ViewBag.Marcadas = BD.ObtenerIdsRestriccionesDeUsuario(usuario.Id);
         ViewBag.ZonasMarcadas = BD.ObtenerZonasDeUsuario(usuario.Id);
         ViewBag.CompaniasMarcadas = BD.ObtenerCompaniasDeUsuario(usuario.Id);
         ViewBag.FrecuenciaMarcada = BD.ObtenerDatosEdicion(usuario.Id)?.Frecuencia;
@@ -35,7 +35,7 @@ public class CuentaController : Controller
         if (!Sesion.HayUsuario(HttpContext.Session)) return RedirectToAction("IniciarSesion");
 
         Usuarios usuario = Sesion.Leer(HttpContext.Session)!;
-        List<string> nombres = BD.ObtenerRestriccionesDeUsuario(usuario.Id).Select(r => r.Nombre!).ToList();
+        List<string> nombres = BD.ObtenerNombresRestriccionesDeUsuario(usuario.Id);
         if (nombres.Count == 0) return RedirectToAction("Inicio", "Home");
 
         ViewBag.TextoRestricciones = Restricciones.UnirConY(nombres);

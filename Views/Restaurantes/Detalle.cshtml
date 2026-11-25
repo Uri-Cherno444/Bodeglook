@@ -22,7 +22,12 @@
         </a>
         <div class="detalle-banner-acciones">
             <span class="detalle-banner-puntaje" id="puntajeBanner" hidden="@(Model.Puntaje == null)">
-                <span class="texto-puntaje">@Model.TextoPuntaje()</span> ★
+                <span class="puntaje-estrellas" data-tamano="32">
+                    @if (Model.Puntaje != null)
+                    {
+                        @await Html.PartialAsync("_Estrellas", Model.Puntaje.Value, new ViewDataDictionary(ViewData) { { "Tamaño", 32 } })
+                    }
+                </span>
             </span>
             <button type="button"
                     class="detalle-banner-favorito boton-favorito @(Model.EsFavorito ? "es-favorito" : "")"
@@ -44,7 +49,14 @@
                     {
                         <span class="chip chip-crema">@Model.Categoria</span>
                     }
-                    <span class="puntaje" id="puntajeTitulo" hidden="@(Model.Puntaje == null)">★ <span class="texto-puntaje">@Model.TextoPuntaje()</span></span>
+                    <span class="puntaje" id="puntajeTitulo" hidden="@(Model.Puntaje == null)">
+                        <span class="puntaje-estrellas" data-tamano="20">
+                            @if (Model.Puntaje != null)
+                            {
+                                @await Html.PartialAsync("_Estrellas", Model.Puntaje.Value, new ViewDataDictionary(ViewData) { { "Tamaño", 20 } })
+                            }
+                        </span>
+                    </span>
                     <span class="detalle-cantidad" id="cantidadResenas">@Model.TextoCantidadResenas()</span>
                     @if (Model.Barrio != null)
                     {
@@ -134,12 +146,7 @@
                                     <span class="resena-nombre">@resena.NombreCompleto</span>
                                     <span class="resena-fecha">@resena.TextoHace()</span>
                                 </div>
-                                <div class="estrellas" aria-label="@resena.Puntaje de 5">
-                                    @for (int estrella = 1; estrella <= 5; estrella++)
-                                    {
-                                        <img src="@(estrella <= resena.Puntaje ? "/img/icono-estrella-llena.svg" : "/img/icono-estrella-vacia.svg")" width="16" height="16" alt="" />
-                                    }
-                                </div>
+                                @await Html.PartialAsync("_Estrellas", (double)resena.Puntaje)
                             </div>
                             @if (resena.Comentario != null)
                             {
@@ -240,8 +247,8 @@
                         @for (int nota = 1; nota <= 5; nota++)
                         {
                             <label class="nota">
-                                <input type="radio" name="@dimensiones[i, 0]" value="@nota" />
-                                <span>@nota</span>
+                                <input type="radio" name="@dimensiones[i, 0]" value="@nota" aria-label="@(nota == 1 ? "1 estrella" : nota + " estrellas")" />
+                                <span aria-hidden="true"></span>
                             </label>
                         }
                     </div>

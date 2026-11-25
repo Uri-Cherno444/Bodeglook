@@ -34,9 +34,8 @@ public class TarjetaRestaurante
     public static List<TarjetaRestaurante> CargarTodos(int idUsuario)
     {
         List<TarjetaRestaurante> lugares = BD.ObtenerRestaurantesParaBuscar();
-        ILookup<int, int> restricciones = BD.ObtenerRestriccionesDeTodosLosRestaurantes()
-            .ToLookup(r => r.IdRestaurante ?? 0, r => r.IdRestriccion ?? 0);
-        HashSet<int> favoritos = BD.ObtenerIdsFavoritos(idUsuario).ToHashSet();
+        ILookup<int, int> restricciones = BD.ObtenerRestriccionesPorRestaurante();
+        HashSet<int> favoritos = BD.ObtenerIdsFavoritos(idUsuario);
 
         foreach (TarjetaRestaurante lugar in lugares)
         {
@@ -91,7 +90,7 @@ public class TarjetaRestaurante
     public static List<TarjetaRestaurante> Recomendados(int cantidad, int idUsuario, bool soloApto, int? idRestriccion)
     {
         List<TarjetaRestaurante> todos = CargarTodos(idUsuario);
-        List<int> restriccionesUsuario = BD.ObtenerRestriccionesDeUsuario(idUsuario).Select(r => r.Id).ToList();
+        List<int> restriccionesUsuario = BD.ObtenerIdsRestriccionesDeUsuario(idUsuario);
         List<int> zonas = BD.ObtenerZonasDeUsuario(idUsuario);
         int? barrioUsuario = BD.ObtenerBarrioDeUsuario(idUsuario)?.Id;
 

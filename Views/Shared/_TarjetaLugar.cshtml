@@ -1,4 +1,3 @@
-@using System.Globalization
 @model Bodeglook.Models.TarjetaRestaurante
 <article class="tarjeta-lugar" data-id-restaurante="@Model.Id">
     <div class="tarjeta-lugar-foto">
@@ -16,7 +15,7 @@
         <a class="tarjeta-lugar-nombre tarjeta-lugar-enlace" href="/Restaurantes/Detalle/@Model.Id" title="@Model.Nombre">@Model.Nombre</a>
         @if (Model.Puntaje != null)
         {
-            <span class="puntaje">★ @Model.Puntaje.Value.ToString("0.0", CultureInfo.InvariantCulture)</span>
+            @await Html.PartialAsync("_Estrellas", Model.Puntaje.Value)
         }
         else
         {

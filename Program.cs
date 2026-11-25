@@ -11,6 +11,12 @@ Geoapify.ApiKey = builder.Configuration["Geoapify:ApiKey"] ?? "";
 
 var app = builder.Build();
 
+if (Geoapify.ApiKey == "")
+{
+    app.Logger.LogWarning("Geoapify: falta la API key, así que no se van a buscar lugares nuevos. " +
+        "Cargala con: dotnet user-secrets set \"Geoapify:ApiKey\" \"TU_API_KEY\" y volvé a ejecutar.");
+}
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");

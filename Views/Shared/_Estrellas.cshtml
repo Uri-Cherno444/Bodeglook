@@ -1,0 +1,15 @@
+@using System.Globalization
+@model double
+@{
+    // Puntaje de 1 a 5 en estrellas, redondeado a la media estrella más cercana. En el navegador lo hace crearEstrellas (site.js).
+    double redondeado = Math.Round(Model * 2, MidpointRounding.AwayFromZero) / 2;
+    int tamaño = ViewData["Tamaño"] as int? ?? 16;
+    string texto = Model.ToString("0.#", CultureInfo.InvariantCulture) + " de 5 estrellas";
+}
+<span class="estrellas" role="img" aria-label="@texto" title="@texto">
+    @for (int estrella = 1; estrella <= 5; estrella++)
+    {
+        string tipo = redondeado >= estrella ? "llena" : redondeado >= estrella - 0.5 ? "media" : "vacia";
+        <img src="/img/icono-estrella-@(tipo).svg" width="@tamaño" height="@tamaño" alt="" />
+    }
+</span>

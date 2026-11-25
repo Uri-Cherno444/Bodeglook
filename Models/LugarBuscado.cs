@@ -33,11 +33,11 @@ public class LugarBuscado
         List<string> restriccionesGrupo = BD.ObtenerRestriccionesDeGrupo(idGrupo);
         List<LugarBuscado> encontrados = texto == "" ? new List<LugarBuscado>() : BD.BuscarLugaresParaGrupo(idGrupo, texto);
 
-        List<int> idsGrupo = BD.ObtenerRestricciones().Where(r => restriccionesGrupo.Contains(r.Nombre!)).Select(r => r.Id).ToList();
-        List<RestriccionesRestaurantes> deLosLugares = BD.ObtenerRestriccionesDeTodosLosRestaurantes();
+        List<int> idsGrupo = BD.ObtenerIdsRestriccionesPorNombre(restriccionesGrupo);
+        ILookup<int, int> deLosLugares = BD.ObtenerRestriccionesPorRestaurante();
         foreach (LugarBuscado lugar in encontrados)
         {
-            List<int> delLugar = deLosLugares.Where(r => r.IdRestaurante == lugar.Id).Select(r => r.IdRestriccion ?? 0).ToList();
+            List<int> delLugar = deLosLugares[lugar.Id].ToList();
             lugar.AptoParaTodos = idsGrupo.All(id => delLugar.Contains(id));
         }
 

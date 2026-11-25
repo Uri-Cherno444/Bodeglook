@@ -9,8 +9,9 @@ public static class Geoapify
     private const string Servidor = "https://api.geoapify.com";
     private const int CreditosPorDia = 2500;
     private const int PausaEntrePedidos = 250;
-    private const int LugaresPorPagina = 100;
-    private const int MaximoPorBarrio = 500;
+    private const int LugaresPorPagina = 40;
+    private const int MaximoPorBarrio = 100;
+    private const int GuardadosPorBarrio = 20;
 
     private const string FiltroCABA = "rect:-58.5315,-34.7056,-58.3350,-34.5265";
 
@@ -55,15 +56,16 @@ public static class Geoapify
             {
                 if (!respuesta.IsSuccessStatusCode)
                 {
-                    Console.WriteLine("Geoapify respondió con el código " + (int)respuesta.StatusCode + ".");
+                    Console.WriteLine("Geoapify respondió con el código " + (int)respuesta.StatusCode + ": " +
+                        await respuesta.Content.ReadAsStringAsync());
                     return null;
                 }
                 return JsonDocument.Parse(await respuesta.Content.ReadAsStringAsync());
             }
         }
-        catch
+        catch (Exception error)
         {
-            Console.WriteLine("Geoapify no respondió.");
+            Console.WriteLine("Geoapify no respondió: " + error.Message);
             return null;
         }
         finally
@@ -139,7 +141,7 @@ public static class Geoapify
 
     public static async Task<List<ResultadoImportacion>> ImportarBarrios(List<Barrios> barrios)
     {
-        Dictionary<string, int> categorias = BD.ObtenerCategorias().ToDictionary(c => c.Nombre!, c => c.Id);
+        Dictionary<string, int> categorias = BD.ObtenerIdsCategoriasPorNombre();
         List<ResultadoImportacion> resultados = new List<ResultadoImportacion>();
 
         foreach (Barrios barrio in barrios)
@@ -171,6 +173,7 @@ public static class Geoapify
 
                 foreach (LugarGeoapify lugar in pagina)
                 {
+                    if (resultado.Nuevos + resultado.Actualizados == GuardadosPorBarrio) break;
                     resultado.Traidos++;
                     if (string.IsNullOrWhiteSpace(lugar.Nombre)) { resultado.SinNombre++; continue; }
 
@@ -192,7 +195,7 @@ public static class Geoapify
                     }
                 }
 
-                if (pagina.Count < LugaresPorPagina) break;
+                if (pagina.Count < LugaresPorPagina || resultado.Nuevos + resultado.Actualizados == GuardadosPorBarrio) break;
             }
         }
         return resultados;
@@ -216,8 +219,8 @@ public static class Geoapify
             return 0;
         }
 
-        Dictionary<string, int> categorias = BD.ObtenerCategorias().ToDictionary(c => c.Nombre!, c => c.Id);
-        List<Barrios> barrios = BD.ObtenerBarriosConCoordenadas().Where(b => b.Latitud != null && b.Longitud != null).ToList();
+        Dictionary<string, int> categorias = BD.ObtenerIdsCategoriasPorNombre();
+        List<Barrios> barrios = BD.ObtenerBarriosUbicados();
         if (barrios.Count == 0) return 0;
 
         int guardados = 0;

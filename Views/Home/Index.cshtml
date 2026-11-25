@@ -1,5 +1,4 @@
-﻿@using System.Globalization
-@using Bodeglook.Models
+﻿@using Bodeglook.Models
 @{
     ViewData["Title"] = "Inicio";
     List<TarjetaRestaurante> lugares = ViewBag.Lugares;
@@ -110,7 +109,7 @@
                     <span class="tarjeta-lugar-nombre">@lugar.Nombre</span>
                     @if (lugar.Puntaje != null)
                     {
-                        <span class="puntaje">★ @lugar.Puntaje.Value.ToString("0.0", CultureInfo.InvariantCulture)</span>
+                        @await Html.PartialAsync("_Estrellas", lugar.Puntaje.Value)
                     }
                 </div>
                 <div class="tarjeta-lugar-detalle">
@@ -147,13 +146,7 @@
                     <span class="resena-nombre">Julián Pérez</span>
                     <span class="resena-fecha">Hace 2 días</span>
                 </div>
-                <div class="estrellas">
-                    <img src="~/img/icono-estrella-llena.svg" width="16" height="16" alt="" />
-                    <img src="~/img/icono-estrella-llena.svg" width="16" height="16" alt="" />
-                    <img src="~/img/icono-estrella-llena.svg" width="16" height="16" alt="" />
-                    <img src="~/img/icono-estrella-llena.svg" width="16" height="16" alt="" />
-                    <img src="~/img/icono-estrella-llena.svg" width="16" height="16" alt="" />
-                </div>
+                @await Html.PartialAsync("_Estrellas", 5.0)
             </div>
             <p class="resena-texto">El patio es hermoso y la tabla de quesos con el malbec fue un golazo. Atención de 10.</p>
         </div>
@@ -164,13 +157,7 @@
                     <span class="resena-nombre">Martina G.</span>
                     <span class="resena-fecha">Hace 1 semana</span>
                 </div>
-                <div class="estrellas">
-                    <img src="~/img/icono-estrella-llena.svg" width="16" height="16" alt="" />
-                    <img src="~/img/icono-estrella-llena.svg" width="16" height="16" alt="" />
-                    <img src="~/img/icono-estrella-llena.svg" width="16" height="16" alt="" />
-                    <img src="~/img/icono-estrella-llena.svg" width="16" height="16" alt="" />
-                    <img src="~/img/icono-estrella-vacia.svg" width="16" height="16" alt="" />
-                </div>
+                @await Html.PartialAsync("_Estrellas", 4.0)
             </div>
             <p class="resena-texto">Muy buena opción sin TACC, nos cuidaron mucho. Recomiendo reservar con tiempo.</p>
         </div>
@@ -181,13 +168,7 @@
                     <span class="resena-nombre">Nico Ramos</span>
                     <span class="resena-fecha">Hace 3 semanas</span>
                 </div>
-                <div class="estrellas">
-                    <img src="~/img/icono-estrella-llena.svg" width="16" height="16" alt="" />
-                    <img src="~/img/icono-estrella-llena.svg" width="16" height="16" alt="" />
-                    <img src="~/img/icono-estrella-llena.svg" width="16" height="16" alt="" />
-                    <img src="~/img/icono-estrella-llena.svg" width="16" height="16" alt="" />
-                    <img src="~/img/icono-estrella-llena.svg" width="16" height="16" alt="" />
-                </div>
+                @await Html.PartialAsync("_Estrellas", 5.0)
             </div>
             <p class="resena-texto">Fuimos en grupo y se adaptaron a todos. Volvemos seguro.</p>
         </div>

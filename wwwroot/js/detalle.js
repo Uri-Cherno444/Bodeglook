@@ -104,7 +104,6 @@ function crearTarjetaResena(resena) {
         '<div class="resena-autor">' +
         '  <span class="avatar"></span>' +
         '  <div class="resena-datos"><span class="resena-nombre"></span><span class="resena-fecha"></span></div>' +
-        '  <div class="estrellas"></div>' +
         '</div>';
 
     const avatar = tarjeta.querySelector(".avatar");
@@ -123,16 +122,7 @@ function crearTarjetaResena(resena) {
     tarjeta.querySelector(".resena-nombre").textContent = resena.nombre;
     tarjeta.querySelector(".resena-fecha").textContent = resena.hace;
 
-    const estrellas = tarjeta.querySelector(".estrellas");
-    estrellas.setAttribute("aria-label", resena.puntaje + " de 5");
-    for (let estrella = 1; estrella <= 5; estrella++) {
-        const imagen = document.createElement("img");
-        imagen.src = estrella <= resena.puntaje ? "/img/icono-estrella-llena.svg" : "/img/icono-estrella-vacia.svg";
-        imagen.width = 16;
-        imagen.height = 16;
-        imagen.alt = "";
-        estrellas.appendChild(imagen);
-    }
+    tarjeta.querySelector(".resena-autor").appendChild(crearEstrellas(resena.puntaje, 16));
 
     if (resena.comentario) {
         const texto = document.createElement("p");
@@ -221,10 +211,32 @@ function actualizarPuntajeGeneral() {
         return;
     }
     const promedio = elegidos.reduce(function (suma, puntaje) { return suma + puntaje; }, 0) / elegidos.length;
-    puntajeGeneral.textContent = promedio.toFixed(1).replace(".", ",");
+    puntajeGeneral.replaceChildren(crearEstrellas(promedio, 28));
 }
 
 formularioResena.addEventListener("change", actualizarPuntajeGeneral);
+
+function pintarNotas(grupo, hasta) {
+    grupo.querySelectorAll(".nota").forEach(function (nota) {
+        nota.classList.toggle("pintada", Number(nota.querySelector("input").value) <= hasta);
+    });
+}
+
+document.querySelectorAll(".notas").forEach(function (grupo) {
+    const dimension = grupo.querySelector("input").name;
+
+    function pintarElegida() {
+        pintarNotas(grupo, puntajeDe(dimension));
+    }
+
+    grupo.addEventListener("mouseover", function (evento) {
+        const nota = evento.target.closest(".nota");
+        if (nota) pintarNotas(grupo, Number(nota.querySelector("input").value));
+    });
+    grupo.addEventListener("mouseleave", pintarElegida);
+    grupo.addEventListener("change", pintarElegida);
+    pintarElegida();
+});
 
 const TIPOS_FOTO = ["image/jpeg", "image/png", "image/webp"];
 const TAMANO_MAXIMO_FOTO = 5 * 1024 * 1024;
@@ -335,8 +347,8 @@ document.querySelectorAll(".aviso-cerrar").forEach(function (boton) {
 });
 
 function actualizarPuntaje(puntaje, textoCantidad) {
-    document.querySelectorAll(".texto-puntaje").forEach(function (texto) {
-        texto.textContent = puntaje;
+    document.querySelectorAll(".puntaje-estrellas").forEach(function (lugar) {
+        lugar.replaceChildren(crearEstrellas(Number(puntaje), Number(lugar.dataset.tamano)));
     });
     document.getElementById("puntajeBanner").hidden = false;
     document.getElementById("puntajeTitulo").hidden = false;

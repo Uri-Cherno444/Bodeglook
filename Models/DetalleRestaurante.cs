@@ -1,5 +1,3 @@
-using System.Globalization;
-
 namespace Bodeglook.Models;
 
 public class DetalleRestaurante
@@ -30,12 +28,6 @@ public class DetalleRestaurante
     public int CantidadResenas { get; set; }
     public bool EsFavorito { get; set; }
     public List<string> Restricciones { get; set; } = new List<string>();
-
-    public string TextoPuntaje()
-    {
-        if (Puntaje == null) return "";
-        return Puntaje.Value.ToString("0.0", CultureInfo.InvariantCulture);
-    }
 
     public string TextoCantidadResenas()
     {

@@ -7,8 +7,8 @@ public static class Gustos
 
     public static DatosGustos Limpiar(DatosGustos datos)
     {
-        List<int> idsRestricciones = BD.ObtenerRestricciones().Select(r => r.Id).ToList();
-        List<int> idsBarrios = BD.ObtenerBarrios().Select(b => b.Id).ToList();
+        List<int> idsRestricciones = BD.ObtenerIdsRestricciones();
+        List<int> idsBarrios = BD.ObtenerIdsBarrios();
 
         DatosGustos limpios = new DatosGustos();
         limpios.Restricciones = datos.Restricciones.Where(id => idsRestricciones.Contains(id)).Distinct().ToList();

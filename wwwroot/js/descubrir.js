@@ -183,7 +183,7 @@ function mostrarResultados(resultados) {
         nombre.textContent = lugar.nombre;
         nombre.href = "/Restaurantes/Detalle/" + lugar.id;
 
-        tarjeta.querySelector(".resultado-categoria").textContent = textoCategoria(lugar);
+        pintarCategoria(tarjeta.querySelector(".resultado-categoria"), lugar);
         tarjeta.querySelector(".resultado-barrio").textContent = textoBarrio(lugar);
         pintarCorazon(tarjeta.querySelector(".boton-favorito"), lugar.esFavorito);
 
@@ -282,9 +282,14 @@ function pedirUbicacionYBuscar() {
     );
 }
 
-function textoCategoria(lugar) {
-    if (lugar.puntaje === null) return lugar.categoria + " · Sin reseñas todavía";
-    return lugar.categoria + " · ★ " + lugar.puntaje;
+function pintarCategoria(elemento, lugar) {
+    elemento.classList.add("estrellas-en-linea");
+    if (lugar.puntaje === null) {
+        elemento.textContent = lugar.categoria + " · Sin reseñas todavía";
+        return;
+    }
+    elemento.textContent = lugar.categoria + " · ";
+    elemento.appendChild(crearEstrellas(Number(lugar.puntaje), 14));
 }
 
 function mostrarPaginacion(pagina, totalPaginas) {
@@ -403,7 +408,7 @@ function crearTarjetaMapa(lugar) {
     else imagen.remove();
 
     tarjeta.querySelector(".mapa-tarjeta-nombre").textContent = lugar.nombre;
-    tarjeta.querySelector(".mapa-tarjeta-detalle").textContent = textoCategoria(lugar);
+    pintarCategoria(tarjeta.querySelector(".mapa-tarjeta-detalle"), lugar);
     return tarjeta;
 }
 

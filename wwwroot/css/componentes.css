@@ -813,7 +813,14 @@
 
 .estrellas {
     display: flex;
+    flex-shrink: 0;
     gap: 4px;
+}
+
+.estrellas-en-linea .estrellas {
+    display: inline-flex;
+    gap: 2px;
+    vertical-align: -2px;
 }
 
 .avatar {

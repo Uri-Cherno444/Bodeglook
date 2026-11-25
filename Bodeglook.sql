@@ -2562,7 +2562,7 @@ GO
 /* Guarda un lugar que trajo Geoapify. Si ya estaba (mismo IdGeoapify) lo actualiza.
    Devuelve 1 si es nuevo y 0 si ya estaba. */
 CREATE PROCEDURE [dbo].[GuardarLugarGeoapify]
-	@IdGeoapify VARCHAR(50),
+	@IdGeoapify VARCHAR(300),
 	@Nombre VARCHAR(100),
 	@Calle VARCHAR(50),
 	@Numero INT,

@@ -22,9 +22,9 @@ public static class BuscadorRestaurantes
         texto = (texto ?? "").Trim();
         if (texto.Length > 100) texto = texto.Substring(0, 100);
 
-        Barrios? barrioElegido = idBarrio == null ? null : BD.ObtenerBarrios().FirstOrDefault(b => b.Id == idBarrio);
+        Barrios? barrioElegido = idBarrio == null ? null : BD.ObtenerBarrio(idBarrio);
         if (barrioElegido == null) idBarrio = null;
-        if (idCategoria != null && !BD.ObtenerCategorias().Any(c => c.Id == idCategoria)) idCategoria = null;
+        if (idCategoria != null && !BD.ExisteCategoria(idCategoria.Value)) idCategoria = null;
 
         string ordenFinal = orden == "puntaje" ? "puntaje" : "cerca";
 
@@ -67,7 +67,7 @@ public static class BuscadorRestaurantes
         filtroCiudad.IdCategoria = idCategoria;
 
         List<TarjetaRestaurante> todos = TarjetaRestaurante.CargarTodos(idUsuario);
-        List<int> restriccionesUsuario = BD.ObtenerRestriccionesDeUsuario(idUsuario).Select(r => r.Id).ToList();
+        List<int> restriccionesUsuario = BD.ObtenerIdsRestriccionesDeUsuario(idUsuario);
         List<TarjetaRestaurante> encontrados = Filtrar(todos, filtro, restriccionesUsuario);
 
         if (encontrados.Count == 0 && texto != "" && pagina <= 1 && !hayZona

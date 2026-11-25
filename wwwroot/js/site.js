@@ -48,3 +48,26 @@ if (botonAvatar) {
         dialogo.close();
     });
 }
+
+// Puntaje de 1 a 5 en estrellas, redondeado a la media estrella más cercana. En el servidor lo hace _Estrellas.cshtml.
+function crearEstrellas(puntaje, tamano) {
+    const redondeado = Math.round(puntaje * 2) / 2;
+    const texto = Math.round(puntaje * 10) / 10 + " de 5 estrellas";
+
+    const estrellas = document.createElement("span");
+    estrellas.className = "estrellas";
+    estrellas.setAttribute("role", "img");
+    estrellas.setAttribute("aria-label", texto);
+    estrellas.title = texto;
+
+    for (let estrella = 1; estrella <= 5; estrella++) {
+        const tipo = redondeado >= estrella ? "llena" : redondeado >= estrella - 0.5 ? "media" : "vacia";
+        const imagen = document.createElement("img");
+        imagen.src = "/img/icono-estrella-" + tipo + ".svg";
+        imagen.width = tamano;
+        imagen.height = tamano;
+        imagen.alt = "";
+        estrellas.appendChild(imagen);
+    }
+    return estrellas;
+}

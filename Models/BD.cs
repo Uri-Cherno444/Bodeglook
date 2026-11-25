@@ -76,12 +76,32 @@ public static class BD
         }
     }
 
+    public static List<int> ObtenerIdsRestricciones()
+    {
+        return ObtenerRestricciones().Select(r => r.Id).ToList();
+    }
+
+    public static List<int> ObtenerIdsRestriccionesPorNombre(List<string> nombres)
+    {
+        return ObtenerRestricciones().Where(r => nombres.Contains(r.Nombre!)).Select(r => r.Id).ToList();
+    }
+
     public static List<Barrios> ObtenerBarrios()
     {
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
             return conexion.Query<Barrios>("ListarBarrios", commandType: CommandType.StoredProcedure).ToList();
         }
+    }
+
+    public static List<int> ObtenerIdsBarrios()
+    {
+        return ObtenerBarrios().Select(b => b.Id).ToList();
+    }
+
+    public static Barrios? ObtenerBarrio(int? idBarrio)
+    {
+        return ObtenerBarrios().FirstOrDefault(b => b.Id == idBarrio);
     }
 
     public static List<Categorias> ObtenerCategorias()
@@ -92,12 +112,27 @@ public static class BD
         }
     }
 
+    public static bool ExisteCategoria(int idCategoria)
+    {
+        return ObtenerCategorias().Any(c => c.Id == idCategoria);
+    }
+
+    public static Dictionary<string, int> ObtenerIdsCategoriasPorNombre()
+    {
+        return ObtenerCategorias().ToDictionary(c => c.Nombre!, c => c.Id);
+    }
+
     public static List<Barrios> ObtenerBarriosConCoordenadas()
     {
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
             return conexion.Query<Barrios>("ListarBarriosConCoordenadas", commandType: CommandType.StoredProcedure).ToList();
         }
+    }
+
+    public static List<Barrios> ObtenerBarriosUbicados()
+    {
+        return ObtenerBarriosConCoordenadas().Where(b => b.Latitud != null && b.Longitud != null).ToList();
     }
 
     public static Barrios? ObtenerBarrioDeUsuario(int idUsuario)
@@ -164,6 +199,16 @@ public static class BD
                 new { idUsuario },
                 commandType: CommandType.StoredProcedure).ToList();
         }
+    }
+
+    public static List<int> ObtenerIdsRestriccionesDeUsuario(int idUsuario)
+    {
+        return ObtenerRestriccionesDeUsuario(idUsuario).Select(r => r.Id).ToList();
+    }
+
+    public static List<string> ObtenerNombresRestriccionesDeUsuario(int idUsuario)
+    {
+        return ObtenerRestriccionesDeUsuario(idUsuario).Select(r => r.Nombre!).ToList();
     }
 
     public static Usuarios? ObtenerDatosEdicion(int idUsuario)
@@ -411,6 +456,11 @@ public static class BD
                 new { idUsuario },
                 commandType: CommandType.StoredProcedure).ToList();
         }
+    }
+
+    public static List<int> ObtenerIdsOtrosUsuarios(int idUsuario)
+    {
+        return ObtenerOtrosUsuarios(idUsuario).Select(u => u.Id).ToList();
     }
 
     public static List<TarjetaPlan> ObtenerPlanesDeUsuario(int idUsuario, bool? confirmado)
@@ -683,13 +733,20 @@ public static class BD
         }
     }
 
-    public static List<int> ObtenerIdsFavoritos(int idUsuario)
+    // Agrupa por restaurante: restricciones[idRestaurante] da los ids de las restricciones que cumple
+    public static ILookup<int, int> ObtenerRestriccionesPorRestaurante()
+    {
+        return ObtenerRestriccionesDeTodosLosRestaurantes()
+            .ToLookup(r => r.IdRestaurante ?? 0, r => r.IdRestriccion ?? 0);
+    }
+
+    public static HashSet<int> ObtenerIdsFavoritos(int idUsuario)
     {
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
         {
             return conexion.Query<int>("ListarFavoritosUsuario",
                 new { idUsuario },
-                commandType: CommandType.StoredProcedure).ToList();
+                commandType: CommandType.StoredProcedure).ToHashSet();
         }
     }
 

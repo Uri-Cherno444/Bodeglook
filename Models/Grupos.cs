@@ -29,7 +29,7 @@ public class Grupos
         if (nombre == "") return new { ok = false, mensaje = "Poné el nombre del grupo." };
         if (nombre.Length > 50) return new { ok = false, mensaje = "El nombre del grupo puede tener hasta 50 caracteres." };
 
-        List<int> existentes = BD.ObtenerOtrosUsuarios(idCreador).Select(u => u.Id).ToList();
+        List<int> existentes = BD.ObtenerIdsOtrosUsuarios(idCreador);
         List<int> validos = integrantes.Where(id => existentes.Contains(id)).Distinct().ToList();
         if (validos.Count == 0) return new { ok = false, mensaje = "Sumá al menos un amigo." };
 
