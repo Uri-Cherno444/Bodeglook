@@ -448,6 +448,44 @@ public static class BD
         }
     }
 
+    public static int? ObtenerIdCreadorGrupo(int idGrupo)
+    {
+        using (SqlConnection conexion = new SqlConnection(CadenaConexion))
+        {
+            return conexion.QueryFirstOrDefault<int?>("ObtenerCreadorGrupo",
+                new { idGrupo },
+                commandType: CommandType.StoredProcedure);
+        }
+    }
+
+    // Si foto es null el grupo conserva la que tenía. Se guarda todo junto o nada.
+    public static void ActualizarGrupo(int idGrupo, string nombre, string? foto, List<int> idsAgregar, List<int> idsQuitar)
+    {
+        using (SqlConnection conexion = new SqlConnection(CadenaConexion))
+        {
+            conexion.Open();
+            using (SqlTransaction transaccion = conexion.BeginTransaction())
+            {
+                conexion.Execute("ActualizarGrupo",
+                    new { idGrupo, nombre, foto }, transaccion,
+                    commandType: CommandType.StoredProcedure);
+                foreach (int idUsuario in idsQuitar)
+                {
+                    conexion.Execute("QuitarUsuarioDeGrupo",
+                        new { idUsuario, idGrupo }, transaccion,
+                        commandType: CommandType.StoredProcedure);
+                }
+                foreach (int idUsuario in idsAgregar)
+                {
+                    conexion.Execute("AgregarUsuarioAGrupo",
+                        new { idUsuario, idGrupo }, transaccion,
+                        commandType: CommandType.StoredProcedure);
+                }
+                transaccion.Commit();
+            }
+        }
+    }
+
     public static List<Usuarios> ObtenerOtrosUsuarios(int idUsuario)
     {
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
@@ -523,10 +561,10 @@ public static class BD
             if (encuesta == null) return null;
             encuesta.Opciones = conexion.Query<OpcionPlan>("ListarOpcionesPlan",
                 new { idPlan },
-                commandType: CommandType.StoredProcedure).ToList();
+                commandType: CommandType.StoredProcedure).DistinctBy(o => o.IdRestaurante).ToList();
             encuesta.Horarios = conexion.Query<OpcionHorario>("ListarHorariosPlan",
                 new { idPlan },
-                commandType: CommandType.StoredProcedure).ToList();
+                commandType: CommandType.StoredProcedure).DistinctBy(h => h.IdHorario).ToList();
             List<Participante> participantes = conexion.Query<Participante>("ListarParticipantesPlan",
                 new { idPlan },
                 commandType: CommandType.StoredProcedure).ToList();
@@ -562,7 +600,7 @@ public static class BD
         {
             return conexion.Query<LugarBuscado>("BuscarLugaresParaGrupo",
                 new { idGrupo, texto },
-                commandType: CommandType.StoredProcedure).ToList();
+                commandType: CommandType.StoredProcedure).DistinctBy(l => l.Id).ToList();
         }
     }
 
@@ -828,7 +866,7 @@ public static class BD
             List<Restricciones> restricciones = conexion.Query<Restricciones>("ListarRestriccionesRestaurante",
                 new { idRestaurante },
                 commandType: CommandType.StoredProcedure).ToList();
-            return restricciones.Select(restriccion => restriccion.Nombre!).ToList();
+            return restricciones.Select(restriccion => restriccion.Nombre!).Distinct().ToList();
         }
     }
 

@@ -3284,6 +3284,62 @@ BEGIN
     ORDER BY p.FechaSalida DESC;
 END
 GO
+/****** Object:  StoredProcedure [dbo].[ObtenerCreadorGrupo]  -- BD.ObtenerIdCreadorGrupo: el creador es el primer integrante que se sumó al grupo ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[ObtenerCreadorGrupo]
+    @idGrupo INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT ug.idUsuario
+    FROM UsuariosGrupos ug
+    WHERE ug.idGrupo = @idGrupo
+      AND NOT EXISTS (SELECT * FROM UsuariosGrupos anterior WHERE anterior.idGrupo = ug.idGrupo AND anterior.ID < ug.ID);
+END
+GO
+/****** Object:  StoredProcedure [dbo].[ActualizarGrupo]  -- BD.ActualizarGrupo (1 de 2): cambia el nombre y, si viene una, la foto ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[ActualizarGrupo]
+    @idGrupo INT,
+    @nombre VARCHAR(50),
+    @foto VARCHAR(100) = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    UPDATE Grupos SET Nombre = @nombre, Foto = ISNULL(@foto, Foto) WHERE ID = @idGrupo;
+END
+GO
+/****** Object:  StoredProcedure [dbo].[QuitarUsuarioDeGrupo]  -- BD.ActualizarGrupo (2 de 2): saca a un integrante y sus votos en los planes que siguen en votación ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[QuitarUsuarioDeGrupo]
+    @idUsuario INT,
+    @idGrupo INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    DELETE v
+    FROM Votos v
+    INNER JOIN Planes p ON p.ID = v.idPlan
+    WHERE v.idUsuario = @idUsuario AND p.idGrupo = @idGrupo AND p.Estado = 0;
+
+    DELETE FROM UsuariosGrupos WHERE idUsuario = @idUsuario AND idGrupo = @idGrupo;
+END
+GO
 USE [master]
 GO
 ALTER DATABASE [Bodeglook] SET  READ_WRITE 

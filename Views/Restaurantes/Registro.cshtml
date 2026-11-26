@@ -60,7 +60,7 @@
             <div class="campo" data-campo="barrio">
                 <label for="barrio">Barrio</label>
                 <div class="campo-entrada">
-                    <select id="barrio" name="barrio">
+                    <select id="barrio" name="barrio" class="sin-elegir">
                         <option value="" selected>Ej: Palermo</option>
                         @foreach (Barrios barrio in barrios)
                         {
@@ -73,7 +73,7 @@
             <div class="campo" data-campo="categoria">
                 <label for="categoria">Categoría</label>
                 <div class="campo-entrada">
-                    <select id="categoria" name="categoria">
+                    <select id="categoria" name="categoria" class="sin-elegir">
                         <option value="" selected>Ej: Parrilla</option>
                         @foreach (Categorias categoria in categorias)
                         {

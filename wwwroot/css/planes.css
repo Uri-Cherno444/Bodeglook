@@ -226,6 +226,7 @@
 
 .avatar-votante {
     width: 32px;
+    min-width: 32px;
     height: 32px;
     border-radius: 16px;
     font-size: 11px;
@@ -272,7 +273,8 @@
 }
 
 .detalle-plan-lateral {
-    flex: 0 0 380px;
+    width: 380px;
+    min-width: 380px;
     display: flex;
     flex-direction: column;
     gap: 20px;
@@ -296,6 +298,7 @@
 
 .avatar-participante {
     width: 36px;
+    min-width: 36px;
     height: 36px;
     border-radius: 18px;
     font-size: 13px;
@@ -392,7 +395,7 @@
     .detalle-plan-principal,
     .detalle-plan-lateral {
         width: 100%;
-        flex: none;
+        min-width: 0;
     }
 }
 

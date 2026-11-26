@@ -267,7 +267,7 @@
                 <div class="modal-perfil-grupo">
                     <h3>¿Qué querés ver?</h3>
                     <div class="modal-perfil-ver">
-                        <label class="modal-perfil-opcion">
+                        <label class="modal-perfil-opcion @(soloApto ? "modal-perfil-opcion-elegida" : "") @(restriccionesMarcadas.Count == 0 ? "modal-perfil-opcion-apagada" : "")">
                             <span class="casilla">
                                 <span class="casilla-texto">Solo lo apto para mí</span>
                                 <input type="radio" class="radio" name="soloApto" value="true" id="verSoloApto" checked="@soloApto" disabled="@(restriccionesMarcadas.Count == 0)" />
@@ -275,7 +275,7 @@
                             </span>
                             <span class="modal-perfil-opcion-texto">Inicio, Descubrir y los planes se filtran por tus restricciones.</span>
                         </label>
-                        <label class="modal-perfil-opcion">
+                        <label class="modal-perfil-opcion @(!soloApto ? "modal-perfil-opcion-elegida" : "")">
                             <span class="casilla">
                                 <span class="casilla-texto">Ver todo</span>
                                 <input type="radio" class="radio" name="soloApto" value="false" id="verTodo" checked="@(!soloApto)" />

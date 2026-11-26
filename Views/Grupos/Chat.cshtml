@@ -16,7 +16,7 @@
     {
         <section class="conversacion" id="conversacion" data-id-grupo="@Model.Id">
             <div class="conversacion-cabecera">
-                <span class="foto-grupo">
+                <span class="foto-grupo" id="fotoGrupo">
                     @if (Fotos.Avatar(Model.Foto) != null)
                     {
                         <img class="foto-grupo-imagen" src="@Model.Foto" width="64" height="64" alt="" />
@@ -27,9 +27,13 @@
                     }
                 </span>
                 <div class="conversacion-datos">
-                    <h1>@Model.Nombre</h1>
-                    <p>@ViewBag.Integrantes</p>
+                    <h1 id="nombreGrupoAbierto">@Model.Nombre</h1>
+                    <p id="integrantesGrupoAbierto">@ViewBag.Integrantes</p>
                 </div>
+                @if (ViewBag.EsCreador)
+                {
+                    <button type="button" class="boton boton-blanco" id="botonEditarGrupo">Editar grupo</button>
+                }
                 <button type="button" class="boton boton-secundario" id="botonCrearPlan">+ Crear plan</button>
             </div>
 
@@ -37,7 +41,7 @@
 
             <form class="conversacion-escribir" id="formularioMensaje">
                 <div class="campo campo-mensaje">
-                    <input type="text" id="campoMensaje" placeholder="Escribí un mensaje" aria-label="Escribí un mensaje" maxlength="1000" autocomplete="off" />
+                    <textarea id="campoMensaje" rows="1" placeholder="Escribí un mensaje" aria-label="Escribí un mensaje" maxlength="1000" autocomplete="off" enterkeyhint="send"></textarea>
                 </div>
                 <button type="submit" class="boton boton-primario">Enviar</button>
             </form>
@@ -93,14 +97,21 @@
             <div class="lista-amigos" id="listaAmigos"></div>
         </div>
 
-        <p class="dialogo-grupo-nota">Solo podés sumar amigos confirmados. Después podés agregar más desde el chat.</p>
+        <p class="dialogo-grupo-nota" id="notaCrearGrupo">Solo podés sumar amigos confirmados. Después podés agregar más desde el chat.</p>
 
         <div class="dialogo-botones">
             <button type="button" class="boton boton-blanco" id="cancelarCrearGrupo">Cancelar</button>
-            <button type="submit" class="boton boton-primario">Crear grupo</button>
+            <button type="submit" class="boton boton-primario" id="botonGuardarGrupo">Crear grupo</button>
         </div>
     </form>
 </dialog>
+
+<div class="aviso aviso-exito aviso-flotante" id="avisoExito" role="status" hidden>
+    <span class="aviso-texto" id="avisoExitoTexto"></span>
+    <button type="button" class="aviso-cerrar" aria-label="Cerrar aviso">
+        <img src="~/img/icono-cerrar-exito.svg" width="24" height="24" alt="" />
+    </button>
+</div>
 
 @if (Model != null)
 {
@@ -113,7 +124,7 @@
             <div class="dialogo-grupo-encabezado">
                 <div>
                     <h2 id="dialogoCrearPlanTitulo">Crear plan</h2>
-                    <p>Para @Model.Nombre · @ViewBag.Integrantes</p>
+                    <p id="subtituloPlan">Para @Model.Nombre · @ViewBag.Integrantes</p>
                 </div>
                 <button type="button" class="dialogo-grupo-cerrar" id="cerrarCrearPlan" aria-label="Cerrar">✕</button>
             </div>

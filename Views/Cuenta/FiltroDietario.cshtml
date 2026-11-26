@@ -32,7 +32,7 @@
             </div>
 
             <div class="opciones-filtro">
-                <label class="opcion-filtro">
+                <label class="opcion-filtro @(soloApto ? "opcion-filtro-elegida" : "")">
                     <input type="radio" name="filtro" value="apto" checked="@soloApto" />
                     <span class="opcion-filtro-titulo">
                         <span class="radio">
@@ -42,7 +42,7 @@
                     </span>
                     <span class="opcion-filtro-texto">El inicio, el explorador, las búsquedas y las sugerencias de planes se filtran por tu dieta.</span>
                 </label>
-                <label class="opcion-filtro">
+                <label class="opcion-filtro @(!soloApto ? "opcion-filtro-elegida" : "")">
                     <input type="radio" name="filtro" value="todo" checked="@(!soloApto)" />
                     <span class="opcion-filtro-titulo">
                         <span class="radio">

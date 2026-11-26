@@ -27,11 +27,13 @@ public class LugarBuscado
 
     private const int CantidadEnBuscador = 6;
 
-    public static object BuscarParaGrupo(int idGrupo, string? texto)
+    // excluidos: los lugares ya elegidos en las otras opciones del plan, que no se vuelven a ofrecer
+    public static object BuscarParaGrupo(int idGrupo, string? texto, List<int> excluidos)
     {
         texto = (texto ?? "").Trim();
         List<string> restriccionesGrupo = BD.ObtenerRestriccionesDeGrupo(idGrupo);
-        List<LugarBuscado> encontrados = texto == "" ? new List<LugarBuscado>() : BD.BuscarLugaresParaGrupo(idGrupo, texto);
+        List<LugarBuscado> coincidencias = texto == "" ? new List<LugarBuscado>() : BD.BuscarLugaresParaGrupo(idGrupo, texto);
+        List<LugarBuscado> encontrados = coincidencias.Where(l => !excluidos.Contains(l.Id)).ToList();
 
         List<int> idsGrupo = BD.ObtenerIdsRestriccionesPorNombre(restriccionesGrupo);
         ILookup<int, int> deLosLugares = BD.ObtenerRestriccionesPorRestaurante();
@@ -53,6 +55,7 @@ public class LugarBuscado
         return new
         {
             restriccionesGrupo,
+            yaElegidos = coincidencias.Count > 0 && encontrados.Count == 0,
             lugares = lugares.Select(l => new
             {
                 id = l.Id,

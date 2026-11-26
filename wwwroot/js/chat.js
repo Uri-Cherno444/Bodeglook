@@ -28,12 +28,31 @@ async function traerMensajesNuevos() {
     const estabaAbajo = ultimoId === 0 ||
         listaMensajes.scrollHeight - listaMensajes.scrollTop - listaMensajes.clientHeight < 80;
 
+    actualizarCabecera(datos.grupo);
     mensajes.forEach(dibujarMensaje);
     actualizarEncuestas(datos.encuestas);
 
     if (mensajes.length === 0) return;
     const ultimo = mensajes[mensajes.length - 1];
     if (estabaAbajo || ultimo.esMio) listaMensajes.scrollTop = listaMensajes.scrollHeight;
+}
+
+// Refleja los cambios del grupo (nombre, foto e integrantes) sin recargar la página
+function actualizarCabecera(grupo) {
+    document.getElementById("nombreGrupoAbierto").textContent = grupo.nombre;
+    document.getElementById("integrantesGrupoAbierto").textContent = grupo.integrantes;
+    document.getElementById("subtituloPlan").textContent = "Para " + grupo.nombre + " · " + grupo.integrantes;
+
+    const contenedor = document.getElementById("fotoGrupo");
+    const imagen = contenedor.querySelector(".foto-grupo-imagen");
+    if (!grupo.foto || (imagen && imagen.getAttribute("src") === grupo.foto)) return;
+    const nueva = document.createElement("img");
+    nueva.className = "foto-grupo-imagen";
+    nueva.src = grupo.foto;
+    nueva.width = 64;
+    nueva.height = 64;
+    nueva.alt = "";
+    contenedor.replaceChildren(nueva);
 }
 
 function dibujarMensaje(mensaje) {
@@ -241,6 +260,7 @@ if (formularioMensaje) {
         if (contenido === "") return;
 
         campoMensaje.value = "";
+        ajustarAlturaMensaje();
         enFila(async function () {
             const respuesta = revisarRespuesta(await fetch("/Grupos/EnviarMensaje", {
                 method: "POST",
@@ -250,12 +270,36 @@ if (formularioMensaje) {
             const resultado = await respuesta.json();
             if (!resultado.ok) {
                 campoMensaje.value = contenido;
+                ajustarAlturaMensaje();
                 return;
             }
             await actualizar();
         });
         campoMensaje.focus();
     });
+
+    campoMensaje.addEventListener("input", ajustarAlturaMensaje);
+    window.addEventListener("resize", ajustarAlturaMensaje);
+
+    // Enter envía y Shift + Enter hace un salto de línea
+    campoMensaje.addEventListener("keydown", function (evento) {
+        if (evento.key !== "Enter" || evento.shiftKey || evento.isComposing) return;
+        evento.preventDefault();
+        formularioMensaje.requestSubmit();
+    });
+}
+
+function ajustarAlturaMensaje() {
+    campoMensaje.style.height = "";
+    campoMensaje.style.overflowY = "";
+    if (campoMensaje.value === "") return;
+
+    const estilos = getComputedStyle(campoMensaje);
+    const bordes = parseFloat(estilos.borderTopWidth) + parseFloat(estilos.borderBottomWidth);
+    const alto = campoMensaje.scrollHeight + bordes;
+    const maximo = parseFloat(estilos.maxHeight);
+    campoMensaje.style.height = Math.min(alto, maximo) + "px";
+    if (alto > maximo) campoMensaje.style.overflowY = "auto";
 }
 
 if (idGrupo) enFila(traerMensajesNuevos);
@@ -276,28 +320,73 @@ const buscarAmigos = document.getElementById("buscarAmigos");
 const contadorSeleccionados = document.getElementById("contadorSeleccionados");
 const campoFoto = document.getElementById("campoFoto");
 const fotoNuevaCirculo = document.getElementById("fotoNuevaCirculo");
-const botonCrearGrupo = formularioGrupo.querySelector("button[type=submit]");
+const botonGuardarGrupo = document.getElementById("botonGuardarGrupo");
 
-async function abrirCrearGrupo() {
+// El mismo formulario sirve para crear un grupo y para editar el que está abierto
+let editandoGrupo = false;
+let aperturaGrupo = 0;
+
+async function pedirJson(url) {
+    const respuesta = revisarRespuesta(await fetch(url));
+    return respuesta.json();
+}
+
+async function abrirFormularioGrupo(editar) {
+    editandoGrupo = editar;
+    const apertura = ++aperturaGrupo;
+
     formularioGrupo.reset();
     fotoNuevaCirculo.textContent = "+";
     ocultarAviso();
     listaAmigos.innerHTML = "";
     actualizarContador();
+    document.getElementById("dialogoCrearGrupoTitulo").textContent = editar ? "Editar grupo" : "Crear grupo";
+    document.getElementById("notaCrearGrupo").hidden = editar;
+    botonGuardarGrupo.textContent = editar ? "Guardar cambios" : "Crear grupo";
+    botonGuardarGrupo.classList.remove("cargando");
+    // Al editar no se puede guardar hasta tener los datos actuales, para no pisarlos con un formulario vacío
+    botonGuardarGrupo.disabled = editar;
     dialogoGrupo.showModal();
 
     try {
-        const respuesta = revisarRespuesta(await fetch("/Grupos/Amigos"));
-        const amigos = await respuesta.json();
-        if (amigos.length === 0) {
+        const [amigos, grupo] = await Promise.all([
+            pedirJson("/Grupos/Amigos"),
+            editar ? pedirJson("/Grupos/DatosGrupo?id=" + idGrupo) : null
+        ]);
+        // Si mientras tanto se volvió a abrir, esta respuesta ya no va: duplicaría la lista
+        if (apertura !== aperturaGrupo) return;
+
+        const filas = new Map(amigos.map(function (amigo) {
+            return [amigo.id, crearFilaAmigo(amigo)];
+        }));
+        listaAmigos.replaceChildren(...filas.values());
+        if (filas.size === 0) {
             listaAmigos.innerHTML = '<p class="lista-amigos-vacia">Todavía no hay amigos para sumar.</p>';
         }
-        amigos.forEach(function (amigo) {
-            listaAmigos.appendChild(crearFilaAmigo(amigo));
-        });
+
+        if (grupo) {
+            document.getElementById("nombreGrupo").value = grupo.nombre;
+            if (grupo.foto && campoFoto.files.length === 0) mostrarFotoGrupo(grupo.foto);
+            grupo.integrantes.forEach(function (id) {
+                if (filas.has(id)) filas.get(id).querySelector(".casilla").checked = true;
+            });
+            botonGuardarGrupo.disabled = false;
+        }
+        buscarAmigos.dispatchEvent(new Event("input"));
+        actualizarContador();
     } catch (error) {
-        mostrarAviso("No pudimos traer tus amigos. Probá de nuevo en un rato.");
+        if (apertura !== aperturaGrupo) return;
+        mostrarAviso(editar
+            ? "No pudimos traer los datos del grupo. Probá de nuevo en un rato."
+            : "No pudimos traer tus amigos. Probá de nuevo en un rato.");
     }
+}
+
+function mostrarFotoGrupo(ruta) {
+    const imagen = document.createElement("img");
+    imagen.src = ruta;
+    imagen.alt = "";
+    fotoNuevaCirculo.replaceChildren(imagen);
 }
 
 function crearFilaAmigo(amigo) {
@@ -338,12 +427,12 @@ document.getElementById("botonSubirFoto").addEventListener("click", function () 
 
 campoFoto.addEventListener("change", function () {
     fotoNuevaCirculo.textContent = "+";
-    if (campoFoto.files.length === 0) return;
-    const imagen = document.createElement("img");
-    imagen.src = URL.createObjectURL(campoFoto.files[0]);
-    imagen.alt = "";
-    fotoNuevaCirculo.textContent = "";
-    fotoNuevaCirculo.appendChild(imagen);
+    if (campoFoto.files.length > 0) {
+        mostrarFotoGrupo(URL.createObjectURL(campoFoto.files[0]));
+    } else if (editandoGrupo) {
+        const actual = document.querySelector("#fotoGrupo .foto-grupo-imagen");
+        if (actual) mostrarFotoGrupo(actual.getAttribute("src"));
+    }
 });
 
 document.getElementById("cerrarCrearGrupo").addEventListener("click", function () {
@@ -359,27 +448,68 @@ formularioGrupo.querySelector(".aviso-cerrar").addEventListener("click", ocultar
 formularioGrupo.addEventListener("submit", async function (evento) {
     evento.preventDefault();
     ocultarAviso();
-    botonCrearGrupo.disabled = true;
-    botonCrearGrupo.classList.add("cargando");
+    botonGuardarGrupo.disabled = true;
+    botonGuardarGrupo.classList.add("cargando");
+    const editar = editandoGrupo;
+    const apertura = aperturaGrupo;
+    let error = "";
 
     try {
-        const respuesta = revisarRespuesta(await fetch("/Grupos/CrearGrupo", {
+        const respuesta = await fetch(editar ? "/Grupos/EditarGrupo?id=" + idGrupo : "/Grupos/CrearGrupo", {
             method: "POST",
             body: new FormData(formularioGrupo)
-        }));
-        const resultado = await respuesta.json();
-        if (resultado.ok) {
-            window.location.href = resultado.destino;
-            return;
+        });
+        // Al editar, un 403 es falta de permiso: se avisa acá en vez de sacar a la persona del chat
+        if (editar && respuesta.status === 403) {
+            error = "Solo quien creó el grupo puede editarlo.";
+        } else {
+            const resultado = await revisarRespuesta(respuesta).json();
+            if (resultado.ok && !editar) {
+                window.location.href = resultado.destino;
+                return;
+            }
+            if (resultado.ok) {
+                if (apertura === aperturaGrupo) dialogoGrupo.close();
+                mostrarExito("Guardamos los cambios del grupo.");
+                enFila(actualizar);
+            } else {
+                error = resultado.mensaje;
+            }
         }
-        mostrarAviso(resultado.mensaje);
-    } catch (error) {
-        mostrarAviso("No pudimos crear el grupo. Probá de nuevo en un rato.");
+    } catch (falla) {
+        error = editar
+            ? "No pudimos guardar los cambios. Probá de nuevo en un rato."
+            : "No pudimos crear el grupo. Probá de nuevo en un rato.";
     }
 
-    botonCrearGrupo.disabled = false;
-    botonCrearGrupo.classList.remove("cargando");
+    if (apertura !== aperturaGrupo) return;
+    if (error) mostrarAviso(error);
+    botonGuardarGrupo.disabled = false;
+    botonGuardarGrupo.classList.remove("cargando");
 });
+
+const avisoExito = document.getElementById("avisoExito");
+let esperaExito = null;
+
+function mostrarExito(mensaje) {
+    document.getElementById("avisoExitoTexto").textContent = mensaje;
+    avisoExito.hidden = false;
+    clearTimeout(esperaExito);
+    esperaExito = setTimeout(function () {
+        avisoExito.hidden = true;
+    }, 4000);
+}
+
+avisoExito.querySelector(".aviso-cerrar").addEventListener("click", function () {
+    avisoExito.hidden = true;
+});
+
+const botonEditarGrupo = document.getElementById("botonEditarGrupo");
+if (botonEditarGrupo) {
+    botonEditarGrupo.addEventListener("click", function () {
+        abrirFormularioGrupo(true);
+    });
+}
 
 function mostrarAviso(mensaje) {
     const aviso = document.getElementById("aviso");
@@ -397,7 +527,7 @@ function ocultarAviso() {
 document.addEventListener("click", function (evento) {
     if (evento.target.closest(".panel-chats-crear")) {
         evento.preventDefault();
-        abrirCrearGrupo();
+        abrirFormularioGrupo(false);
     }
 });
 
@@ -418,6 +548,7 @@ if (dialogoPlan) {
         document.getElementById("avisoPlan").hidden = true;
         camposLugar.forEach(function (campo) {
             campo.querySelector(".lugar-plan-buscar").dataset.idLugar = "";
+            campo.querySelector(".resultados-lugares").replaceChildren();
             cerrarResultados(campo);
         });
         chipsHorario.forEach(function (chip) {
@@ -479,7 +610,14 @@ if (dialogoPlan) {
         });
 
         input.addEventListener("blur", function () {
+            clearTimeout(espera);
             cerrarResultados(campo);
+        });
+
+        // Al volver a un campo sin lugar elegido se busca de nuevo, con las opciones al día
+        input.addEventListener("focus", function () {
+            const texto = input.value.trim();
+            if (texto !== "" && !input.dataset.idLugar) buscarLugares(campo, texto);
         });
 
         input.addEventListener("keydown", function (evento) {
@@ -494,20 +632,42 @@ if (dialogoPlan) {
         });
     });
 
+    function idsElegidosEnOtros(campo) {
+        return Array.from(camposLugar)
+            .filter(function (otro) { return otro !== campo; })
+            .map(function (otro) { return Number(otro.querySelector(".lugar-plan-buscar").dataset.idLugar); })
+            .filter(Boolean);
+    }
+
+    // Deja un solo lugar por id y saca los ya elegidos en las otras opciones
+    function lugaresSinRepetir(campo, lugares) {
+        const elegidos = idsElegidosEnOtros(campo);
+        const porId = new Map(lugares.map(function (lugar) { return [lugar.id, lugar]; }));
+        return Array.from(porId.values()).filter(function (lugar) { return !elegidos.includes(lugar.id); });
+    }
+
     async function buscarLugares(campo, texto) {
         const input = campo.querySelector(".lugar-plan-buscar");
         const resultados = campo.querySelector(".resultados-lugares");
-        const respuesta = revisarRespuesta(await fetch("/Planes/BuscarLugares?idGrupo=" + idGrupo + "&texto=" + encodeURIComponent(texto)));
-        const datos = await respuesta.json();
-        if (input.value.trim() !== texto) return;
+        const consulta = new URLSearchParams({ idGrupo: idGrupo, texto: texto });
+        idsElegidosEnOtros(campo).forEach(function (id) {
+            consulta.append("excluir", id);
+        });
+        const datos = await pedirJson("/Planes/BuscarLugares?" + consulta);
+        // Una respuesta que llega tarde no reabre la lista de un campo que ya no se está usando
+        if (input.value.trim() !== texto || input.dataset.idLugar || document.activeElement !== input) return;
 
+        const lugares = lugaresSinRepetir(campo, datos.lugares);
         resultados.innerHTML = "";
         const hayRestricciones = datos.restriccionesGrupo.length > 0;
-        const aptos = datos.lugares.filter(function (lugar) { return lugar.apto; });
-        const otros = datos.lugares.filter(function (lugar) { return !lugar.apto; });
+        const aptos = lugares.filter(function (lugar) { return lugar.apto; });
+        const otros = lugares.filter(function (lugar) { return !lugar.apto; });
 
-        if (datos.lugares.length === 0) {
-            resultados.innerHTML = '<p class="resultados-vacio">No encontramos lugares con ese nombre.</p>';
+        if (lugares.length === 0) {
+            resultados.innerHTML = '<p class="resultados-vacio"></p>';
+            resultados.firstChild.textContent = datos.yaElegidos
+                ? "Ese lugar ya está en otra opción."
+                : "No encontramos lugares con ese nombre.";
         }
         if (hayRestricciones && aptos.length > 0) {
             const encabezado = document.createElement("div");
@@ -657,7 +817,7 @@ function limpiarErrorCampo(campo) {
 }
 
 const parametros = new URLSearchParams(window.location.search);
-if (parametros.get("crear") === "1") abrirCrearGrupo();
+if (parametros.get("crear") === "1") abrirFormularioGrupo(false);
 if (parametros.has("crear") || parametros.has("plan") || parametros.has("lugar")) {
     history.replaceState(null, "", window.location.pathname);
 }

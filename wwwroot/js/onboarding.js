@@ -60,6 +60,14 @@ function desmarcarSegunNinguna(grupo, chipMarcado) {
 function prepararFiltroDietario() {
     document.querySelector(".aviso-cerrar").addEventListener("click", ocultarAviso);
 
+    document.querySelectorAll("input[name=filtro]").forEach(function (radio) {
+        radio.addEventListener("change", function () {
+            document.querySelectorAll(".opcion-filtro").forEach(function (opcion) {
+                opcion.classList.toggle("opcion-filtro-elegida", opcion.querySelector("input").checked);
+            });
+        });
+    });
+
     const boton = document.getElementById("botonEntrar");
     boton.addEventListener("click", function () {
         const elegido = document.querySelector("input[name=filtro]:checked");

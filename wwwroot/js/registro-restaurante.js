@@ -6,6 +6,13 @@ document.querySelectorAll(".plan-opcion input").forEach(function (radio) {
     });
 });
 
+// El texto de ejemplo del desplegable se ve en gris hasta que se elige algo
+document.querySelectorAll("#barrio, #categoria").forEach(function (desplegable) {
+    desplegable.addEventListener("change", function () {
+        desplegable.classList.toggle("sin-elegir", desplegable.value === "");
+    });
+});
+
 document.getElementById("botonVolver").addEventListener("click", function (evento) {
     if (document.referrer.startsWith(window.location.origin) && history.length > 1) {
         evento.preventDefault();

@@ -29,6 +29,7 @@ public class GruposController : Controller
         ViewBag.Chats = BD.ObtenerChatsDeUsuario(usuario.Id);
         ViewBag.GrupoAbierto = id;
         ViewBag.Integrantes = Grupos.TextoIntegrantes(id, usuario.Id);
+        ViewBag.EsCreador = Grupos.EsCreador(id, usuario.Id);
         ViewBag.LugarInicial = lugar == null ? null : BD.ObtenerLugar(lugar.Value);
         ViewBag.Horarios = NuevoPlan.HorariosPosibles;
         ViewBag.Hoy = DateTime.Today.ToString("yyyy-MM-dd");
@@ -80,5 +81,26 @@ public class GruposController : Controller
 
         Usuarios usuario = Sesion.Leer(HttpContext.Session)!;
         return Json(Grupos.Crear(nombre, usuario.Id, integrantes, foto));
+    }
+
+    public IActionResult DatosGrupo(int id)
+    {
+        if (!Sesion.HayUsuario(HttpContext.Session)) return Unauthorized();
+
+        Usuarios usuario = Sesion.Leer(HttpContext.Session)!;
+        object? respuesta = Grupos.DatosParaEditar(id, usuario.Id);
+        if (respuesta == null) return StatusCode(403);
+        return Json(respuesta);
+    }
+
+    [HttpPost]
+    public IActionResult EditarGrupo(int id, string? nombre, List<int> integrantes, IFormFile? foto)
+    {
+        if (!Sesion.HayUsuario(HttpContext.Session)) return Unauthorized();
+
+        Usuarios usuario = Sesion.Leer(HttpContext.Session)!;
+        object? respuesta = Grupos.Editar(id, nombre, usuario.Id, integrantes, foto);
+        if (respuesta == null) return StatusCode(403);
+        return Json(respuesta);
     }
 }

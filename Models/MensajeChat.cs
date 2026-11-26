@@ -46,6 +46,7 @@ public class MensajeChat
         List<EncuestaPlan> encuestas = BD.ObtenerEncuestasDeGrupo(idGrupo, idUsuario);
         return new
         {
+            grupo = Grupos.Cabecera(idGrupo, idUsuario),
             mensajes = mensajes.Select(m => m.ParaJson(idUsuario)),
             encuestas = encuestas.Select(e => e.ParaJson())
         };

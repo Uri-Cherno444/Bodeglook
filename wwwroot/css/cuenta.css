@@ -5,7 +5,8 @@
 
 .cuenta-marca {
     position: relative;
-    flex: 0 0 860px;
+    width: 860px;
+    min-width: 860px;
     background: var(--negro);
     padding: 0 150px;
     display: flex;
@@ -148,7 +149,7 @@
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.campo select:has(option[value=""]:checked) {
+.campo select.sin-elegir {
     color: var(--gris-texto);
 }
 
@@ -225,7 +226,7 @@
     pointer-events: none;
 }
 
-.plan-opcion:has(input:focus-visible) {
+.plan-opcion:focus-within {
     box-shadow: 0 0 0 3px var(--naranja-suave);
 }
 
@@ -293,7 +294,8 @@
     }
 
     .cuenta-marca {
-        flex: none;
+        width: auto;
+        min-width: 0;
         padding: 48px 16px;
     }
 

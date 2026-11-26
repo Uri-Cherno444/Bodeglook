@@ -34,13 +34,13 @@
                     <input type="search" name="q" placeholder="Buscar restaurantes o bodegas" aria-label="Buscar restaurantes o bodegas" value="@(pestaña == "Descubrir" ? Context.Request.Query["q"].ToString() : "")" />
                 </form>
             </div>
+            <nav class="navegacion">
+                <a class="@(pestaña == "Inicio" ? "activa" : "")" href="/Home/Inicio">Inicio</a>
+                <a class="@(pestaña == "Descubrir" ? "activa" : "")" href="/Restaurantes/Descubrir">Descubrir</a>
+                <a class="@(pestaña == "MisChats" ? "activa" : "")" href="/Grupos">Mis Chats</a>
+                <a class="@(pestaña == "Perfil" ? "activa" : "")" href="/Perfil">Perfil</a>
+            </nav>
             <div class="encabezado-derecha">
-                <nav class="navegacion">
-                    <a class="@(pestaña == "Inicio" ? "activa" : "")" href="/Home/Inicio">Inicio</a>
-                    <a class="@(pestaña == "Descubrir" ? "activa" : "")" href="/Restaurantes/Descubrir">Descubrir</a>
-                    <a class="@(pestaña == "MisChats" ? "activa" : "")" href="/Grupos">Mis Chats</a>
-                    <a class="@(pestaña == "Perfil" ? "activa" : "")" href="/Perfil">Perfil</a>
-                </nav>
                 <img src="~/img/icono-notificacion.svg" width="24" height="24" alt="Notificaciones" />
                 <div class="menu-usuario">
                     <button type="button" class="avatar avatar-chico avatar-boton" id="botonAvatar" aria-haspopup="true" aria-expanded="false" aria-controls="menuUsuario">

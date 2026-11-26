@@ -67,14 +67,14 @@ public class PlanesController : Controller
         ViewBag.TextoLugarElegido = encuesta.TextoLugarElegido(restricciones);
     }
 
-    public IActionResult BuscarLugares(int idGrupo, string? texto)
+    public IActionResult BuscarLugares(int idGrupo, string? texto, List<int> excluir)
     {
         if (!Sesion.HayUsuario(HttpContext.Session)) return Unauthorized();
 
         Usuarios usuario = Sesion.Leer(HttpContext.Session)!;
         if (!BD.EsIntegranteDeGrupo(usuario.Id, idGrupo)) return StatusCode(403);
 
-        return Json(LugarBuscado.BuscarParaGrupo(idGrupo, texto));
+        return Json(LugarBuscado.BuscarParaGrupo(idGrupo, texto, excluir));
     }
 
     [HttpPost]

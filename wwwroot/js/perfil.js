@@ -64,7 +64,20 @@ function actualizarSoloApto() {
     const hay = hayRestriccionesMarcadas();
     opcionSoloApto.disabled = !hay;
     if (!hay) opcionVerTodo.checked = true;
+    marcarOpcionesVer();
 }
+
+function marcarOpcionesVer() {
+    document.querySelectorAll(".modal-perfil-opcion").forEach(function (opcion) {
+        const radio = opcion.querySelector("input");
+        opcion.classList.toggle("modal-perfil-opcion-elegida", radio.checked);
+        opcion.classList.toggle("modal-perfil-opcion-apagada", radio.disabled);
+    });
+}
+
+[opcionSoloApto, opcionVerTodo].forEach(function (radio) {
+    radio.addEventListener("change", marcarOpcionesVer);
+});
 
 const archivoFoto = document.getElementById("archivoFoto");
 const lienzo = document.getElementById("lienzoFoto");

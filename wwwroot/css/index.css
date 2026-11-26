@@ -19,7 +19,7 @@
 }
 
 .hero-texto {
-    flex: 0 1 780px;
+    width: 780px;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -48,7 +48,7 @@
 
 .hero-foto {
     position: relative;
-    flex: 0 1 760px;
+    width: 760px;
     height: 480px;
 }
 
@@ -76,6 +76,7 @@
 
 .tarjeta-flotante .icono-circulo {
     width: 48px;
+    min-width: 48px;
     height: 48px;
     border-radius: 12px;
 }
@@ -107,7 +108,7 @@
 }
 
 .fila-tarjetas .tarjeta {
-    flex: 1 1 0;
+    flex: 1;
     min-width: 0;
 }
 
@@ -182,7 +183,7 @@
 }
 
 .resenas-reales-texto {
-    flex: 0 1 680px;
+    width: 680px;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -231,7 +232,7 @@
 }
 
 .tarjeta-precio {
-    flex: 0 1 520px;
+    width: 520px;
     min-height: 593px;
     padding: 40px;
     gap: 24px;
@@ -288,10 +289,6 @@
     line-height: 26px;
 }
 
-.lista-beneficios img {
-    flex-shrink: 0;
-}
-
 .tarjeta-precio .boton {
     margin-top: auto;
 }
@@ -323,7 +320,7 @@
     .hero-foto,
     .hero-texto,
     .resenas-reales-texto {
-        flex: none;
+        width: auto;
     }
 
     .tarjeta-flotante {
@@ -366,7 +363,7 @@
     }
 
     .tarjeta-precio {
-        flex: none;
+        width: auto;
         min-height: 0;
         padding: 32px 24px;
     }

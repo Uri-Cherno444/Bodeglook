@@ -67,10 +67,6 @@
     gap: 20px;
 }
 
-.conversacion-mensajes > * {
-    flex-shrink: 0;
-}
-
 .mensaje-dia {
     margin: 0;
     font-size: 13px;
@@ -88,6 +84,7 @@
 
 .avatar-mensaje {
     width: 36px;
+    min-width: 36px;
     height: 36px;
     border-radius: 18px;
     font-size: 13px;
@@ -146,16 +143,30 @@
 }
 
 .conversacion-escribir {
-    min-height: 140px;
-    padding: 20px 28px;
+    padding: 48px 28px;
     display: flex;
-    align-items: center;
-    justify-content: space-between;
+    align-items: flex-end;
     gap: 12px;
 }
 
 .campo-mensaje {
-    width: 300px;
+    flex: 1;
+    min-width: 0;
+}
+
+/* El alto lo ajusta chat.js según el contenido, hasta max-height; después scrollea */
+.campo-mensaje textarea {
+    display: block;
+    height: 44px;
+    max-height: 160px;
+    padding: 9px 16px;
+    line-height: 24px;
+    resize: none;
+    overflow-y: hidden;
+}
+
+.conversacion-escribir .boton {
+    height: 44px;
 }
 
 .dialogo-grupo {
@@ -191,7 +202,8 @@
 }
 
 .dialogo-grupo-cerrar {
-    flex: 0 0 40px;
+    width: 40px;
+    min-width: 40px;
     height: 40px;
     border: none;
     border-radius: 20px;
@@ -215,7 +227,8 @@
 }
 
 .foto-nueva-circulo {
-    flex: 0 0 72px;
+    width: 72px;
+    min-width: 72px;
     height: 72px;
     border-radius: 36px;
     background: var(--arena);
@@ -326,7 +339,8 @@
 }
 
 .casilla-caja {
-    flex: 0 0 24px;
+    width: 24px;
+    min-width: 24px;
     height: 24px;
     border: 2px solid var(--linea);
     border-radius: 6px;
@@ -434,10 +448,6 @@
     font-weight: 700;
     letter-spacing: -0.16px;
     color: var(--rojo);
-}
-
-.encuesta-error img {
-    flex-shrink: 0;
 }
 
 .opcion-plan {
@@ -581,7 +591,8 @@
 }
 
 .lugar-plan-numero {
-    flex: 0 0 36px;
+    width: 36px;
+    min-width: 36px;
     height: 36px;
     border-radius: 18px;
     background: var(--naranja-suave);
@@ -681,8 +692,8 @@
 }
 
 .lugar-miniatura {
-    flex-shrink: 0;
     width: 48px;
+    min-width: 48px;
     height: 48px;
     border-radius: 8px;
     object-fit: cover;
@@ -691,6 +702,7 @@
 
 .opcion-plan-elegir .lugar-miniatura {
     width: 40px;
+    min-width: 40px;
     height: 40px;
 }
 
@@ -782,7 +794,8 @@
     }
 
     .conversacion-datos {
-        flex-basis: calc(100% - 80px);
+        flex: none;
+        width: calc(100% - 80px);
     }
 
     .conversacion-cabecera .boton {
@@ -794,13 +807,8 @@
     }
 
     .conversacion-escribir {
-        min-height: 0;
+        gap: 8px;
         padding: 16px;
-    }
-
-    .campo-mensaje {
-        width: auto;
-        flex: 1;
     }
 
     .mensaje {
