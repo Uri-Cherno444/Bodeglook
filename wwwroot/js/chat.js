@@ -37,7 +37,6 @@ async function traerMensajesNuevos() {
     if (estabaAbajo || ultimo.esMio) listaMensajes.scrollTop = listaMensajes.scrollHeight;
 }
 
-// Refleja los cambios del grupo (nombre, foto e integrantes) sin recargar la página
 function actualizarCabecera(grupo) {
     document.getElementById("nombreGrupoAbierto").textContent = grupo.nombre;
     document.getElementById("integrantesGrupoAbierto").textContent = grupo.integrantes;
@@ -281,7 +280,6 @@ if (formularioMensaje) {
     campoMensaje.addEventListener("input", ajustarAlturaMensaje);
     window.addEventListener("resize", ajustarAlturaMensaje);
 
-    // Enter envía y Shift + Enter hace un salto de línea
     campoMensaje.addEventListener("keydown", function (evento) {
         if (evento.key !== "Enter" || evento.shiftKey || evento.isComposing) return;
         evento.preventDefault();
@@ -322,7 +320,6 @@ const campoFoto = document.getElementById("campoFoto");
 const fotoNuevaCirculo = document.getElementById("fotoNuevaCirculo");
 const botonGuardarGrupo = document.getElementById("botonGuardarGrupo");
 
-// El mismo formulario sirve para crear un grupo y para editar el que está abierto
 let editandoGrupo = false;
 let aperturaGrupo = 0;
 
@@ -344,7 +341,6 @@ async function abrirFormularioGrupo(editar) {
     document.getElementById("notaCrearGrupo").hidden = editar;
     botonGuardarGrupo.textContent = editar ? "Guardar cambios" : "Crear grupo";
     botonGuardarGrupo.classList.remove("cargando");
-    // Al editar no se puede guardar hasta tener los datos actuales, para no pisarlos con un formulario vacío
     botonGuardarGrupo.disabled = editar;
     dialogoGrupo.showModal();
 
@@ -353,7 +349,6 @@ async function abrirFormularioGrupo(editar) {
             pedirJson("/Grupos/Amigos"),
             editar ? pedirJson("/Grupos/DatosGrupo?id=" + idGrupo) : null
         ]);
-        // Si mientras tanto se volvió a abrir, esta respuesta ya no va: duplicaría la lista
         if (apertura !== aperturaGrupo) return;
 
         const filas = new Map(amigos.map(function (amigo) {
@@ -459,7 +454,6 @@ formularioGrupo.addEventListener("submit", async function (evento) {
             method: "POST",
             body: new FormData(formularioGrupo)
         });
-        // Al editar, un 403 es falta de permiso: se avisa acá en vez de sacar a la persona del chat
         if (editar && respuesta.status === 403) {
             error = "Solo quien creó el grupo puede editarlo.";
         } else {
@@ -614,7 +608,6 @@ if (dialogoPlan) {
             cerrarResultados(campo);
         });
 
-        // Al volver a un campo sin lugar elegido se busca de nuevo, con las opciones al día
         input.addEventListener("focus", function () {
             const texto = input.value.trim();
             if (texto !== "" && !input.dataset.idLugar) buscarLugares(campo, texto);
@@ -639,7 +632,6 @@ if (dialogoPlan) {
             .filter(Boolean);
     }
 
-    // Deja un solo lugar por id y saca los ya elegidos en las otras opciones
     function lugaresSinRepetir(campo, lugares) {
         const elegidos = idsElegidosEnOtros(campo);
         const porId = new Map(lugares.map(function (lugar) { return [lugar.id, lugar]; }));
@@ -654,7 +646,6 @@ if (dialogoPlan) {
             consulta.append("excluir", id);
         });
         const datos = await pedirJson("/Planes/BuscarLugares?" + consulta);
-        // Una respuesta que llega tarde no reabre la lista de un campo que ya no se está usando
         if (input.value.trim() !== texto || input.dataset.idLugar || document.activeElement !== input) return;
 
         const lugares = lugaresSinRepetir(campo, datos.lugares);

@@ -1,5 +1,5 @@
 .inicio {
-    padding: 48px 64px 64px;
+    padding: 3% 4% 4%;
     display: flex;
     flex-direction: column;
     gap: 48px;
@@ -8,7 +8,7 @@
 .banner {
     background: var(--crema);
     border-radius: 24px;
-    padding: 40px 48px;
+    padding: 3% 4%;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -24,19 +24,19 @@
 
 .banner-saludo {
     margin: 0;
-    font-size: 16px;
+    font-size: 100%;
     font-weight: 700;
     color: var(--naranja);
 }
 
 .banner-texto h1 {
     margin: 0;
-    font-size: 40px;
+    font-size: 250%;
 }
 
 .banner-descripcion {
     margin: 0;
-    font-size: 18px;
+    font-size: 113%;
     color: var(--gris-texto);
 }
 
@@ -61,12 +61,12 @@
 }
 
 .dato-numero {
-    font-size: 36px;
+    font-size: 225%;
     font-weight: 700;
 }
 
 .dato-texto {
-    font-size: 15px;
+    font-size: 94%;
     color: var(--gris-texto);
 }
 
@@ -96,11 +96,11 @@
 
 .seccion-lugares-encabezado h2 {
     margin: 0;
-    font-size: 32px;
+    font-size: 200%;
 }
 
 .ver-todo {
-    font-size: 16px;
+    font-size: 100%;
     font-weight: 700;
     color: var(--naranja);
     text-decoration: none;
@@ -123,7 +123,7 @@
     }
 
     .banner-texto h1 {
-        font-size: 32px;
+        font-size: 200%;
     }
 
     .banner-botones,

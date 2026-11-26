@@ -27,7 +27,6 @@ public class LugarBuscado
 
     private const int CantidadEnBuscador = 6;
 
-    // excluidos: los lugares ya elegidos en las otras opciones del plan, que no se vuelven a ofrecer
     public static object BuscarParaGrupo(int idGrupo, string? texto, List<int> excluidos)
     {
         texto = (texto ?? "").Trim();

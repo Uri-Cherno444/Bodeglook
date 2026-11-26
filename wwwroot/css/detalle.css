@@ -15,7 +15,7 @@
 .detalle-volver {
     position: absolute;
     top: 32px;
-    left: 64px;
+    left: 4%;
 }
 
 .detalle-banner-acciones {
@@ -44,8 +44,8 @@
 .detalle-contenido {
     display: flex;
     align-items: flex-start;
-    gap: 48px;
-    padding: 40px 112px 64px;
+    gap: 48px 4%;
+    padding: 3% 8% 4%;
 }
 
 .detalle-principal {
@@ -64,7 +64,7 @@
 
 .detalle-titulo h1 {
     margin: 0;
-    font-size: 44px;
+    font-size: 275%;
 }
 
 .detalle-datos {
@@ -86,7 +86,7 @@
 
 .detalle-cantidad,
 .detalle-datos .ubicacion {
-    font-size: 16px;
+    font-size: 100%;
     color: var(--gris-texto);
 }
 
@@ -103,8 +103,8 @@
 
 .detalle-descripcion {
     margin: 0;
-    font-size: 18px;
-    line-height: 28px;
+    font-size: 113%;
+    line-height: 156%;
     color: var(--gris-texto);
 }
 
@@ -194,7 +194,7 @@
 .visor-contador {
     margin: 12px 0 0;
     text-align: center;
-    font-size: 14px;
+    font-size: 88%;
     color: var(--gris-texto);
 }
 
@@ -242,12 +242,12 @@
 
 .modal-resena-encabezado h2 {
     margin: 0;
-    font-size: 36px;
+    font-size: 225%;
 }
 
 .modal-resena-lugar {
     margin: 6px 0 0;
-    font-size: 16px;
+    font-size: 100%;
     color: var(--gris-texto);
 }
 
@@ -288,13 +288,13 @@
 }
 
 .dimension-titulo {
-    font-size: 18px;
+    font-size: 113%;
     font-weight: 700;
 }
 
 .dimension-subtitulo {
-    font-size: 14px;
-    line-height: 20px;
+    font-size: 88%;
+    line-height: 143%;
     color: var(--gris-texto);
 }
 
@@ -349,13 +349,13 @@
 }
 
 .puntaje-general-titulo {
-    font-size: 16px;
+    font-size: 100%;
     font-weight: 700;
 }
 
 .puntaje-general-texto {
     margin-top: 2px !important;
-    font-size: 14px;
+    font-size: 88%;
     color: var(--gris-texto);
 }
 
@@ -363,7 +363,7 @@
     display: flex;
     align-items: center;
     min-height: 40px;
-    font-size: 32px;
+    font-size: 200%;
     font-weight: 700;
     color: var(--naranja);
 }
@@ -393,7 +393,7 @@
 
 .campo-fotos-titulo {
     margin: 0;
-    font-size: 18px;
+    font-size: 113%;
     font-weight: 700;
 }
 
@@ -427,7 +427,7 @@
     border-radius: 7px;
     background: var(--blanco);
     color: var(--gris-texto);
-    font-size: 16px;
+    font-size: 100%;
     letter-spacing: -0.16px;
 }
 
@@ -504,10 +504,10 @@
     height: 24px;
     padding: 0;
     border: none;
-    border-radius: 12px;
+    border-radius: 50%;
     background: var(--naranja-suave);
     color: var(--naranja);
-    font-size: 12px;
+    font-size: 75%;
     font-weight: 700;
     cursor: pointer;
 }
@@ -525,7 +525,7 @@
 .como-fue legend {
     margin-bottom: 12px;
     padding: 0;
-    font-size: 18px;
+    font-size: 113%;
     font-weight: 700;
 }
 
@@ -547,7 +547,7 @@
     min-width: 24px;
     height: 24px;
     border: 2px solid var(--linea);
-    border-radius: 12px;
+    border-radius: 50%;
     background: var(--blanco);
 }
 
@@ -575,20 +575,20 @@
 }
 
 .opcion-visita-titulo {
-    font-size: 16px;
+    font-size: 100%;
     font-weight: 700;
 }
 
 .opcion-visita-texto {
-    font-size: 14px;
-    line-height: 20px;
+    font-size: 88%;
+    line-height: 143%;
     color: var(--gris-texto);
 }
 
 .modal-resena-nota {
     margin: 0;
-    font-size: 14px;
-    line-height: 20px;
+    font-size: 88%;
+    line-height: 143%;
     color: var(--gris-texto);
 }
 
@@ -622,14 +622,14 @@
 
 .resenas-comunidad-encabezado h2 {
     margin: 0;
-    font-size: 28px;
+    font-size: 175%;
 }
 
 .resenas-comunidad-encabezado .ver-todo {
     padding: 0;
     border: none;
     background: none;
-    font-family: inherit;
+    font-family: 'PT Sans', sans-serif;
     cursor: pointer;
 }
 
@@ -648,8 +648,8 @@
 }
 
 .detalle-acciones {
-    width: 440px;
-    min-width: 440px;
+    width: 36%;
+    min-width: 36%;
     display: flex;
     flex-direction: column;
     gap: 16px;
@@ -665,7 +665,7 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    font-size: 16px;
+    font-size: 100%;
 }
 
 .detalle-mapa {
@@ -719,7 +719,7 @@
     }
 
     .modal-resena-encabezado h2 {
-        font-size: 28px;
+        font-size: 175%;
     }
 
     .dimension {
@@ -732,7 +732,7 @@
     }
 
     .detalle-titulo h1 {
-        font-size: 32px;
+        font-size: 200%;
     }
 
     .dejar-resena {

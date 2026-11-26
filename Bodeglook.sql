@@ -1,6 +1,5 @@
 USE [master]
 GO
-/****** Object:  Database [Bodeglook]    Script Date: 4/11/2026 10:27:22 ******/
 CREATE DATABASE [Bodeglook]
  CONTAINMENT = NONE
  ON  PRIMARY 
@@ -79,10 +78,8 @@ ALTER DATABASE [Bodeglook] SET QUERY_STORE = OFF
 GO
 USE [Bodeglook]
 GO
-/****** Object:  User [alumno]    Script Date: 4/11/2026 10:27:22 ******/
 CREATE USER [alumno] FOR LOGIN [alumno] WITH DEFAULT_SCHEMA=[dbo]
 GO
-/****** Object:  Table [dbo].[Barrios]    Script Date: 4/11/2026 10:27:22 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -98,7 +95,6 @@ CREATE TABLE [dbo].[Barrios](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Busquedas]    Script Date: 4/11/2026 10:27:23 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -114,7 +110,6 @@ CREATE TABLE [dbo].[Busquedas](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Categorias]    Script Date: 4/11/2026 10:27:23 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -128,7 +123,6 @@ CREATE TABLE [dbo].[Categorias](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[CompaniasUsuarios]    Script Date: 4/11/2026 10:27:23 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -143,7 +137,6 @@ CREATE TABLE [dbo].[CompaniasUsuarios](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[CuentasRestaurantes]    Script Date: 4/11/2026 10:27:23 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -160,7 +153,6 @@ CREATE TABLE [dbo].[CuentasRestaurantes](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Favoritos]    Script Date: 4/11/2026 10:27:23 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -175,7 +167,6 @@ CREATE TABLE [dbo].[Favoritos](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Grupos]    Script Date: 4/11/2026 10:27:23 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -191,7 +182,6 @@ CREATE TABLE [dbo].[Grupos](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Mensajes]    Script Date: 4/11/2026 10:27:23 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -209,13 +199,10 @@ CREATE TABLE [dbo].[Mensajes](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[PalabrasProhibidas]    Script Date: 18/11/2026 12:00:00 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
--- Palabras que no se pueden usar en las reseñas (los datos están más abajo, con el resto de los datos):
--- en minúsculas y sin tildes (el código normaliza el texto y la lista de la misma forma).
 CREATE TABLE [dbo].[PalabrasProhibidas](
 	[ID] [int] IDENTITY(1,1) NOT NULL,
 	[Palabra] [varchar](50) NOT NULL,
@@ -229,7 +216,6 @@ CREATE TABLE [dbo].[PalabrasProhibidas](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Planes]    Script Date: 4/11/2026 10:27:23 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -249,7 +235,6 @@ CREATE TABLE [dbo].[Planes](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[PlanesHorarios]    Script Date: 4/11/2026 10:27:23 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -265,7 +250,6 @@ CREATE TABLE [dbo].[PlanesHorarios](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[PlanesRestaurantes]    Script Date: 4/11/2026 10:27:23 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -280,7 +264,6 @@ CREATE TABLE [dbo].[PlanesRestaurantes](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Reseñas]    Script Date: 4/11/2026 10:27:23 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -299,7 +282,6 @@ CREATE TABLE [dbo].[Reseñas](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Restaurantes]    Script Date: 4/11/2026 10:27:23 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -330,7 +312,6 @@ CREATE TABLE [dbo].[Restaurantes](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Restricciones]    Script Date: 4/11/2026 10:27:23 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -344,7 +325,6 @@ CREATE TABLE [dbo].[Restricciones](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[RestriccionesRestaurantes]    Script Date: 4/11/2026 10:27:23 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -359,7 +339,6 @@ CREATE TABLE [dbo].[RestriccionesRestaurantes](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[RestriccionesUsuarios]    Script Date: 4/11/2026 10:27:23 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -374,7 +353,6 @@ CREATE TABLE [dbo].[RestriccionesUsuarios](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Usuarios]    Script Date: 4/11/2026 10:27:23 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -397,7 +375,6 @@ CREATE TABLE [dbo].[Usuarios](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[UsuariosGrupos]    Script Date: 4/11/2026 10:27:23 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -413,7 +390,6 @@ CREATE TABLE [dbo].[UsuariosGrupos](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[Votos]    Script Date: 4/11/2026 10:27:23 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -430,7 +406,6 @@ CREATE TABLE [dbo].[Votos](
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Object:  Table [dbo].[ZonasUsuarios]    Script Date: 4/11/2026 10:27:23 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -667,18 +642,6 @@ INSERT [dbo].[PalabrasProhibidas] ([ID], [Palabra]) VALUES (45, N'peruca')
 INSERT [dbo].[PalabrasProhibidas] ([ID], [Palabra]) VALUES (46, N'sudaca')
 SET IDENTITY_INSERT [dbo].[PalabrasProhibidas] OFF
 GO
--- Dudosas: no se cargan porque también aparecen en reseñas normales. Para bloquear una, agregala con:
---   INSERT INTO PalabrasProhibidas (Palabra) VALUES ('palabra');   (y reiniciá la app)
---   mierda     "la atención fue una mierda" en una reseña sincera
---   carajo     
---   lpm        
---   concha     "conchas de mar" en una marisquería
---   culo       
---   orto       
---   villero    "cumbia villera"
---   villera    
---   bolita     "una bolita de helado"
---   paragua    por el plural también bloquearía "paraguas"
 SET IDENTITY_INSERT [dbo].[Planes] ON 
 
 INSERT [dbo].[Planes] ([ID], [Titulo], [FechaCierreVotacion], [FechaSalida], [Estado], [idGrupo], [idRestauranteElegido], [idUsuarioCreador]) VALUES (1, N'Cena de cumpleaños de Sofi', CAST(N'2026-10-23T20:00:00.000' AS DateTime), CAST(N'2026-10-24T21:00:00.000' AS DateTime), 0, 1, NULL, 1)
@@ -1020,19 +983,16 @@ SET IDENTITY_INSERT [dbo].[ZonasUsuarios] OFF
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [UQ_CuentasRestaurantes_Email]    Script Date: 4/11/2026 10:27:23 ******/
 ALTER TABLE [dbo].[CuentasRestaurantes] ADD  CONSTRAINT [UQ_CuentasRestaurantes_Email] UNIQUE NONCLUSTERED 
 (
 	[Email] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 GO
-/****** Object:  Index [UQ_CuentasRestaurantes_Restaurante]    Script Date: 4/11/2026 10:27:23 ******/
 ALTER TABLE [dbo].[CuentasRestaurantes] ADD  CONSTRAINT [UQ_CuentasRestaurantes_Restaurante] UNIQUE NONCLUSTERED 
 (
 	[idRestaurante] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 GO
-/****** Object:  Index [UQ_PlanesRestaurantes]    Script Date: 4/11/2026 10:27:23 ******/
 ALTER TABLE [dbo].[PlanesRestaurantes] ADD  CONSTRAINT [UQ_PlanesRestaurantes] UNIQUE NONCLUSTERED 
 (
 	[idPlan] ASC,
@@ -1041,7 +1001,6 @@ ALTER TABLE [dbo].[PlanesRestaurantes] ADD  CONSTRAINT [UQ_PlanesRestaurantes] U
 GO
 SET ANSI_PADDING ON
 GO
-/****** Object:  Index [UX_Restaurantes_IdGeoapify]    Script Date: 4/11/2026 10:27:23 ******/
 CREATE UNIQUE NONCLUSTERED INDEX [UX_Restaurantes_IdGeoapify] ON [dbo].[Restaurantes]
 (
 	[IdGeoapify] ASC
@@ -1049,7 +1008,6 @@ CREATE UNIQUE NONCLUSTERED INDEX [UX_Restaurantes_IdGeoapify] ON [dbo].[Restaura
 WHERE ([IdGeoapify] IS NOT NULL)
 WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 GO
-/****** Object:  Index [UQ_Votos]    Script Date: 4/11/2026 10:27:23 ******/
 ALTER TABLE [dbo].[Votos] ADD  CONSTRAINT [UQ_Votos] UNIQUE NONCLUSTERED 
 (
 	[idUsuario] ASC,
@@ -1217,7 +1175,6 @@ REFERENCES [dbo].[Usuarios] ([ID])
 GO
 ALTER TABLE [dbo].[ZonasUsuarios] CHECK CONSTRAINT [FK_ZonasUsuarios_Usuarios]
 GO
-/****** Object:  StoredProcedure [dbo].[ActualizarPerfilUsuario]    Script Date: 4/11/2026 10:27:23 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1240,15 +1197,14 @@ BEGIN
             idBarrio = @idBarrio
         WHERE ID = @idUsuario;
         
-        SELECT 0 AS Error; -- Todo OK
+        SELECT 0 AS Error;
     END
     ELSE
     BEGIN
-        SELECT 1 AS Error; -- El barrio no existe
+        SELECT 1 AS Error;
     END
 END
 GO
-/****** Object:  StoredProcedure [dbo].[AgregarFavorito]    Script Date: 4/11/2026 10:27:23 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1265,7 +1221,6 @@ BEGIN
         VALUES (@idRestaurante, @idUsuario);
 END
 GO
-/****** Object:  StoredProcedure [dbo].[AgregarHorarioAPlan]    Script Date: 4/11/2026 10:27:23 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1281,7 +1236,6 @@ BEGIN
     VALUES (@idPlan, @idRestaurante, @FechaHoraPropuesta);
 END
 GO
-/****** Object:  StoredProcedure [dbo].[AgregarRestauranteAPlan]    Script Date: 4/11/2026 10:27:23 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1299,7 +1253,6 @@ BEGIN
     END
 END
 GO
-/****** Object:  StoredProcedure [dbo].[AgregarUsuarioAGrupo]    Script Date: 4/11/2026 10:27:23 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1315,15 +1268,15 @@ BEGIN
 
     IF NOT EXISTS (SELECT 1 FROM Usuarios WHERE ID = @idUsuario)
     BEGIN
-        SET @Error = 1; -- El usuario no existe
+        SET @Error = 1;
     END
     ELSE IF NOT EXISTS (SELECT 1 FROM Grupos WHERE ID = @idGrupo)
     BEGIN
-        SET @Error = 2; -- El grupo no existe
+        SET @Error = 2;
     END
     ELSE IF EXISTS (SELECT 1 FROM UsuariosGrupos WHERE idUsuario = @idUsuario AND idGrupo = @idGrupo)
     BEGIN
-        SET @Error = 3; -- El usuario ya pertenece a este grupo
+        SET @Error = 3;
     END
     ELSE
     BEGIN
@@ -1334,7 +1287,6 @@ BEGIN
     SELECT @Error;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[CerrarVotacionPlan]    Script Date: 18/11/2026 12:00:00 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1417,12 +1369,10 @@ BEGIN
     END
 END
 GO
-/****** Object:  StoredProcedure [dbo].[ComprobarEsFavorito]    Script Date: 18/11/2026 12:00:00 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-/* Devuelve 1 si el restaurante está en los favoritos del usuario, si no 0 */
 CREATE PROCEDURE [dbo].[ComprobarEsFavorito]
 	@idUsuario INT,
 	@idRestaurante INT
@@ -1440,7 +1390,6 @@ BEGIN
 	SELECT @Resultado AS EsFavorito;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[CrearPlan]    Script Date: 4/11/2026 10:27:23 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1459,7 +1408,6 @@ BEGIN
     INSERT INTO Planes (Titulo, FechaCierreVotacion, FechaSalida, Estado, idGrupo, idRestauranteElegido, idUsuarioCreador)
     VALUES (@Titulo, @FechaCierreVotacion, @FechaSalida, 0, @idGrupo, NULL, @idUsuarioCreador);
 
-    -- El plan recién guardado es el último que creó ese usuario en ese grupo
     SELECT @idPlanNuevo = P.ID FROM Planes P
     WHERE P.idUsuarioCreador = @idUsuarioCreador AND P.idGrupo = @idGrupo
       AND NOT EXISTS (SELECT * FROM Planes Posterior WHERE Posterior.idUsuarioCreador = P.idUsuarioCreador AND Posterior.idGrupo = P.idGrupo AND Posterior.ID > P.ID);
@@ -1467,7 +1415,6 @@ BEGIN
     SELECT @idPlanNuevo AS idPlanNuevo;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[CrearResena]    Script Date: 4/11/2026 10:27:23 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1485,11 +1432,11 @@ DECLARE @Error INT = 0;
 
     IF (@Puntaje < 1 OR @Puntaje > 5)
     BEGIN
-        SET @Error = 1;  -- EL PUNTAJE TIENE QUE SER DE 1 A 5
+        SET @Error = 1;
     END
     ELSE IF EXISTS (SELECT * FROM [Reseñas] WHERE idUsuario = @idUsuario AND idRestaurante = @idRestaurante)
     BEGIN
-        SET @Error = 2;  -- YA ESCRIBIÓ UNA RESEÑA DE ESTE LUGAR
+        SET @Error = 2;
     END
     ELSE
     BEGIN
@@ -1500,20 +1447,11 @@ DECLARE @Error INT = 0;
     SELECT @Error;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[DefinirHorarioPlan]    Script Date: 18/11/2026 12:00:00 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-/*
-  CONSIGNA ADICIONAL - DefinirHorarioPlan
-  Enunciado: dado un plan con restaurante elegido, cuenta los votos de horario de los
-  integrantes del grupo, informa el horario ganador y su porcentaje y, con @Confirmar = 1,
-  guarda ese horario en Planes.FechaSalida. Si hay empate, no hay votos, o el plan no existe
-  o no tiene restaurante elegido, no modifica nada y informa el motivo.
-  Funcionalidad: Chat del grupo, tarjeta del plan; define la fecha y hora de la salida.
-*/
 CREATE PROCEDURE [dbo].[DefinirHorarioPlan]
     @idPlan int,
     @Confirmar bit = 0
@@ -1550,7 +1488,6 @@ BEGIN
             GROUP BY V.idHorarioVotado;
 
             SELECT @VotosHorario = SUM(Votos) FROM @Conteo;
-            -- El máximo es el horario al que ningún otro le gana en votos
             SELECT @MaximoVotos = C.Votos FROM @Conteo C WHERE NOT EXISTS (SELECT * FROM @Conteo Otro WHERE Otro.Votos > C.Votos);
 
             IF (@VotosHorario IS NULL)
@@ -1582,7 +1519,6 @@ BEGIN
     END
 END
 GO
-/****** Object:  StoredProcedure [dbo].[InicioSesionUsuario]    Script Date: 4/11/2026 10:27:23 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1599,7 +1535,6 @@ BEGIN
 	SELECT * FROM Usuarios WHERE @Email = Email and @Contraseña = Contraseña;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[ListarBarrios]    Script Date: 4/11/2026 10:27:23 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1613,25 +1548,21 @@ BEGIN
 	SELECT ID, Nombre FROM Barrios ORDER BY Nombre ASC;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[ListarCategorias]    Script Date: 4/11/2026 10:27:23 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-/* ===== Procedimientos nuevos ===== */
 CREATE   PROCEDURE [dbo].[ListarCategorias]
 AS
 BEGIN
     SELECT ID, Nombre FROM Categorias ORDER BY Nombre ASC;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[ListarFavoritosUsuario]    Script Date: 18/11/2026 12:00:00 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-/* Los Id de los restaurantes favoritos del usuario */
 CREATE PROCEDURE [dbo].[ListarFavoritosUsuario]
 	@idUsuario INT
 AS
@@ -1641,7 +1572,6 @@ BEGIN
 	SELECT idRestaurante FROM Favoritos WHERE idUsuario = @idUsuario;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[ListarMiembrosGrupo]    Script Date: 4/11/2026 10:27:23 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1656,7 +1586,7 @@ BEGIN
 
     IF NOT EXISTS (SELECT 1 FROM Grupos WHERE ID = @idGrupo)
     BEGIN
-        SET @Error = 1; -- El grupo especificado no existe
+        SET @Error = 1;
     END
     ELSE
     BEGIN
@@ -1669,13 +1599,11 @@ BEGIN
     SELECT @Error;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[ListarPalabrasProhibidas]    Script Date: 18/11/2026 12:00:00 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-/* Las palabras que no se pueden usar en las reseñas. BD.TieneLenguajeOfensivo las lee una vez y las guarda en memoria. */
 CREATE PROCEDURE [dbo].[ListarPalabrasProhibidas]
 AS
 BEGIN
@@ -1684,12 +1612,10 @@ BEGIN
     SELECT Palabra FROM PalabrasProhibidas;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[ListarPuntajesResenas]    Script Date: 18/11/2026 12:00:00 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-/* El puntaje y la fecha de todas las reseñas (los puntajes por lugar ya los suma ListarRestaurantesBuscador). */
 CREATE PROCEDURE [dbo].[ListarPuntajesResenas]
 AS
 BEGIN
@@ -1698,15 +1624,11 @@ BEGIN
 	SELECT ID, Puntaje, Fecha, idUsuario, idRestaurante FROM Reseñas;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[ListarResenasRestaurante]    Script Date: 4/11/2026 10:27:23 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-/* Las reseñas publicadas (con más de 24 horas) de un lugar, de la más nueva a la más vieja.
-   @Desde: cuántas se saltea. @Cantidad: cuántas trae (NULL = todas las que quedan).
-   Trae también el nombre y la foto de quien la escribió, así no hace falta pedir cada perfil aparte. */
 CREATE PROCEDURE [dbo].[ListarResenasRestaurante]
     @idRestaurante INT,
     @Desde INT = 0,
@@ -1726,14 +1648,10 @@ BEGIN
     OFFSET @Desde ROWS FETCH NEXT ISNULL(@Cantidad, 2147483647) ROWS ONLY;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[ListarRestaurantesBuscador]    Script Date: 18/11/2026 12:00:00 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-/* Todos los restaurantes con su categoría, su barrio y las coordenadas (las del lugar y las del centro de su barrio).
-   También las reseñas ya contadas por lugar: las publicadas (más de 24 horas) y el promedio de todas.
-   Con esto BuscadorRestaurantes busca, filtra y ordena en 05 · Descubrir, y TarjetaRestaurante arma los recomendados. */
 CREATE PROCEDURE [dbo].[ListarRestaurantesBuscador]
 AS
 BEGIN
@@ -1752,7 +1670,6 @@ BEGIN
 	ORDER BY r.ID;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[ListarRestriccionesRestaurante]    Script Date: 4/11/2026 10:27:23 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1769,12 +1686,10 @@ BEGIN
     ORDER BY R.Nombre;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[ListarTodasRestriccionesRestaurantes]    Script Date: 18/11/2026 12:00:00 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-/* Qué restricciones cumple cada restaurante (una fila por restaurante y restricción) */
 CREATE PROCEDURE [dbo].[ListarTodasRestriccionesRestaurantes]
 AS
 BEGIN
@@ -1783,7 +1698,6 @@ BEGIN
 	SELECT ID, idRestaurante, idRestriccion FROM RestriccionesRestaurantes;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[Mostrar4Restaurantes]    Script Date: 4/11/2026 10:27:23 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1798,7 +1712,6 @@ BEGIN
 	SELECT TOP (@Cantidad) * FROM Restaurantes ORDER BY ID ASC;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[MostrarFavoritos]    Script Date: 4/11/2026 10:27:23 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1818,7 +1731,6 @@ BEGIN
 	ORDER BY F.ID ASC;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[ObtenerPerfilUsuario]    Script Date: 4/11/2026 10:27:23 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1835,12 +1747,10 @@ BEGIN
     WHERE U.ID = @idUsuario;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[ObtenerRestaurante]    Script Date: 18/11/2026 12:00:00 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-/* Un restaurante con su barrio, su categoría, el promedio de todas sus reseñas y cuántas tiene */
 CREATE PROCEDURE [dbo].[ObtenerRestaurante]
 	@idRestaurante INT
 AS
@@ -1861,7 +1771,6 @@ BEGIN
 	WHERE R.ID = @idRestaurante;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[ParticipacionGrupo]    Script Date: 18/11/2026 12:00:00 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1933,7 +1842,6 @@ BEGIN
     END
 END
 GO
-/****** Object:  StoredProcedure [dbo].[QuitarFavorito]    Script Date: 4/11/2026 10:27:23 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -1948,7 +1856,6 @@ BEGIN
     WHERE idUsuario = @idUsuario AND idRestaurante = @idRestaurante;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[RankingActividadUsuarios]    Script Date: 18/11/2026 12:00:00 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2004,7 +1911,6 @@ BEGIN
     END
 END
 GO
-/****** Object:  StoredProcedure [dbo].[RankingRestaurantesPopulares]    Script Date: 18/11/2026 12:00:00 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2048,7 +1954,6 @@ BEGIN
     END
 END
 GO
-/****** Object:  StoredProcedure [dbo].[RecomendarRestaurantesGrupo]    Script Date: 18/11/2026 12:00:00 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2100,16 +2005,11 @@ BEGIN
     END
 END
 GO
-/****** Object:  StoredProcedure [dbo].[RegistrarRestaurante]    Script Date: 4/11/2026 10:27:23 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-/* Devuelve 0 si se guardó, 1 si el email ya se usó (en un restaurante o en un usuario),
-   2 si el barrio no existe o 3 si la categoría no existe.
-   El formulario solo pide nombre, email, contraseña, barrio, categoría y plan:
-   los demás datos del local (dirección, teléfono, descripción, horarios) quedan vacíos. */
 CREATE   PROCEDURE [dbo].[RegistrarRestaurante]
     @Nombre VARCHAR(100),
     @Email VARCHAR(100),
@@ -2126,15 +2026,15 @@ BEGIN
     IF EXISTS (SELECT 1 FROM CuentasRestaurantes WHERE Email = @Email)
        OR EXISTS (SELECT 1 FROM Usuarios WHERE Email = @Email)
     BEGIN
-        SET @Error = 1; -- EL EMAIL YA SE USÓ
+        SET @Error = 1;
     END
     ELSE IF NOT EXISTS (SELECT 1 FROM Barrios WHERE ID = @idBarrio)
     BEGIN
-        SET @Error = 2; -- EL BARRIO NO EXISTE
+        SET @Error = 2;
     END
     ELSE IF NOT EXISTS (SELECT 1 FROM Categorias WHERE ID = @idCategoria)
     BEGIN
-        SET @Error = 3; -- LA CATEGORÍA NO EXISTE
+        SET @Error = 3;
     END
     ELSE
     BEGIN
@@ -2142,7 +2042,6 @@ BEGIN
                                   Telefono, HorarioApertura, HorarioCerrado, RangoPrecio, Foto, idBarrio, idCategoria, EsPro)
         VALUES (@Nombre, '', 0, 0, '', '', '19000101', '19000101', 0, NULL, @idBarrio, @idCategoria, @EsPro);
 
-        -- El restaurante recién guardado es el último con ese nombre y barrio
         SELECT @idRestauranteNuevo = R.ID FROM Restaurantes R
         WHERE R.Nombre = @Nombre AND R.idBarrio = @idBarrio
           AND NOT EXISTS (SELECT * FROM Restaurantes Posterior WHERE Posterior.Nombre = R.Nombre AND Posterior.idBarrio = R.idBarrio AND Posterior.ID > R.ID);
@@ -2154,7 +2053,6 @@ BEGIN
     SELECT @Error;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[RegistrarUsuario]    Script Date: 4/11/2026 10:27:23 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2181,19 +2079,18 @@ Declare @Error int
         END
         ELSE
         BEGIN
-            SET @Error = 1; -- EL NOMBRE DE USUARIO YA EXISTE
+            SET @Error = 1;
         END
     END
     ELSE
     BEGIN
-        SET @Error = 2; -- EL EMAIL YA SE USÓ
+        SET @Error = 2;
     END
 
 SELECT @Error;
 
 END
 GO
-/****** Object:  StoredProcedure [dbo].[VotarPlanCompleto]    Script Date: 4/11/2026 10:27:23 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2222,12 +2119,7 @@ BEGIN
     END
 END
 GO
-/* ============================================================================
-   PROCEDIMIENTOS NUEVOS: reemplazan las consultas SQL que estaban escritas en Models/BD.cs.
-   Cada uno dice arriba qué método de BD.cs reemplaza.
-   ============================================================================ */
 
-/****** Object:  StoredProcedure [dbo].[ProbarConexion]  -- BD.ProbarConexion ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2241,7 +2133,6 @@ BEGIN
     SELECT 1;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[ContarResenasUsuario]  -- BD.ContarResenasDeUsuario: todas las reseñas que escribió, publicadas o no ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2256,7 +2147,6 @@ BEGIN
     SELECT COUNT(*) FROM Reseñas WHERE idUsuario = @idUsuario;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[ListarRestricciones]  -- BD.ObtenerRestricciones ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2270,7 +2160,6 @@ BEGIN
     SELECT ID, Nombre FROM Restricciones ORDER BY ID;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[ListarBarriosConCoordenadas]  -- BD.ObtenerBarriosConCoordenadas ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2284,7 +2173,6 @@ BEGIN
     SELECT ID, Nombre, Latitud, Longitud FROM Barrios ORDER BY ID;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[ObtenerBarrioUsuario]  -- BD.ObtenerBarrioDeUsuario ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2302,7 +2190,6 @@ BEGIN
     WHERE u.ID = @idUsuario;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[ListarRestriccionesUsuario]  -- BD.ObtenerRestriccionesDeUsuario ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2321,7 +2208,6 @@ BEGIN
     ORDER BY re.ID;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[ObtenerDatosEdicionUsuario]  -- BD.ObtenerDatosEdicion: lo que carga el modal Editar perfil ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2338,7 +2224,6 @@ BEGIN
     WHERE ID = @idUsuario;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[ListarZonasUsuario]  -- BD.ObtenerZonasDeUsuario ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2353,7 +2238,6 @@ BEGIN
     SELECT idBarrio FROM ZonasUsuarios WHERE idUsuario = @idUsuario ORDER BY idBarrio;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[ListarCompaniasUsuario]  -- BD.ObtenerCompaniasDeUsuario ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2368,7 +2252,6 @@ BEGIN
     SELECT Compania FROM CompaniasUsuarios WHERE idUsuario = @idUsuario ORDER BY ID;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[ObtenerSoloAptoUsuario]  -- BD.ObtenerSoloApto (NULL si todavía no eligió) ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2383,7 +2266,6 @@ BEGIN
     SELECT SoloApto FROM Usuarios WHERE ID = @idUsuario;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[GuardarSoloApto]  -- BD.GuardarSoloApto ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2399,12 +2281,10 @@ BEGIN
     UPDATE Usuarios SET SoloApto = @soloApto WHERE ID = @idUsuario;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[ExisteNombreUsuario]    Script Date: 18/11/2026 12:00:00 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-/* Devuelve 1 si otro usuario ya tiene ese nombre de usuario, si no 0 */
 CREATE PROCEDURE [dbo].[ExisteNombreUsuario]
 	@nombreUsuario VARCHAR(50),
 	@idUsuario INT
@@ -2422,7 +2302,6 @@ BEGIN
 	SELECT @Resultado;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[GuardarFrecuenciaUsuario]  -- BD.GuardarGustos (1 de 7) ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2438,7 +2317,6 @@ BEGIN
     UPDATE Usuarios SET Frecuencia = @frecuencia WHERE ID = @idUsuario;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[BorrarRestriccionesUsuario]  -- BD.GuardarGustos (2 de 7) ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2453,7 +2331,6 @@ BEGIN
     DELETE FROM RestriccionesUsuarios WHERE idUsuario = @idUsuario;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[AgregarRestriccionUsuario]  -- BD.GuardarGustos (3 de 7) ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2469,7 +2346,6 @@ BEGIN
     INSERT INTO RestriccionesUsuarios (idUsuario, idRestricciones) VALUES (@idUsuario, @idRestriccion);
 END
 GO
-/****** Object:  StoredProcedure [dbo].[BorrarZonasUsuario]  -- BD.GuardarGustos (4 de 7) ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2484,7 +2360,6 @@ BEGIN
     DELETE FROM ZonasUsuarios WHERE idUsuario = @idUsuario;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[AgregarZonaUsuario]  -- BD.GuardarGustos (5 de 7) ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2500,7 +2375,6 @@ BEGIN
     INSERT INTO ZonasUsuarios (idUsuario, idBarrio) VALUES (@idUsuario, @idBarrio);
 END
 GO
-/****** Object:  StoredProcedure [dbo].[BorrarCompaniasUsuario]  -- BD.GuardarGustos (6 de 7) ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2515,7 +2389,6 @@ BEGIN
     DELETE FROM CompaniasUsuarios WHERE idUsuario = @idUsuario;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[AgregarCompaniaUsuario]  -- BD.GuardarGustos (7 de 7) ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2531,7 +2404,6 @@ BEGIN
     INSERT INTO CompaniasUsuarios (idUsuario, Compania) VALUES (@idUsuario, @compania);
 END
 GO
-/****** Object:  StoredProcedure [dbo].[GuardarDatosPerfilUsuario]  -- BD.GuardarPerfil: datos del modal Editar perfil (la foto solo se cambia si llega una nueva) ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2554,13 +2426,10 @@ BEGIN
     WHERE ID = @idUsuario;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[GuardarLugarGeoapify]    Script Date: 18/11/2026 12:00:00 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-/* Guarda un lugar que trajo Geoapify. Si ya estaba (mismo IdGeoapify) lo actualiza.
-   Devuelve 1 si es nuevo y 0 si ya estaba. */
 CREATE PROCEDURE [dbo].[GuardarLugarGeoapify]
 	@IdGeoapify VARCHAR(300),
 	@Nombre VARCHAR(100),
@@ -2599,7 +2468,6 @@ BEGIN
 	SELECT @EsNuevo;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[ObtenerOrigenRestaurante]  -- BD.ObtenerOrigenRestaurante ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2614,7 +2482,6 @@ BEGIN
     SELECT Origen FROM Restaurantes WHERE ID = @idRestaurante;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[ListarRestaurantesConRestriccion]  -- BD.ObtenerRestaurantesConRestriccion ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2629,7 +2496,6 @@ BEGIN
     SELECT idRestaurante FROM RestriccionesRestaurantes WHERE idRestriccion = @idRestriccion;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[ObtenerLugar]  -- BD.ObtenerLugar ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2648,7 +2514,6 @@ BEGIN
     WHERE r.ID = @idRestaurante;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[ListarChatsUsuario]  -- BD.ObtenerChatsDeUsuario: los grupos con la fecha del último mensaje y los no leídos ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2675,7 +2540,6 @@ BEGIN
     ORDER BY FechaOrden DESC;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[ObtenerGrupo]  -- BD.ObtenerGrupo ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2690,7 +2554,6 @@ BEGIN
     SELECT ID, Nombre, Foto, FechaCreacion FROM Grupos WHERE ID = @idGrupo;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[ListarMensajesGrupo]  -- BD.ObtenerMensajes: los mensajes con Id mayor a @desdeId, del más viejo al más nuevo ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2710,7 +2573,6 @@ BEGIN
     ORDER BY m.ID;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[GuardarMensaje]  -- BD.GuardarMensaje ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2728,7 +2590,6 @@ BEGIN
     VALUES (@contenido, GETDATE(), @idGrupo, @idUsuario);
 END
 GO
-/****** Object:  StoredProcedure [dbo].[GuardarMensajePlan]  -- BD.CrearPlan (último paso): publica el plan en el chat como mensaje encuesta ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2747,7 +2608,6 @@ BEGIN
     VALUES (@titulo, GETDATE(), @idGrupo, @idCreador, @idPlan);
 END
 GO
-/****** Object:  StoredProcedure [dbo].[MarcarGrupoLeido]  -- BD.MarcarComoLeido ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2763,7 +2623,6 @@ BEGIN
     UPDATE UsuariosGrupos SET UltimaLectura = GETDATE() WHERE idUsuario = @idUsuario AND idGrupo = @idGrupo;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[CrearGrupo]  -- BD.CrearGrupo: crea el grupo y devuelve el Id nuevo (los integrantes se suman con AgregarUsuarioAGrupo) ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2778,7 +2637,6 @@ BEGIN
 
     INSERT INTO Grupos (Nombre, FechaCreacion) VALUES (@nombre, GETDATE());
 
-    -- El grupo recién guardado es el último con ese nombre
     SELECT @idGrupoNuevo = G.ID FROM Grupos G
     WHERE G.Nombre = @nombre
       AND NOT EXISTS (SELECT * FROM Grupos Posterior WHERE Posterior.Nombre = G.Nombre AND Posterior.ID > G.ID);
@@ -2786,7 +2644,6 @@ BEGIN
     SELECT @idGrupoNuevo AS idGrupoNuevo;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[ActualizarFotoGrupo]  -- BD.ActualizarFotoGrupo ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2802,7 +2659,6 @@ BEGIN
     UPDATE Grupos SET Foto = @foto WHERE ID = @idGrupo;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[ListarOtrosUsuarios]  -- BD.ObtenerOtrosUsuarios: "Sumá amigos" (todavía no hay tabla de amistades) ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2820,7 +2676,6 @@ BEGIN
     ORDER BY NombreCompleto;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[ContarAmigosUsuario]  -- BD.ContarAmigos: personas distintas que comparten algún grupo con el usuario ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2840,7 +2695,6 @@ BEGIN
           GROUP BY otros.idUsuario) AS Amigos;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[ListarRestriccionesGrupo]  -- BD.ObtenerRestriccionesDeGrupo: las restricciones de los integrantes, sin repetir ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2860,14 +2714,10 @@ BEGIN
     GROUP BY re.Nombre;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[ListarPlanesUsuario]    Script Date: 18/11/2026 12:00:00 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-/* Los planes de todos los grupos del usuario, del más nuevo al más viejo (los cancelados no van).
-   NumeroEstado: 0 = En votación, 1 = Confirmado. El texto del chip lo arma TarjetaPlan.
-   @confirmado: NULL trae todos, 0 solo los en votación y 1 solo los confirmados. */
 CREATE PROCEDURE [dbo].[ListarPlanesUsuario]
 	@idUsuario INT,
 	@confirmado BIT = NULL
@@ -2897,7 +2747,6 @@ BEGIN
 	END
 END
 GO
-/****** Object:  StoredProcedure [dbo].[ContarPlanesVotacionUsuario]  -- BD.ContarPlanesEnVotacion ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2915,7 +2764,6 @@ BEGIN
     WHERE ug.idUsuario = @idUsuario AND p.Estado = 0;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[ObtenerPlan]  -- BD.ObtenerPlan ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2930,7 +2778,6 @@ BEGIN
     SELECT * FROM Planes WHERE ID = @idPlan;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[ObtenerEncuestaPlan]  -- BD.ObtenerEncuesta (1 de 4): los datos del plan como los ve @idUsuario, con su voto de lugar y de horario ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2958,7 +2805,6 @@ BEGIN
     WHERE p.ID = @idPlan;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[ListarOpcionesPlan]  -- BD.ObtenerEncuesta (2 de 4): los lugares en el orden en que se propusieron, con sus votos ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2980,8 +2826,6 @@ BEGIN
     ORDER BY pr.ID;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[ListarHorariosPlan]  -- BD.ObtenerEncuesta (3 de 4): los horarios de más temprano a más tarde.
-   PlanesHorarios tiene una fila por lugar y por hora: cada horario se identifica con la primera fila (la que no tiene otra anterior con la misma hora). ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3003,13 +2847,10 @@ BEGIN
     ORDER BY ph.FechaHoraPropuesta;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[ListarParticipantesPlan]    Script Date: 18/11/2026 12:00:00 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-/* Los integrantes del grupo del plan con lo que votó cada uno (lugar y horario), por nombre.
-   Al que organiza lo pone primero BD.ObtenerEncuesta. */
 CREATE PROCEDURE [dbo].[ListarParticipantesPlan]
 	@idPlan INT
 AS
@@ -3032,7 +2873,6 @@ BEGIN
 	ORDER BY u.NombreCompleto;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[ListarPlanesPublicadosGrupo]  -- BD.ObtenerEncuestasDeGrupo: los planes que se publicaron en el chat del grupo ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3047,13 +2887,10 @@ BEGIN
     SELECT idPlan FROM Mensajes WHERE idGrupo = @idGrupo AND idPlan IS NOT NULL ORDER BY ID;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[BuscarLugaresParaGrupo]    Script Date: 18/11/2026 12:00:00 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-/* Los lugares cuyo nombre tiene el texto, por nombre (buscador del modal Crear plan).
-   Cuáles son aptos para todo el grupo y cuáles se muestran lo decide LugarBuscado.BuscarParaGrupo. */
 CREATE PROCEDURE [dbo].[BuscarLugaresParaGrupo]
 	@idGrupo INT,
 	@texto VARCHAR(100)
@@ -3069,12 +2906,10 @@ BEGIN
 	ORDER BY r.Nombre;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[EsLugarDelPlan]    Script Date: 18/11/2026 12:00:00 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-/* Devuelve 1 si el lugar es una de las opciones del plan, si no 0 */
 CREATE PROCEDURE [dbo].[EsLugarDelPlan]
 	@idPlan INT,
 	@idRestaurante INT
@@ -3092,12 +2927,10 @@ BEGIN
 	SELECT @Resultado;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[EsHorarioDelPlan]    Script Date: 18/11/2026 12:00:00 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-/* Devuelve 1 si el horario es una de las opciones del plan, si no 0 */
 CREATE PROCEDURE [dbo].[EsHorarioDelPlan]
 	@idPlan INT,
 	@idHorario INT
@@ -3115,7 +2948,6 @@ BEGIN
 	SELECT @Resultado;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[ObtenerLugarVotado]  -- BD.ObtenerLugarVotado (sin filas si todavía no votó) ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3131,7 +2963,6 @@ BEGIN
     SELECT idRestaurante FROM Votos WHERE idPlan = @idPlan AND idUsuario = @idUsuario;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[ObtenerHorarioVotadoEnLugar]  -- BD.Votar: la fila de PlanesHorarios con la misma hora que ya había votado, pero en el lugar nuevo (sin filas si no votó horario) ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3151,7 +2982,6 @@ BEGIN
     WHERE v.idPlan = @idPlan AND v.idUsuario = @idUsuario AND ph.idRestaurante = @idRestaurante;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[ObtenerHorarioDeLugar]  -- BD.VotarHorario: dada cualquier fila de una hora (@idHorario), la fila de esa hora en el lugar votado ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3170,7 +3000,6 @@ BEGIN
     WHERE ph.idPlan = @idPlan AND ph.idRestaurante = @idRestaurante;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[ConfirmarPlan]  -- BD.ConfirmarPlan: queda Confirmado con el lugar ganador; FechaSalida pasa a ser el día y la hora ganadora ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3190,7 +3019,6 @@ BEGIN
     WHERE ID = @idPlan;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[CancelarPlan]  -- BD.CancelarPlan ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3205,7 +3033,6 @@ BEGIN
     UPDATE Planes SET Estado = 2 WHERE ID = @idPlan;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[GuardarBusqueda]  -- BD.GuardarBusqueda ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3221,7 +3048,6 @@ BEGIN
     INSERT INTO Busquedas (idUsuario, Texto, Fecha) VALUES (@idUsuario, @texto, GETDATE());
 END
 GO
-/****** Object:  StoredProcedure [dbo].[ListarBusquedasRecientes]  -- BD.ObtenerBusquedasRecientes: las últimas búsquedas del usuario, sin repetir, la más nueva primero ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3241,12 +3067,10 @@ BEGIN
     ORDER BY b.Fecha DESC, b.ID DESC;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[ComprobarYaReseno]    Script Date: 18/11/2026 12:00:00 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-/* Devuelve 1 si el usuario ya dejó una reseña de ese lugar (publicada o no), si no 0 */
 CREATE PROCEDURE [dbo].[ComprobarYaReseno]
 	@idUsuario INT,
 	@idRestaurante INT
@@ -3264,7 +3088,6 @@ BEGIN
 	SELECT @Resultado;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[ObtenerVisitaVerificada]  -- BD.ObtenerVisitaVerificada: el último plan confirmado de un grupo del usuario en ese lugar que ya pasó (sin filas si no hay) ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3284,7 +3107,6 @@ BEGIN
     ORDER BY p.FechaSalida DESC;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[ObtenerCreadorGrupo]  -- BD.ObtenerIdCreadorGrupo: el creador es el primer integrante que se sumó al grupo ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3302,7 +3124,6 @@ BEGIN
       AND NOT EXISTS (SELECT * FROM UsuariosGrupos anterior WHERE anterior.idGrupo = ug.idGrupo AND anterior.ID < ug.ID);
 END
 GO
-/****** Object:  StoredProcedure [dbo].[ActualizarGrupo]  -- BD.ActualizarGrupo (1 de 2): cambia el nombre y, si viene una, la foto ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3319,7 +3140,6 @@ BEGIN
     UPDATE Grupos SET Nombre = @nombre, Foto = ISNULL(@foto, Foto) WHERE ID = @idGrupo;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[QuitarUsuarioDeGrupo]  -- BD.ActualizarGrupo (2 de 2): saca a un integrante y sus votos en los planes que siguen en votación ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON

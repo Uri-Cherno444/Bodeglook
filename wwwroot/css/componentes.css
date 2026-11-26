@@ -25,10 +25,10 @@
     padding: 0 24px;
     border-radius: 7px;
     border: 2px solid var(--naranja);
-    font-family: inherit;
+    font-family: 'PT Sans', sans-serif;
     font-weight: 700;
-    font-size: 16px;
-    line-height: 20px;
+    font-size: 100%;
+    line-height: 125%;
     letter-spacing: -0.16px;
     text-decoration: none;
     white-space: nowrap;
@@ -110,8 +110,8 @@
 .boton-grande {
     height: 58px;
     padding: 0 27px;
-    font-size: 18px;
-    line-height: 22px;
+    font-size: 113%;
+    line-height: 122%;
     letter-spacing: -0.18px;
 }
 
@@ -127,7 +127,7 @@
 }
 
 .campo label {
-    font-size: 14px;
+    font-size: 88%;
     font-weight: 700;
 }
 
@@ -138,8 +138,8 @@
     border: 1px solid var(--gris-medio);
     border-radius: 7px;
     background: var(--blanco);
-    font-family: inherit;
-    font-size: 16px;
+    font-family: 'PT Sans', sans-serif;
+    font-size: 100%;
     letter-spacing: -0.16px;
     color: var(--negro);
 }
@@ -169,8 +169,8 @@
     border: 1px solid var(--gris-medio);
     border-radius: 7px;
     background: var(--blanco);
-    font-family: inherit;
-    font-size: 16px;
+    font-family: 'PT Sans', sans-serif;
+    font-size: 100%;
     color: var(--negro);
     resize: vertical;
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
@@ -282,12 +282,12 @@
 
 .no-desarrollado h1 {
     margin: 0;
-    font-size: 32px;
+    font-size: 200%;
 }
 
 .no-desarrollado p {
     margin: 0;
-    font-size: 18px;
+    font-size: 113%;
     color: var(--gris-texto);
 }
 
@@ -332,9 +332,9 @@
     border-radius: 4px;
     background: var(--negro);
     color: var(--blanco);
-    font-size: 13px;
+    font-size: 81%;
     font-weight: 700;
-    line-height: 20px;
+    line-height: 154%;
     letter-spacing: -0.13px;
     box-shadow: 0 1.2px 1.8px rgba(0, 0, 0, 0.1), 0 6.4px 7.2px rgba(0, 0, 0, 0.13);
     animation: aparecer-suave 0.25s ease;
@@ -361,8 +361,8 @@
     border-radius: 7px;
     background: rgba(251, 199, 86, 0.1);
     color: var(--amarillo);
-    font-size: 16px;
-    line-height: 24px;
+    font-size: 100%;
+    line-height: 150%;
     letter-spacing: -0.16px;
 }
 
@@ -413,7 +413,7 @@
     border-radius: 9px;
     background: var(--blanco);
     box-shadow: 0 5px 10px rgba(0, 0, 0, 0.25);
-    font-family: inherit;
+    font-family: 'PT Sans', sans-serif;
 }
 
 .dialogo[open] {
@@ -433,15 +433,15 @@
 
 .dialogo-titulo {
     margin: 0;
-    font-size: 18px;
-    line-height: 22px;
+    font-size: 113%;
+    line-height: 122%;
     letter-spacing: -0.18px;
 }
 
 .dialogo-descripcion {
     margin: 9px 0 15px;
-    font-size: 14px;
-    line-height: 20px;
+    font-size: 88%;
+    line-height: 143%;
 }
 
 .dialogo-botones {
@@ -459,11 +459,11 @@
     min-width: 40px;
     height: 40px;
     border: none;
-    border-radius: 20px;
+    border-radius: 50%;
     background: var(--naranja-suave);
     color: var(--naranja);
-    font-family: inherit;
-    font-size: 16px;
+    font-family: 'PT Sans', sans-serif;
+    font-size: 100%;
     font-weight: 700;
     cursor: pointer;
     transition: transform 0.2s ease;
@@ -489,7 +489,7 @@
 .boton-volver {
     width: 44px;
     height: 44px;
-    border-radius: 22px;
+    border-radius: 50%;
     background: var(--blanco);
     display: flex;
     align-items: center;
@@ -519,7 +519,7 @@
     padding: 8px 16px;
     border-radius: 20px;
     font-weight: 700;
-    font-size: 14px;
+    font-size: 88%;
     white-space: nowrap;
 }
 
@@ -535,7 +535,7 @@
 
 .chip-categoria {
     padding: 4px 18px;
-    font-size: 15px;
+    font-size: 94%;
 }
 
 .tarjeta {
@@ -550,14 +550,14 @@
 
 .tarjeta h3 {
     margin: 0;
-    font-size: 28px;
+    font-size: 175%;
     font-weight: 700;
 }
 
 .tarjeta p {
     margin: 0;
-    font-size: 18px;
-    line-height: 28px;
+    font-size: 113%;
+    line-height: 156%;
     color: var(--gris-texto);
 }
 
@@ -567,7 +567,7 @@
     justify-content: center;
     width: 56px;
     height: 56px;
-    border-radius: 28px;
+    border-radius: 50%;
     background: var(--naranja-suave);
     min-width: 56px;
 }
@@ -575,7 +575,7 @@
 .icono-circulo-naranja {
     background: var(--naranja);
     color: var(--blanco);
-    font-size: 24px;
+    font-size: 150%;
     font-weight: 700;
 }
 
@@ -617,7 +617,7 @@
     height: 36px;
     padding: 0;
     border: none;
-    border-radius: 18px;
+    border-radius: 50%;
     background: var(--blanco);
     display: flex;
     align-items: center;
@@ -683,7 +683,7 @@
     border: 1px dashed var(--gris-medio);
     border-radius: 16px;
     text-align: center;
-    font-size: 18px;
+    font-size: 113%;
     color: var(--gris-texto);
 }
 
@@ -710,7 +710,7 @@
 }
 
 .tarjeta-lugar-nombre {
-    font-size: 20px;
+    font-size: 125%;
     flex: 1;
     min-width: 0;
     display: block;
@@ -731,7 +731,7 @@
 }
 
 .puntaje {
-    font-size: 16px;
+    font-size: 100%;
     font-weight: 700;
     color: var(--naranja);
 }
@@ -746,7 +746,7 @@
     display: flex;
     align-items: center;
     gap: 4px;
-    font-size: 14px;
+    font-size: 88%;
     color: var(--gris-texto);
 }
 
@@ -774,19 +774,19 @@
 }
 
 .resena-nombre {
-    font-size: 16px;
+    font-size: 100%;
     font-weight: 700;
 }
 
 .resena-fecha {
-    font-size: 13px;
+    font-size: 81%;
     color: var(--gris-texto);
 }
 
 .resena-texto {
     margin: 0;
-    font-size: 16px;
-    line-height: 24px;
+    font-size: 100%;
+    line-height: 150%;
     color: var(--gris-texto);
 }
 
@@ -830,10 +830,10 @@
     justify-content: center;
     width: 44px;
     height: 44px;
-    border-radius: 22px;
+    border-radius: 50%;
     background: var(--naranja-suave);
     color: var(--naranja);
-    font-size: 16px;
+    font-size: 100%;
     font-weight: 700;
     min-width: 44px;
     overflow: hidden;
@@ -845,18 +845,27 @@
     gap: 13px;
     color: var(--negro);
     text-decoration: none;
-    font-size: 26px;
+    font-size: 163%;
     font-weight: 700;
 }
 
 .encabezado {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 100;
     height: 88px;
-    padding: 0 64px;
+    padding: 0 4%;
     display: flex;
     align-items: center;
     justify-content: space-between;
     background: var(--blanco);
     border-bottom: 1px solid var(--linea);
+}
+
+.encabezado ~ main {
+    padding-top: 88px;
 }
 
 .encabezado-acciones {
@@ -892,7 +901,7 @@
     flex-direction: column;
     align-items: center;
     gap: 6px;
-    font-size: 16px;
+    font-size: 100%;
     font-weight: 700;
     color: var(--negro);
     text-decoration: none;
@@ -917,13 +926,13 @@
     width: 40px;
     min-width: 40px;
     height: 40px;
-    border-radius: 20px;
-    font-size: 14px;
+    border-radius: 50%;
+    font-size: 88%;
 }
 
 .chip-filtro {
     padding: 8px 18px;
-    font-size: 15px;
+    font-size: 94%;
     text-decoration: none;
 }
 
@@ -944,10 +953,10 @@
     padding: 0;
     border: none;
     background: none;
-    font-family: inherit;
-    font-size: 16px;
+    font-family: 'PT Sans', sans-serif;
+    font-size: 100%;
     font-weight: 700;
-    line-height: 24px;
+    line-height: 150%;
     color: var(--gris-claro);
     cursor: pointer;
 }
@@ -977,7 +986,7 @@
 }
 
 .paginacion-puntos {
-    font-size: 16px;
+    font-size: 100%;
     font-weight: 700;
     color: var(--gris-claro);
 }
@@ -994,8 +1003,8 @@
     border-radius: 24px;
     background: var(--blanco);
     color: var(--negro);
-    font-family: inherit;
-    font-size: 15px;
+    font-family: 'PT Sans', sans-serif;
+    font-size: 94%;
     cursor: pointer;
     transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
@@ -1018,11 +1027,11 @@
 .pie {
     background: var(--negro);
     border-top: 1px solid #262626;
-    padding: 56px 112px 48px;
+    padding: 4% 8% 3%;
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    gap: 48px;
+    gap: 48px 4%;
 }
 
 .pie-marca {
@@ -1036,7 +1045,7 @@
     align-items: center;
     gap: 14px;
     color: var(--blanco);
-    font-size: 29px;
+    font-size: 181%;
     font-weight: 700;
 }
 
@@ -1050,21 +1059,21 @@
     margin: 0;
     width: 380px;
     max-width: 100%;
-    font-size: 14px;
-    line-height: 22px;
+    font-size: 88%;
+    line-height: 157%;
     color: var(--gris-medio);
 }
 
 .pie-copyright {
     margin: 0;
-    font-size: 13px;
+    font-size: 81%;
     color: var(--gris-texto);
 }
 
 .pie-columnas {
     display: flex;
     gap: 96px;
-    font-size: 14px;
+    font-size: 88%;
 }
 
 .pie-columna {
@@ -1115,6 +1124,14 @@
         gap: 12px;
     }
 
+    .encabezado ~ main {
+        padding-top: 69px;
+    }
+
+    .encabezado-usuario ~ main {
+        padding-top: 110px;
+    }
+
     .navegacion {
         order: 1;
         width: 100%;
@@ -1124,14 +1141,15 @@
     }
 
     .logo {
-        font-size: 22px;
+        font-size: 138%;
         gap: 8px;
     }
 
     .encabezado-acciones .boton {
         height: 42px;
         padding: 0 14px;
-        font-size: 14px;
+        font-size: 88%;
+        line-height: 143%;
     }
 
     .pie {
@@ -1158,10 +1176,10 @@
     border-bottom: 2px solid var(--gris-medio);
     background: none;
     color: var(--gris-claro);
-    font-family: inherit;
-    font-size: 16px;
+    font-family: 'PT Sans', sans-serif;
+    font-size: 100%;
     font-weight: 700;
-    line-height: 20px;
+    line-height: 125%;
     letter-spacing: -0.16px;
     cursor: pointer;
     transition: color 0.2s ease, border-color 0.2s ease;
@@ -1223,7 +1241,7 @@
 }
 
 .tarjeta-plan-nombre {
-    font-size: 20px;
+    font-size: 125%;
     font-weight: 700;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1231,7 +1249,7 @@
 }
 
 .tarjeta-plan-detalle {
-    font-size: 14px;
+    font-size: 88%;
     color: var(--gris-texto);
 }
 
@@ -1261,7 +1279,7 @@
     min-width: 30px;
     height: 30px;
     border: 1px solid var(--gris-medio);
-    border-radius: 15px;
+    border-radius: 50%;
     background: var(--blanco);
     display: flex;
     align-items: center;
@@ -1276,7 +1294,7 @@
     content: "";
     width: 16px;
     height: 16px;
-    border-radius: 8px;
+    border-radius: 50%;
     background: var(--naranja);
 }
 
@@ -1292,9 +1310,9 @@
 }
 
 .casilla-texto {
-    font-size: 16px;
+    font-size: 100%;
     font-weight: 700;
-    line-height: 20px;
+    line-height: 125%;
     letter-spacing: -0.16px;
 }
 
@@ -1331,9 +1349,9 @@
     width: 28px;
     min-width: 28px;
     height: 28px;
-    border-radius: 14px;
+    border-radius: 50%;
     border: 2px solid var(--blanco);
-    font-size: 10px;
+    font-size: 63%;
     margin-left: -10px;
 }
 
@@ -1342,8 +1360,8 @@
 }
 
 .panel-chats {
-    width: 520px;
-    min-width: 520px;
+    width: 43%;
+    min-width: 43%;
     padding: 28px;
     border: 1px solid var(--linea);
     border-radius: 24px;
@@ -1361,7 +1379,7 @@
 
 .panel-chats-encabezado h2 {
     margin: 0;
-    font-size: 32px;
+    font-size: 200%;
 }
 
 .panel-chats-vacio {
@@ -1406,7 +1424,7 @@
     width: 64px;
     min-width: 64px;
     height: 64px;
-    border-radius: 32px;
+    border-radius: 50%;
     background: var(--arena);
     display: flex;
     align-items: center;
@@ -1429,12 +1447,12 @@
 }
 
 .fila-chat-nombre {
-    font-size: 18px;
+    font-size: 113%;
     font-weight: 700;
 }
 
 .fila-chat-integrantes {
-    font-size: 14px;
+    font-size: 88%;
     color: var(--gris-texto);
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1446,7 +1464,7 @@
     flex-direction: column;
     align-items: flex-end;
     gap: 6px;
-    font-size: 13px;
+    font-size: 81%;
     color: var(--gris-texto);
 }
 
@@ -1457,7 +1475,7 @@
     border-radius: 11px;
     background: var(--naranja);
     color: var(--blanco);
-    font-size: 11px;
+    font-size: 85%;
     font-weight: 700;
     display: flex;
     align-items: center;
@@ -1570,7 +1588,7 @@
     border: none;
     padding: 0;
     cursor: pointer;
-    font-family: inherit;
+    font-family: 'PT Sans', sans-serif;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -1612,20 +1630,20 @@
 }
 
 .avatar-menu {
-    font-size: 16px;
+    font-size: 100%;
 }
 
 .menu-usuario-nombre {
     margin: 0 0 2px;
-    font-size: 16px;
-    line-height: 22px;
+    font-size: 100%;
+    line-height: 138%;
     font-weight: 700;
 }
 
 .menu-usuario-arroba {
     margin: 0;
-    font-size: 14px;
-    line-height: 20px;
+    font-size: 88%;
+    line-height: 143%;
     color: var(--gris-texto);
 }
 
@@ -1642,9 +1660,9 @@
     border-radius: 8px;
     background: none;
     color: var(--negro);
-    font-family: inherit;
-    font-size: 16px;
-    line-height: 24px;
+    font-family: 'PT Sans', sans-serif;
+    font-size: 100%;
+    line-height: 150%;
     text-align: left;
     text-decoration: none;
     cursor: pointer;
@@ -1711,6 +1729,14 @@ main > section:nth-child(n+5) { animation-delay: 0.3s; }
 }
 
 @media (max-width: 450px) {
+    .encabezado ~ main {
+        padding-top: 123px;
+    }
+
+    .encabezado-usuario ~ main {
+        padding-top: 110px;
+    }
+
     .encabezado-acciones {
         width: 100%;
     }
@@ -1732,8 +1758,8 @@ main > section:nth-child(n+5) { animation-delay: 0.3s; }
 
 .creditos {
     margin: 8px 0 0;
-    font-size: 12px;
-    line-height: 16px;
+    font-size: 75%;
+    line-height: 133%;
     color: var(--gris-texto);
 }
 

@@ -49,7 +49,6 @@ if (botonAvatar) {
     });
 }
 
-// Puntaje de 1 a 5 en estrellas, redondeado a la media estrella más cercana. En el servidor lo hace _Estrellas.cshtml.
 function crearEstrellas(puntaje, tamano) {
     const redondeado = Math.round(puntaje * 2) / 2;
     const texto = Math.round(puntaje * 10) / 10 + " de 5 estrellas";

@@ -1,5 +1,5 @@
 .descubrir {
-    padding: 48px 64px 72px;
+    padding: 3% 4% 5%;
     display: flex;
     flex-direction: column;
     gap: 40px;
@@ -21,14 +21,14 @@
 
 .descubrir-buscador h1 {
     margin: 0;
-    font-size: 40px;
-    line-height: 48px;
+    font-size: 250%;
+    line-height: 120%;
 }
 
 .descubrir-subtitulo {
     margin: 0;
-    font-size: 20px;
-    line-height: 30px;
+    font-size: 125%;
+    line-height: 150%;
     color: var(--gris-texto);
 }
 
@@ -57,8 +57,8 @@
     border: none;
     outline: none;
     background: none;
-    font-family: inherit;
-    font-size: 18px;
+    font-family: 'PT Sans', sans-serif;
+    font-size: 113%;
     color: var(--negro);
 }
 
@@ -78,7 +78,7 @@
 }
 
 .busquedas-recientes-titulo {
-    font-size: 16px;
+    font-size: 100%;
     font-weight: 700;
 }
 
@@ -90,7 +90,7 @@
 
 .chip-reciente {
     border: none;
-    font-family: inherit;
+    font-family: 'PT Sans', sans-serif;
     cursor: pointer;
     transition: background-color 0.2s ease;
 }
@@ -102,12 +102,12 @@
 .resultados-y-mapa {
     display: flex;
     align-items: stretch;
-    gap: 32px;
+    gap: 32px 2%;
 }
 
 .resultados {
-    width: 720px;
-    min-width: 720px;
+    width: 55%;
+    min-width: 55%;
     display: flex;
     flex-direction: column;
     gap: 16px;
@@ -121,14 +121,14 @@
 
 .resultados-encabezado h2 {
     margin: 0;
-    font-size: 22px;
+    font-size: 138%;
 }
 
 .resultados-orden {
     display: flex;
     align-items: center;
     gap: 4px;
-    font-size: 14px;
+    font-size: 88%;
     font-weight: 700;
     color: var(--naranja);
 }
@@ -149,8 +149,8 @@
     border: 1px solid var(--gris-medio);
     border-radius: 7px;
     background: var(--blanco) url("/img/icono-chevron.svg") no-repeat right 14px center;
-    font-family: inherit;
-    font-size: 16px;
+    font-family: 'PT Sans', sans-serif;
+    font-size: 100%;
     letter-spacing: -0.16px;
     color: var(--negro);
     appearance: none;
@@ -184,7 +184,9 @@
     padding: 0;
     border: 0;
     background: none;
-    font: inherit;
+    font-family: 'PT Sans', sans-serif;
+    font-size: 100%;
+    line-height: normal;
     font-weight: 700;
     color: var(--naranja);
     text-decoration: underline;
@@ -247,11 +249,11 @@
 
 .chip-recomendado {
     padding: 4px 10px;
-    font-size: 12px;
+    font-size: 75%;
 }
 
 .resultado-nombre {
-    font-size: 18px;
+    font-size: 113%;
     font-weight: 700;
     color: var(--negro);
     text-decoration: none;
@@ -277,7 +279,7 @@
 }
 
 .resultado-categoria {
-    font-size: 14px;
+    font-size: 88%;
     font-weight: 700;
     color: var(--naranja);
 }
@@ -286,7 +288,7 @@
     display: flex;
     align-items: center;
     gap: 4px;
-    font-size: 14px;
+    font-size: 88%;
     color: var(--gris-texto);
 }
 
@@ -315,7 +317,7 @@
 .sin-resultados {
     margin: 0;
     padding: 32px 0;
-    font-size: 18px;
+    font-size: 113%;
     color: var(--gris-texto);
 }
 
@@ -346,13 +348,13 @@
 
 .chip-categoria-filtro {
     border: none;
-    font-family: inherit;
+    font-family: 'PT Sans', sans-serif;
     white-space: nowrap;
 }
 
 .resultados-cuenta {
     margin: 0;
-    font-size: 14px;
+    font-size: 88%;
     color: var(--gris-texto);
 }
 
@@ -483,12 +485,12 @@
 }
 
 .mapa-tarjeta-nombre {
-    font-size: 16px;
+    font-size: 133%;
     font-weight: 700;
 }
 
 .mapa-tarjeta-detalle {
-    font-size: 13px;
+    font-size: 108%;
     color: var(--gris-texto);
 }
 
@@ -519,8 +521,8 @@
     }
 
     .descubrir-buscador h1 {
-        font-size: 32px;
-        line-height: 40px;
+        font-size: 200%;
+        line-height: 125%;
     }
 
     .barra-busqueda {

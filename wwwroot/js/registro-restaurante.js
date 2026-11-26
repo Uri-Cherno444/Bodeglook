@@ -6,7 +6,6 @@ document.querySelectorAll(".plan-opcion input").forEach(function (radio) {
     });
 });
 
-// El texto de ejemplo del desplegable se ve en gris hasta que se elige algo
 document.querySelectorAll("#barrio, #categoria").forEach(function (desplegable) {
     desplegable.addEventListener("change", function () {
         desplegable.classList.toggle("sin-elegir", desplegable.value === "");

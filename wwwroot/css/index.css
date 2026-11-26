@@ -1,5 +1,5 @@
 .seccion {
-    padding: 96px 112px;
+    padding: 7% 8%;
 }
 
 .seccion-crema {
@@ -12,14 +12,14 @@
 
 .hero {
     background: var(--crema);
-    padding: 72px 112px;
+    padding: 5% 8%;
     display: flex;
     align-items: center;
-    gap: 64px;
+    gap: 64px 5%;
 }
 
 .hero-texto {
-    width: 780px;
+    width: 64%;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -28,15 +28,15 @@
 
 .hero-texto h1 {
     margin: 0;
-    font-size: 64px;
-    line-height: 72px;
+    font-size: 400%;
+    line-height: 113%;
 }
 
 .hero-texto p {
     margin: 0;
     max-width: 640px;
-    font-size: 20px;
-    line-height: 30px;
+    font-size: 125%;
+    line-height: 150%;
     color: var(--gris-texto);
 }
 
@@ -48,7 +48,7 @@
 
 .hero-foto {
     position: relative;
-    width: 760px;
+    width: 63%;
     height: 480px;
 }
 
@@ -89,22 +89,22 @@
 }
 
 .tarjeta-flotante-nombre {
-    font-size: 17px;
+    font-size: 106%;
     font-weight: 700;
 }
 
 .tarjeta-flotante-detalle {
-    font-size: 13px;
+    font-size: 81%;
     color: var(--gris-texto);
 }
 
 .beneficios {
-    padding: 72px 112px;
+    padding: 5% 8%;
 }
 
 .fila-tarjetas {
     display: flex;
-    gap: 32px;
+    gap: 32px 3%;
 }
 
 .fila-tarjetas .tarjeta {
@@ -135,14 +135,14 @@
 .resenas-reales h2,
 .llamado-final h2 {
     margin: 0;
-    font-size: 48px;
-    line-height: 56px;
+    font-size: 300%;
+    line-height: 117%;
 }
 
 .encabezado-seccion p {
     margin: 0;
-    font-size: 20px;
-    line-height: 30px;
+    font-size: 125%;
+    line-height: 150%;
     color: var(--gris-texto);
 }
 
@@ -165,25 +165,25 @@
 
 .lugares-encabezado h2 {
     margin: 0 0 12px;
-    font-size: 40px;
-    line-height: 48px;
+    font-size: 250%;
+    line-height: 120%;
 }
 
 .lugares-encabezado p {
     margin: 0;
-    font-size: 20px;
-    line-height: 30px;
+    font-size: 125%;
+    line-height: 150%;
     color: var(--gris-texto);
 }
 
 .resenas-reales {
     display: flex;
     align-items: center;
-    gap: 80px;
+    gap: 80px 7%;
 }
 
 .resenas-reales-texto {
-    width: 680px;
+    width: 56%;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -193,8 +193,8 @@
 
 .resenas-reales-texto p {
     margin: 0;
-    font-size: 20px;
-    line-height: 30px;
+    font-size: 125%;
+    line-height: 150%;
     color: var(--gris-medio);
 }
 
@@ -228,13 +228,13 @@
     width: 100%;
     display: flex;
     justify-content: center;
-    gap: 32px;
+    gap: 32px 3%;
 }
 
 .tarjeta-precio {
-    width: 520px;
+    width: 43%;
     min-height: 593px;
-    padding: 40px;
+    padding: 3%;
     gap: 24px;
 }
 
@@ -257,8 +257,8 @@
 }
 
 .precio-monto {
-    font-size: 48px;
-    line-height: 56px;
+    font-size: 300%;
+    line-height: 117%;
     font-weight: 700;
 }
 
@@ -267,8 +267,8 @@
 }
 
 .precio-periodo {
-    font-size: 18px;
-    line-height: 28px;
+    font-size: 113%;
+    line-height: 156%;
     color: var(--gris-texto);
 }
 
@@ -285,8 +285,8 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    font-size: 18px;
-    line-height: 26px;
+    font-size: 113%;
+    line-height: 144%;
 }
 
 .tarjeta-precio .boton {
@@ -296,7 +296,7 @@
 .llamado-final {
     background: var(--naranja);
     border-radius: 24px;
-    padding: 64px 80px;
+    padding: 5% 7%;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -306,8 +306,8 @@
 
 .llamado-final p {
     margin: 12px 0 0;
-    font-size: 20px;
-    line-height: 30px;
+    font-size: 125%;
+    line-height: 150%;
 }
 
 @media (max-width: 1200px) {
@@ -338,8 +338,8 @@
     }
 
     .hero-texto h1 {
-        font-size: 40px;
-        line-height: 48px;
+        font-size: 250%;
+        line-height: 120%;
     }
 
     .hero-foto {
@@ -375,7 +375,7 @@
     .encabezado-seccion h2,
     .resenas-reales h2,
     .llamado-final h2 {
-        font-size: 32px;
-        line-height: 40px;
+        font-size: 200%;
+        line-height: 125%;
     }
 }

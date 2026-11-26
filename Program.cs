@@ -6,7 +6,6 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddSession();
 
 BD.CadenaConexion = builder.Configuration.GetConnectionString("Bodeglook")!;
-// La API key de Geoapify está en los user-secrets ("Geoapify:ApiKey"): no va en el código ni en appsettings.json
 Geoapify.ApiKey = builder.Configuration["Geoapify:ApiKey"] ?? "";
 
 var app = builder.Build();
@@ -24,7 +23,6 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-// MapStaticAssets solo sirve los archivos que había al compilar; esto sirve las fotos de grupo que se suben
 app.UseStaticFiles();
 app.UseRouting();
 
@@ -33,8 +31,6 @@ app.UseAuthorization();
 
 app.MapStaticAssets();
 
-// Importación de lugares de Geoapify: solo existe en desarrollo y gasta créditos del plan gratis.
-// /Geoapify/Importar?barrios=1,2   (ids de Barrios)   o   ?barrios=todos
 if (app.Environment.IsDevelopment())
 {
     app.MapGet("/Geoapify/Importar", async (string? barrios) =>

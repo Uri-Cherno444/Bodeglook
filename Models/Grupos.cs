@@ -23,7 +23,6 @@ public class Grupos
         return amigos.Select(a => new { id = a.Id, nombre = a.NombreCompleto, iniciales = a.ObtenerIniciales() });
     }
 
-    // La base no guarda quién creó el grupo: es el primer integrante que se le sumó (ver BD.CrearGrupo)
     public static bool EsCreador(int idGrupo, int idUsuario)
     {
         return BD.ObtenerIdCreadorGrupo(idGrupo) == idUsuario;
@@ -40,7 +39,6 @@ public class Grupos
         };
     }
 
-    // Devuelve null si el usuario no puede editar el grupo
     public static object? DatosParaEditar(int idGrupo, int idUsuario)
     {
         if (!EsCreador(idGrupo, idUsuario)) return null;
@@ -54,7 +52,6 @@ public class Grupos
         };
     }
 
-    // Las reglas del formulario, iguales al crear y al editar. Devuelve el mensaje de error o null.
     private static string? Validar(string nombre, List<int> integrantes, IFormFile? foto)
     {
         if (nombre == "") return "Poné el nombre del grupo.";
@@ -98,7 +95,6 @@ public class Grupos
         return new { ok = true, destino = "/Grupos/Chat/" + idGrupo };
     }
 
-    // Devuelve null si el usuario no puede editar el grupo
     public static object? Editar(int idGrupo, string? nombre, int idUsuario, List<int> integrantes, IFormFile? foto)
     {
         if (!EsCreador(idGrupo, idUsuario)) return null;
@@ -108,11 +104,9 @@ public class Grupos
         string? error = Validar(nombre, validos, foto);
         if (error != null) return new { ok = false, mensaje = error };
 
-        // El creador no entra en ninguna de las dos listas: nunca se puede quitar
         List<int> actuales = BD.ObtenerIntegrantesDeGrupo(idGrupo).Where(i => i.Id != idUsuario).Select(i => i.Id).ToList();
         string? fotoAnterior = BD.ObtenerGrupo(idGrupo)!.Foto;
 
-        // Nombre de archivo nuevo en cada cambio, para que el navegador no muestre la foto vieja
         string? fotoNueva = null;
         if (foto != null)
             fotoNueva = Fotos.GuardarSubida(foto, "", "grupo-" + idGrupo + "-" + DateTime.UtcNow.Ticks + Extension(foto));

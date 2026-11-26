@@ -458,7 +458,6 @@ public static class BD
         }
     }
 
-    // Si foto es null el grupo conserva la que tenía. Se guarda todo junto o nada.
     public static void ActualizarGrupo(int idGrupo, string nombre, string? foto, List<int> idsAgregar, List<int> idsQuitar)
     {
         using (SqlConnection conexion = new SqlConnection(CadenaConexion))
@@ -771,7 +770,6 @@ public static class BD
         }
     }
 
-    // Agrupa por restaurante: restricciones[idRestaurante] da los ids de las restricciones que cumple
     public static ILookup<int, int> ObtenerRestriccionesPorRestaurante()
     {
         return ObtenerRestriccionesDeTodosLosRestaurantes()

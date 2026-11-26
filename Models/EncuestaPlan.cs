@@ -75,7 +75,6 @@ public class EncuestaPlan
 
     public int Porcentaje(int votos)
     {
-        // En un plan ya cerrado pueden quedar votos de gente que después salió del grupo
         return CantidadIntegrantes == 0 ? 0 : Math.Min(100, votos * 100 / CantidadIntegrantes);
     }
 

@@ -5,10 +5,10 @@
 
 .cuenta-marca {
     position: relative;
-    width: 860px;
-    min-width: 860px;
+    width: 60%;
+    min-width: 60%;
     background: var(--negro);
-    padding: 0 150px;
+    padding: 0 10%;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -24,7 +24,7 @@
 
 .cuenta-nombre {
     margin: 0;
-    font-size: 64px;
+    font-size: 400%;
     font-weight: 700;
     color: var(--blanco);
 }
@@ -32,8 +32,8 @@
 .cuenta-lema {
     margin: 0;
     max-width: 560px;
-    font-size: 26px;
-    line-height: 34px;
+    font-size: 163%;
+    line-height: 131%;
     font-weight: 700;
     color: var(--naranja);
 }
@@ -41,8 +41,8 @@
 .cuenta-descripcion {
     margin: 0;
     max-width: 520px;
-    font-size: 18px;
-    line-height: 28px;
+    font-size: 113%;
+    line-height: 156%;
     color: var(--gris-medio);
 }
 
@@ -65,18 +65,18 @@
 
 .cuenta-formulario h1 {
     margin: 0;
-    font-size: 44px;
+    font-size: 275%;
     white-space: nowrap;
 }
 
 .cuenta-subtitulo {
     margin: 0;
-    font-size: 18px;
+    font-size: 113%;
     color: var(--gris-texto);
 }
 
 .cuenta-olvide {
-    font-size: 14px;
+    font-size: 88%;
     font-weight: 700;
     color: var(--naranja);
     text-decoration: none;
@@ -87,7 +87,7 @@
     display: flex;
     justify-content: center;
     gap: 6px;
-    font-size: 16px;
+    font-size: 100%;
     color: var(--gris-texto);
 }
 
@@ -103,27 +103,27 @@
 }
 
 .cuenta-formulario-registro h1 {
-    font-size: 40px;
+    font-size: 250%;
 }
 
 .cuenta-formulario-registro .cuenta-subtitulo {
-    font-size: 16px;
-    line-height: 24px;
+    font-size: 100%;
+    line-height: 150%;
 }
 
 .cuenta-legal {
     margin: 0;
-    font-size: 12px;
-    line-height: 18px;
+    font-size: 75%;
+    line-height: 150%;
     color: var(--gris-texto);
 }
 
 .cuenta-pie-registro {
-    font-size: 15px;
+    font-size: 94%;
 }
 
 .cuenta-pie-chico {
-    font-size: 14px;
+    font-size: 88%;
 }
 
 .cuenta-formulario-restaurante {
@@ -141,8 +141,8 @@
     border: 1px solid var(--gris-medio);
     border-radius: 7px;
     background: var(--blanco) url("/img/icono-chevron.svg") no-repeat right 14px center;
-    font-family: inherit;
-    font-size: 16px;
+    font-family: 'PT Sans', sans-serif;
+    font-size: 100%;
     letter-spacing: -0.16px;
     color: var(--negro);
     appearance: none;
@@ -187,7 +187,7 @@
 .plan-campo legend {
     padding: 0;
     margin-bottom: 8px;
-    font-size: 14px;
+    font-size: 88%;
     font-weight: 700;
 }
 
@@ -231,12 +231,12 @@
 }
 
 .plan-opcion-nombre {
-    font-size: 16px;
+    font-size: 100%;
     font-weight: 700;
 }
 
 .plan-opcion-precio {
-    font-size: 12px;
+    font-size: 75%;
     color: var(--gris-texto);
 }
 
@@ -310,6 +310,6 @@
     }
 
     .cuenta-nombre {
-        font-size: 44px;
+        font-size: 275%;
     }
 }
